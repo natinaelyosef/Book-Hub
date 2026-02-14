@@ -1,0 +1,82 @@
+<!-- store/manage_books.html -->
+{% extends 'store/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Manage Book Availability</h2>
+    
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'add_book_registration' %}" class="btn" style="background: #3498db; color: white;">
+            <i class="fas fa-plus"></i> Add New Book
+        </a>
+    </div>
+    
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #f8f9fa;">
+                <th style="padding: 15px; border: 1px solid #ddd;">Title</th>
+                <th style="padding: 15px; border: 1px solid #ddd;">Author</th>
+                <th style="padding: 15px; border: 1px solid #ddd;">Total Copies</th>
+                <th style="padding: 15px; border: 1px solid #ddd;">Available for Rent</th>
+                <th style="padding: 15px; border: 1px solid #ddd;">Available for Purchase</th>
+                <th style="padding: 15px; border: 1px solid #ddd;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td style="padding: 15px; border: 1px solid #ddd;">{{ book.title }}</td>
+                <td style="padding: 15px; border: 1px solid #ddd;">{{ book.author }}</td>
+                <td style="padding: 15px; border: 1px solid #ddd;">
+                    <input type="number" id="total_{{ book.id }}" value="{{ book.total_copies }}" style="width: 60px;">
+                </td>
+                <td style="padding: 15px; border: 1px solid #ddd;">
+                    <input type="number" id="rent_{{ book.id }}" value="{{ book.available_copies }}" style="width: 60px;">
+                </td>
+                <td style="padding: 15px; border: 1px solid #ddd;">
+                    <input type="number" id="sale_{{ book.id }}" value="{{ book.available_sales }}" style="width: 60px;">
+                </td>
+                <td style="padding: 15px; border: 1px solid #ddd;">
+                    <button onclick="updateBook({{ book.id }})" class="btn" style="background: #2ecc71; color: white;">
+                        Update
+                    </button>
+                    <a href="{% url 'edit_book' book.id %}" class="btn" style="background: #f39c12; color: white;">
+                        Edit
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function updateBook(bookId) {
+    const total = document.getElementById('total_' + bookId).value;
+    const rent = document.getElementById('rent_' + bookId).value;
+    const sale = document.getElementById('sale_' + bookId).value;
+    
+    fetch('/update-book-availability/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            book_id: bookId,
+            total_copies: total,
+            available_copies: rent,
+            available_sales: sale
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Book updated successfully!');
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+</script>
+{% endblock %}

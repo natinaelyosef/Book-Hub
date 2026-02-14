@@ -1,0 +1,158 @@
+<!-- customer/dashboard.html -->
+{% extends 'customer/base.html' %} <!-- Assuming you have a base template -->
+
+{% block content %}
+<div class="container">
+    <!-- Search and Filters Section -->
+    <div class="store-filter">
+        <h2>Browse Books</h2>
+        
+   
+        
+        <!-- Filter Tags -->
+        <div class="store-tags">
+            <a href="{% url 'customer_dashboard' %}" class="store-tag {% if not selected_genre and not selected_store and not selected_availability %}active{% endif %}">
+                All Books
+            </a>
+            
+            <a href="?availability=rent" class="store-tag {% if selected_availability == 'rent' %}active{% endif %}">
+                Available for Rent
+            </a>
+            
+            <a href="?availability=buy" class="store-tag {% if selected_availability == 'buy' %}active{% endif %}">
+                Available for Purchase
+            </a>
+            
+            <!-- Genre Filters -->
+            {% for genre in genres %}
+            <a href="?genre={{ genre }}" class="store-tag {% if selected_genre == genre %}active{% endif %}">
+                {{ genre }}
+            </a>
+            {% endfor %}
+        </div>
+        
+        <!-- Store Filter Dropdown -->
+        <div class="store-dropdown" style="margin-top: 15px;">
+            <label for="store-filter">Filter by Store:</label>
+            <select id="store-filter" onchange="window.location.href='?store='+this.value" style="margin-left: 10px; padding: 8px; border-radius: 5px;">
+                <option value="">All Stores</option>
+                {% for store in stores %}
+                <option value="{{ store.id }}" {% if selected_store == store.id|stringformat:'s' %}selected{% endif %}>
+                    {{ store.store_name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Results Count -->
+    <div class="results-count" style="margin: 20px 0;">
+        <p>Found {{ total_books }} book{{ total_books|pluralize }}</p>
+    </div>
+
+    <!-- Book Grid -->
+    <div class="book-grid">
+        {% for book in books %}
+        <div class="book-card">
+            <div class="book-image">
+                {% if book.store %}
+                <div class="store-badge">{{ book.store.store_name|default:"Book Store" }}</div>
+                {% endif %}
+                <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="{{ book.title }}">
+            </div>
+            <div class="book-info">
+                <h3 class="book-title">{{ book.title }}</h3>
+                <div class="book-author">{{ book.author }}</div>
+                <div class="book-genre" style="color: #3498db; margin-bottom: 10px; font-weight: 500;">
+                    {{ book.genre }}
+                </div>
+                
+                <div class="book-pricing">
+                    {% if book.available_copies > 0 %}
+                    <div class="price-option">
+                        <span class="price-label">RENT FOR</span>
+                        <span class="price-amount rent-price">${{ book.rental_price }}</span>
+                        <span class="price-label">/month</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if book.available_sales > 0 %}
+                    <div class="price-option">
+                        <span class="price-label">BUY FOR</span>
+                        <span class="price-amount buy-price">${{ book.sale_price }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="book-availability" style="margin-bottom: 15px;">
+                    {% if book.available_copies > 0 %}
+                    <span style="color: #27ae60; font-weight: 500;">
+                        <i class="fas fa-check-circle"></i> {{ book.available_copies }} available for rent
+                    </span>
+                    {% else %}
+                    <span style="color: #e74c3c; font-weight: 500;">
+                        <i class="fas fa-times-circle"></i> Not available for rent
+                    </span>
+                    {% endif %}
+                    
+                    <br>
+                    
+                    {% if book.available_sales > 0 %}
+                    <span style="color: #27ae60; font-weight: 500;">
+                        <i class="fas fa-check-circle"></i> {{ book.available_sales }} available for purchase
+                    </span>
+                    {% else %}
+                    <span style="color: #e74c3c; font-weight: 500;">
+                        <i class="fas fa-times-circle"></i> Not available for purchase
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="book-actions">
+                    {% if book.available_copies > 0 %}
+                    <a href="{% url 'add_to_cart_rent' book.id %}" class="btn btn-rent">
+                        <i class="fas fa-exchange-alt"></i> Rent Now
+                    </a>
+                    {% endif %}
+                    
+                    {% if book.available_sales > 0 %}
+                    <a href="{% url 'add_to_cart_buy' book.id %}" class="btn btn-buy">
+                        <i class="fas fa-shopping-cart"></i> Buy Now
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'book_detail' book.id %}" class="btn" style="background-color: #f39c12; color: white; flex: 0.5;">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
+            <h3>No books found matching your criteria.</h3>
+            <p>Try adjusting your search or filters.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Quick Search Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('input[name="search"]');
+    let searchTimeout;
+    
+    // Quick search as you type
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const query = this.value.trim();
+            if (query.length >= 2) {
+                // You can implement AJAX search here if needed
+                console.log('Searching for:', query);
+            }
+        }, 300);
+    });
+});
+</script>
+{% endblock %}

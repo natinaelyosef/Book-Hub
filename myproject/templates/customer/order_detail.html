@@ -1,0 +1,260 @@
+<!-- customer/order_detail.html -->
+{% extends 'customer/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div style="max-width: 900px; margin: 0 auto;">
+        <!-- Order Header -->
+        <div style="background: white; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <h2 style="margin: 0; color: #2c3e50;">Order #{{ order.order_number }}</h2>
+                    <p style="color: #7f8c8d; margin: 5px 0 0 0;">
+                        Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|time:"g:i A" }}
+                    </p>
+                </div>
+                <div style="text-align: right;">
+                    <span style="display: inline-block; padding: 8px 20px; background: {% if order.status == 'completed' or order.status == 'delivered' %}#27ae60{% elif order.status == 'cancelled' %}#e74c3c{% else %}#3498db{% endif %}; 
+                           color: white; border-radius: 20px; font-weight: 600; font-size: 0.9rem;">
+                        {{ order.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div>
+                    <p style="color: #7f8c8d; margin: 0 0 5px 0; font-size: 0.9rem;">Order Type</p>
+                    <p style="margin: 0; font-weight: 600; color: #2c3e50;">
+                        {% if order.order_type == 'rent' %}📚 Rental{% else %}🛒 Purchase{% endif %}
+                    </p>
+                </div>
+                <div>
+                    <p style="color: #7f8c8d; margin: 0 0 5px 0; font-size: 0.9rem;">Total Amount</p>
+                    <p style="margin: 0; font-weight: 600; color: #2c3e50;">${{ order.total_amount|floatformat:2 }}</p>
+                </div>
+                <div>
+                    <p style="color: #7f8c8d; margin: 0 0 5px 0; font-size: 0.9rem;">Delivery Method</p>
+                    <p style="margin: 0; font-weight: 600; color: #2c3e50;">
+                        {% if order.delivery_option == 'delivery' %}🚚 Home Delivery{% else %}🏪 Store Pickup{% endif %}
+                    </p>
+                </div>
+                <div>
+                    <p style="color: #7f8c8d; margin: 0 0 5px 0; font-size: 0.9rem;">Store</p>
+                    <p style="margin: 0; font-weight: 600; color: #2c3e50;">{{ order.store.store_name }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Items -->
+        <div style="background: white; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <h3 style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #f8f9fa; padding-bottom: 15px;">
+                Order Items ({{ items.count }})
+            </h3>
+            
+            <div style="margin-top: 20px;">
+                {% for item in items %}
+                <div style="display: flex; padding: 20px; background: #f8f9fa; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 5px 0; color: #2c3e50;">{{ item.book.title }}</h4>
+                        <p style="margin: 0 0 10px 0; color: #7f8c8d;">by {{ item.book.author }}</p>
+                        <div style="display: flex; gap: 20px; font-size: 0.9rem;">
+                            <span style="background: {% if item.item_type == 'rent' %}#3498db{% else %}#2ecc71{% endif %}; 
+                                  color: white; padding: 4px 12px; border-radius: 12px;">
+                                {% if item.item_type == 'rent' %}Rental{% else %}Purchase{% endif %}
+                            </span>
+                            <span>Quantity: {{ item.quantity }}</span>
+                            {% if item.item_type == 'rent' and item.rental_days %}
+                            <span>Rental Period: {{ item.rental_days }} days</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="margin: 0; font-size: 1.2rem; font-weight: 600; color: #2c3e50;">
+                            ${{ item.price|floatformat:2 }}
+                        </p>
+                        {% if item.item_type == 'rent' %}
+                        <p style="margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.9rem;">
+                            ${{ item.book.rental_price }}/day
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Order Summary -->
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #f8f9fa;">
+                <div style="max-width: 300px; margin-left: auto;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #7f8c8d;">Subtotal</span>
+                        <span>${{ order.total_amount|add:-order.delivery_fee|floatformat:2 }}</span>
+                    </div>
+                    {% if order.delivery_fee > 0 %}
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #7f8c8d;">Delivery Fee</span>
+                        <span>${{ order.delivery_fee|floatformat:2 }}</span>
+                    </div>
+                    {% endif %}
+                    <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 600; padding-top: 10px; border-top: 1px solid #f8f9fa;">
+                        <span>Total</span>
+                        <span>${{ order.total_amount|floatformat:2 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Delivery Information -->
+        {% if order.delivery_option == 'delivery' or delivery %}
+        <div style="background: white; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <h3 style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #f8f9fa; padding-bottom: 15px;">
+                Delivery Information
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+                <div>
+                    <h4 style="margin: 0 0 15px 0; color: #2c3e50;">Delivery Details</h4>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        {% if delivery %}
+                        <div style="margin-bottom: 15px;">
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d;">Status</p>
+                            <p style="margin: 0; font-weight: 600; color: #2c3e50;">
+                                {{ delivery.get_status_display }}
+                            </p>
+                        </div>
+                        {% if delivery.driver_name %}
+                        <div style="margin-bottom: 15px;">
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d;">Driver</p>
+                            <p style="margin: 0; font-weight: 600; color: #2c3e50;">
+                                {{ delivery.driver_name }}
+                                {% if delivery.driver_phone %}
+                                <br><small style="color: #7f8c8d;">{{ delivery.driver_phone }}</small>
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% endif %}
+                        {% if delivery.estimated_arrival %}
+                        <div style="margin-bottom: 15px;">
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d;">Estimated Arrival</p>
+                            <p style="margin: 0; font-weight: 600; color: #2c3e50;">
+                                {{ delivery.estimated_arrival|date:"F d, Y" }} at {{ delivery.estimated_arrival|time:"g:i A" }}
+                            </p>
+                        </div>
+                        {% endif %}
+                        {% if delivery.current_location %}
+                        <div>
+                            <p style="margin: 0 0 5px 0; color: #7f8c8d;">Current Location</p>
+                            <p style="margin: 0; font-weight: 600; color: #2c3e50;">{{ delivery.current_location }}</p>
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <div>
+                            <p style="margin: 0; color: #7f8c8d; text-align: center; padding: 20px 0;">
+                                Delivery information will be updated by the store
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="margin: 0 0 15px 0; color: #2c3e50;">Delivery Address</h4>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; height: 100%;">
+                        <p style="margin: 0; color: #2c3e50; font-weight: 600;">
+                            {% if order.delivery_address %}
+                            {{ order.delivery_address|linebreaksbr }}
+                            {% else %}
+                            Store Pickup: {{ order.store.store_name }}<br>
+                            {{ order.store.address }}, {{ order.store.city }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Store Information -->
+        <div style="background: white; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <h3 style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #f8f9fa; padding-bottom: 15px;">
+                Store Information
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+                <div>
+                    <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 1.1rem;">
+                        {{ order.store.store_name }}
+                    </h4>
+                    <p style="margin: 0 0 10px 0; color: #7f8c8d;">
+                        <i class="fas fa-map-marker-alt"></i> {{ order.store.address }}, {{ order.store.city }}
+                    </p>
+                    {% if order.store.phone %}
+                    <p style="margin: 0 0 10px 0; color: #7f8c8d;">
+                        <i class="fas fa-phone"></i> {{ order.store.phone }}
+                    </p>
+                    {% endif %}
+                    {% if order.store.email %}
+                    <p style="margin: 0 0 10px 0; color: #7f8c8d;">
+                        <i class="fas fa-envelope"></i> {{ order.store.email }}
+                    </p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 1.1rem;">Order Notes</h4>
+                    {% if order.notes %}
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <p style="margin: 0; color: #2c3e50;"><strong>Your Notes:</strong> {{ order.notes }}</p>
+                    </div>
+                    {% endif %}
+                    {% if order.store_notes %}
+                    <div style="background: #e8f4f8; padding: 15px; border-radius: 8px; border-left: 4px solid #3498db;">
+                        <p style="margin: 0; color: #2c3e50;"><strong>Store Notes:</strong> {{ order.store_notes|linebreaksbr }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div style="display: flex; justify-content: space-between; gap: 15px; margin-top: 30px;">
+            <a href="{% url 'order_history' %}" class="btn" 
+               style="background: #95a5a6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                <i class="fas fa-arrow-left"></i> Back to Orders
+            </a>
+            
+            <div style="display: flex; gap: 15px;">
+                {% if order.status == 'delivered' %}
+                <form method="POST" action="{% url 'mark_order_finished' order.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn" 
+                        style="background: #16a085; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; border: none;">
+                        <i class="fas fa-check-double"></i> Finished
+                    </button>
+                </form>
+                {% endif %}
+
+                {% if order.status == 'completed' %}
+                <a href="{% url 'add_review' order.id %}" class="btn" 
+                   style="background: #f39c12; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                    <i class="fas fa-star"></i> Add Review
+                </a>
+                {% endif %}
+                
+                <a href="{% url 'track_order' order.id %}" class="btn" 
+                   style="background: #3498db; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                    <i class="fas fa-map-marker-alt"></i> Track Order
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,256 @@
+<div id="sidebar">
+    <div class="sidebar-header p-4 border-bottom">
+        <div class="d-flex align-items-center">
+            <div class="logo-icon me-3">
+                <i class="bi bi-book-open fs-3 text-primary"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold mb-0">BookTracker</h4>
+                <small class="text-muted">Collection Manager</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar-content p-3 flex-grow-1">
+        <ul class="nav flex-column">
+            <li class="nav-item mb-2">
+                <a class="sidebar-item active d-flex align-items-center py-3 px-3 rounded" href="{% url 'store_dashboard' %}">
+                    <i class="bi bi-speedometer2 me-3"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a class="sidebar-item d-flex align-items-center py-3 px-3 rounded" href="#">
+                    <i class="bi bi-book me-3"></i>
+                    <span>All Books</span>
+                    <span class="badge bg-primary ms-auto">500</span>
+                </a>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a class="sidebar-item d-flex align-items-center py-3 px-3 rounded" href="#">
+                    <i class="bi bi-check-circle me-3"></i>
+                    <span>Read</span>
+                    <span class="badge bg-success ms-auto">87</span>
+                </a>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a class="sidebar-item d-flex align-items-center py-3 px-3 rounded" href="#">
+                    <i class="bi bi-hourglass-split me-3"></i>
+                    <span>Reading</span>
+                    <span class="badge bg-warning ms-auto">5</span>
+                </a>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a class="sidebar-item d-flex align-items-center py-3 px-3 rounded" href="#">
+                    <i class="bi bi-bookmark me-3"></i>
+                    <span>To Read</span>
+                    <span class="badge bg-danger ms-auto">42</span>
+                </a>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a class="sidebar-item d-flex align-items-center py-3 px-3 rounded" href="{% url 'store_orders' %}">
+                    <i class="bi bi-cart me-3"></i>
+                    <span>Orders</span>
+                    <span class="badge bg-warning ms-auto">{{ pending_orders_count|default:"0" }}</span>
+                </a>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a class="sidebar-item d-flex align-items-center py-3 px-3 rounded" href="{% url 'store_wishlist' %}">
+                    <i class="bi bi-heart me-3"></i>
+                    <span>Wishlist Analytics</span>
+                </a>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a class="sidebar-item d-flex align-items-center py-3 px-3 rounded" href="#">
+                    <i class="bi bi-people me-3"></i>
+                    <span>Customers</span>
+                    <span class="badge bg-success ms-auto">42</span>
+                </a>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a class="sidebar-item d-flex align-items-center py-3 px-3 rounded" href="#">
+                    <i class="bi bi-bar-chart me-3"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a class="sidebar-item d-flex align-items-center py-3 px-3 rounded" href="#">
+                    <i class="bi bi-gear me-3"></i>
+                    <span>Settings</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Quick Stats in Sidebar -->
+        <div class="mt-5 p-3 bg-light rounded">
+            <h6 class="text-muted mb-3">📊 Quick Stats</h6>
+            <div class="small mb-2">
+                <span class="text-muted">💰 Revenue Today:</span>
+                <span class="fw-bold float-end">$250</span>
+            </div>
+            <div class="small mb-2">
+                <span class="text-muted">📚 Total Books:</span>
+                <span class="fw-bold float-end">500</span>
+            </div>
+            <div class="small mb-2">
+                <span class="text-muted">🔄 Active Rentals:</span>
+                <span class="fw-bold float-end">23</span>
+            </div>
+            <div class="small mb-2">
+                <span class="text-muted">🚚 Pending Deliveries:</span>
+                <span class="fw-bold float-end">8</span>
+            </div>
+            <div class="small">
+                <span class="text-muted">👥 New Customers:</span>
+                <span class="fw-bold float-end text-success">3</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar-footer p-3 border-top">
+        <div class="d-grid gap-2">
+            <button class="btn btn-primary btn-sm" id="addBookBtnSidebar">
+                <i class="bi bi-plus-circle me-1"></i> Add New Book
+            </button>
+            <button class="btn btn-outline-primary btn-sm" id="manageOrdersBtn">
+                <i class="bi bi-cart me-1"></i> Manage Orders
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    #sidebar {
+        width: var(--sidebar-width);
+        background-color: white;
+        color: #858796;
+        position: fixed;
+        top: 70px;
+        left: 0;
+        height: calc(100vh - 70px);
+        z-index: 1000;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        transition: all var(--transition-speed) ease;
+        overflow-y: auto;
+        display: block !important;
+    }
+
+    .sidebar-header {
+        padding: 1.5rem 1rem 0.5rem;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        color: #b7b9cc;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .sidebar-item {
+        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        color: #3a3b45;
+        text-decoration: none;
+        border-left: 3px solid transparent;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .sidebar-item:hover,
+    .sidebar-item.active {
+        color: var(--book-color);
+        background-color: #f8f9fc;
+        border-left-color: var(--book-color);
+    }
+
+    .sidebar-item i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+        font-size: 1.1rem;
+    }
+
+    .sidebar-item span {
+        transition: opacity var(--transition-speed);
+    }
+
+    body[data-bs-theme="dark"] #sidebar {
+        background-color: #1a1d28;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.3);
+    }
+
+    body[data-bs-theme="dark"] .sidebar-item {
+        color: #adb5bd;
+    }
+
+    body[data-bs-theme="dark"] .sidebar-item:hover,
+    body[data-bs-theme="dark"] .sidebar-item.active {
+        background-color: #12151e;
+        color: var(--book-color);
+    }
+
+    body[data-bs-theme="dark"] .bg-light {
+        background-color: #2a2d38 !important;
+        color: #adb5bd;
+    }
+
+    @media (max-width: 768px) {
+        #sidebar {
+            transform: translateX(-100%);
+            width: 280px;
+        }
+
+        .sidebar-open #sidebar {
+            transform: translateX(0);
+        }
+
+        .sidebar-open::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+    }
+
+    /* Scrollbar Styling */
+    #sidebar::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    #sidebar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    #sidebar::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+    }
+
+    #sidebar::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+
+    body[data-bs-theme="dark"] #sidebar::-webkit-scrollbar-track {
+        background: #2a2d38;
+    }
+
+    body[data-bs-theme="dark"] #sidebar::-webkit-scrollbar-thumb {
+        background: #4a4d58;
+    }
+
+    body[data-bs-theme="dark"] #sidebar::-webkit-scrollbar-thumb:hover {
+        background: #5a5d68;
+    }
+</style>

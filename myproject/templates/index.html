@@ -1,0 +1,176 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>MySite | Full OnePage 2026</title>
+
+  <!-- Vendor CSS -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+
+  <style>
+    :root { --primary: #2487ce; --dark: #124265; --bg-light: #f8fbfe; }
+    body { font-family: 'Poppins', sans-serif; color: #444; scroll-behavior: smooth; }
+    .section-title { text-align: center; padding-bottom: 40px; padding-top: 60px; }
+    .section-title h2 { font-size: 32px; font-weight: bold; color: var(--dark); position: relative; padding-bottom: 15px; }
+    .section-title h2::after { content: ""; position: absolute; width: 50px; height: 3px; background: var(--primary); bottom: 0; left: calc(50% - 25px); }
+    
+    /* Hero */
+    #hero { width: 100%; height: 100vh; background: url("{% static 'assets/img/hero-bg.jpg' %}") top center; background-size: cover; position: relative; }
+    #hero:before { content: ""; background: rgba(255, 255, 255, 0.8); position: absolute; bottom: 0; top: 0; left: 0; right: 0; }
+    #hero .container { position: relative; }
+
+    /* Icon Boxes */
+    .icon-box { padding: 30px; position: relative; overflow: hidden; background: #fff; box-shadow: 0 0 29px 0 rgba(68, 88, 144, 0.12); transition: all 0.3s ease-in-out; border-radius: 8px; z-index: 1; text-align: center; }
+    .icon-box .icon { margin-bottom: 15px; }
+    .icon-box .icon i { font-size: 48px; line-height: 1; color: var(--primary); }
+
+    /* Team/Pricing Styles */
+    .member { box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.1); padding: 30px; border-radius: 5px; background: #fff; }
+    .pricing .box { padding: 40px 20px; box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1); background: #fff; text-align: center; border-radius: 8px; }
+    .pricing .featured { background: var(--primary); color: #fff; }
+  </style>
+</head>
+
+<body>
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="header sticky-top bg-white border-bottom py-2">
+    <div class="container d-flex align-items-center justify-content-between">
+      <h1 class="m-0"><a href="/" class="text-decoration-none fw-bold text-dark">OnePage<span>.</span></a></h1>
+      <nav class="navmenu d-none d-lg-block">
+        <ul class="nav">
+          <li><a class="nav-link" href="#hero">Home</a></li>
+          <li><a class="nav-link" href="#about">About</a></li>
+          <li><a class="nav-link" href="#team">Team</a></li>
+          <li><a class="nav-link" href="#pricing">Pricing</a></li>
+          <li><a class="nav-link" href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+
+      {% if user.is_authenticated %}
+        <a class="btn btn-primary px-4" href="logout">Logout</a>
+      {% else %}
+        <a class="btn btn-primary px-4" href="login">Login</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- ======= Hero Section ======= -->
+  <section id="hero" class="d-flex align-items-center">
+    <div class="container text-center" data-aos="zoom-in" data-aos-delay="100">
+     {% if user.is_authenticated %}
+      <h1 class="display-4 fw-bold">Welcome back, {{ user.username }}!</h1>
+      {% else %}
+         <h1 class="display-4 fw-bold">One Page Bootstrap Website Template</h1>
+      {% endif %}
+      <h2 class="fs-4 text-secondary mb-4">We are team of talented designers making websites with Bootstrap</h2>
+      <a href="#about" class="btn btn-primary btn-lg px-5 rounded-pill">Get Started</a>
+    </div>
+  </section>
+
+  <!-- ======= Icon Boxes Section ======= -->
+  <section id="featured-services" class="py-5 bg-light">
+    <div class="container">
+      <div class="row g-4">
+       
+          {% for feature in features %}
+            <div class="col-md-6 col-lg-3 d-flex align-items-stretch" data-aos="zoom-in" data-aos-delay="100">
+              <div class="icon-box">
+                <div class="icon"><i class="bi {{ feature.icon|default:'bi-stack' }}"></i></div>  <!-- Dynamic icon with fallback -->
+                <h4 class="title">{{ feature.name }}</h4>
+                <p class="description">{{ feature.details }}</p>
+              {% if feature.name == "Fast" %}
+              <p> we are vary quick</p>
+              {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+    
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= About Us Section ======= -->
+  <section id="about" class="py-5">
+    <div class="container" data-aos="fade-up">
+      <div class="section-title">
+        <h2>About Us</h2>
+        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+      </div>
+      <div class="row content">
+        <div class="col-lg-6">
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+          <ul class="list-unstyled">
+            <li><i class="bi bi-check-all text-primary me-2"></i> Ullamco laboris nisi ut aliquip ex ea commodo consequat.</li>
+            <li><i class="bi bi-check-all text-primary me-2"></i> Duis aute irure dolor in reprehenderit in voluptate velit.</li>
+            <li><i class="bi bi-check-all text-primary me-2"></i> Ullamco laboris nisi ut aliquip ex ea commodo</li>
+          </ul>
+        </div>
+        <div class="col-lg-6 pt-4 pt-lg-0">
+          <p>Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+          <a href="#" class="btn btn-outline-primary px-4">Read More</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= Team, Pricing, FAQ, Contact (As previously structured) ======= -->
+  <main>
+    <!-- Team Section -->
+    <section id="team" class="py-5 bg-light">
+      <div class="container" data-aos="fade-up">
+        <div class="section-title"><h2>Team</h2></div>
+        <div class="row g-4">
+          <div class="col-lg-3 col-md-6 text-center">
+            <div class="member bg-white">
+              <img src="{% static 'assets/img/team/team-1.jpg' %}" alt="" class="rounded-circle mb-3" style="width:100px;">
+              <h4>Walter White</h4><span>Chief Executive Officer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-5 pricing">
+      <div class="container">
+        <div class="section-title"><h2>Pricing</h2></div>
+        <div class="row g-4">
+          <div class="col-lg-4"><div class="box"><h3>Free</h3><h4>$0</h4><button class="btn btn-outline-primary mt-3">Buy Now</button></div></div>
+          <div class="col-lg-4"><div class="box featured"><h3>Business</h3><h4>$29</h4><button class="btn btn-light mt-3">Buy Now</button></div></div>
+          <div class="col-lg-4"><div class="box"><h3>Developer</h3><h4>$49</h4><button class="btn btn-outline-primary mt-3">Buy Now</button></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-5 bg-light">
+      <div class="container">
+        <div class="section-title"><h2>Contact</h2></div>
+        <div class="row g-4">
+          <div class="col-lg-5"><div class="p-4 bg-white shadow-sm"><h5>Location:</h5><p>123 Blue Street, NY</p></div></div>
+          <div class="col-lg-7">
+            <form class="p-4 bg-white shadow-sm rounded">
+              <input type="text" class="form-control mb-3" placeholder="Your Name">
+              <textarea class="form-control mb-3" rows="4" placeholder="Message"></textarea>
+              <button class="btn btn-primary w-100">Send Message</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-dark text-white py-4 text-center">
+    <div class="container"><p class="mb-0">© 2026 MySite. All Rights Reserved.</p></div>
+  </footer>
+
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+  <script>AOS.init({ duration: 1000, once: true });</script>
+</body>
+</html>

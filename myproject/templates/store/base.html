@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Book Collection Tracker{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --info-color: #7209b7;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --sidebar-bg: #1e293b;
+            --sidebar-text: #e2e8f0;
+            --card-bg: #ffffff;
+            --body-bg: #f8fafc;
+            --text-color: #334155;
+            --border-color: #e2e8f0;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --light-color: #1e293b;
+            --dark-color: #f1f5f9;
+            --sidebar-bg: #0f172a;
+            --sidebar-text: #cbd5e1;
+            --card-bg: #1e293b;
+            --body-bg: #0f172a;
+            --text-color: #cbd5e1;
+            --border-color: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        #sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.3s;
+        }
+
+        .sidebar-brand {
+            padding: 1.5rem 1rem;
+            display: flex;
+            align-items: center;
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-brand i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+
+        .sidebar-heading {
+            padding: 1rem 1rem 0.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-item {
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .sidebar-item:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            border-left-color: var(--primary-color);
+        }
+
+        .sidebar-item.active {
+            background-color: rgba(67, 97, 238, 0.15);
+            color: white;
+            border-left-color: var(--primary-color);
+        }
+
+        .sidebar-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .badge-sidebar {
+            margin-left: auto;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #sidebar {
+                transform: translateX(-100%);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            #sidebar.show {
+                transform: translateX(0);
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--body-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar">
+            <div class="sidebar-brand">
+                <i class="fas fa-book"></i>
+                <span>BookTracker</span>
+            </div>
+            
+            <div class="sidebar-heading">Dashboard</div>
+            <a href="{% url 'store_dashboard' %}" class="sidebar-item {% if request.resolver_match.url_name == 'store_dashboard' %}active{% endif %}">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            
+            <div class="sidebar-heading">Store Management</div>
+            <a href="{% url 'store_registration' %}" class="sidebar-item {% if request.resolver_match.url_name == 'store_registration' %}active{% endif %}">
+                <i class="fas fa-store"></i>
+                <span>Register Store</span>
+            </a>
+            <a href="{% url 'store_registration_view' %}" class="sidebar-item {% if request.resolver_match.url_name == 'store_registration_view' %}active{% endif %}">
+                <i class="fas fa-list"></i>
+                <span>View Stores</span>
+            </a>
+            
+            <div class="sidebar-heading">Book Management</div>
+            <a href="{% url 'add_book_registration' %}" class="sidebar-item {% if request.resolver_match.url_name == 'add_book_registration' %}active{% endif %}">
+                <i class="fas fa-plus-circle"></i>
+                <span>Add Book</span>
+            </a>
+            <a href="{% url 'view_inventory' %}" class="sidebar-item {% if request.resolver_match.url_name == 'view_inventory' %}active{% endif %}">
+                <i class="fas fa-archive"></i>
+                <span>View Inventory</span>
+                {% with total_books=books.count|default:0 %}
+                <span class="badge-sidebar bg-primary">{{ total_books }}</span>
+                {% endwith %}
+            </a>
+            <a href="{% url 'manage_books' %}" class="sidebar-item {% if request.resolver_match.url_name == 'manage_books' %}active{% endif %}">
+                <i class="fas fa-edit"></i>
+                <span>Manage Books</span>
+            </a>
+            
+      <div class="sidebar-heading">Order Management</div>
+<a href="{% url 'store_orders' %}" class="sidebar-item {% if request.resolver_match.url_name == 'store_orders' %}active{% endif %}">
+    <i class="fas fa-shopping-cart"></i>
+    <span>Order Management</span>
+    {% if pending_orders_count %}
+    <span class="badge-sidebar bg-warning">{{ pending_orders_count }}</span>
+    {% endif %}
+</a>
+<a href="{% url 'store_wishlist' %}" class="sidebar-item {% if request.resolver_match.url_name == 'store_wishlist' %}active{% endif %}">
+    <i class="fas fa-heart"></i>
+    <span>Wishlisted Books</span>
+    {% if wishlist_count %}
+    <span class="badge-sidebar bg-danger">{{ wishlist_count }}</span>
+    {% endif %}
+</a>
+            
+            <div class="sidebar-heading">Customers</div>
+            <a href="{% url 'order_history' %}" class="sidebar-item">
+                <i class="fas fa-history"></i>
+                <span>Customer Orders</span>
+            </a>
+            
+            <div class="sidebar-heading">Account</div>
+            <a href="{% url 'customer_profile' %}" class="sidebar-item">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+            </a>
+            <a href="{% url 'logout' %}" class="sidebar-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 rounded">
+                <div class="container-fluid">
+                    <button class="btn btn-primary d-md-none" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <div class="ms-auto d-flex align-items-center">
+                        <div class="dropdown me-3">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user"></i> {{ request.user.username }}
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'customer_profile' %}">Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            
+            <!-- Page Content -->
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Sidebar Toggle for Mobile
+        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.getElementById('sidebarToggle');
+            
+            if (window.innerWidth <= 768 && 
+                sidebar.classList.contains('show') && 
+                !sidebar.contains(event.target) && 
+                !toggle.contains(event.target)) {
+                sidebar.classList.remove('show');
+            }
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

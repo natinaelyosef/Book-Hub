@@ -1,0 +1,576 @@
+<!-- store/order_history.html -->
+{% extends 'store/base.html' %}
+
+{% block title %}Order History - Store Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'store_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Order History</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-card p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h3 class="mb-2">
+                            <i class="bi bi-clock-history text-book-color me-2"></i>
+                            Order History
+                        </h3>
+                        <p class="text-muted mb-0">
+                            Manage and track all orders for your store
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'store_dashboard' %}" class="btn btn-secondary">
+                                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                            </a>
+                            <button class="btn btn-purple" onclick="printReport()">
+                                <i class="bi bi-printer me-2"></i> Print Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center border-left-book">
+                <div class="text-book-color mb-2">
+                    <i class="bi bi-cart fs-1"></i>
+                </div>
+                <h4 class="mb-1">{{ total_orders|default:"0" }}</h4>
+                <p class="text-muted mb-0">Total Orders</p>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center border-left-revenue">
+                <div class="text-success mb-2">
+                    <i class="bi bi-currency-dollar fs-1"></i>
+                </div>
+                <h4 class="mb-1">${{ total_revenue|floatformat:2|default:"0.00" }}</h4>
+                <p class="text-muted mb-0">Total Revenue</p>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center border-left-rental">
+                <div class="text-warning mb-2">
+                    <i class="bi bi-clock fs-1"></i>
+                </div>
+                <h4 class="mb-1">{{ pending_orders|default:"0" }}</h4>
+                <p class="text-muted mb-0">Pending Orders</p>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center border-left-delivery">
+                <div class="text-danger mb-2">
+                    <i class="bi bi-arrow-repeat fs-1"></i>
+                </div>
+                <h4 class="mb-1">{{ rental_orders|default:"0" }}</h4>
+                <p class="text-muted mb-0">Active Rentals</p>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center border-left-primary">
+                <div class="text-info mb-2">
+                    <i class="bi bi-calendar-day fs-1"></i>
+                </div>
+                <h4 class="mb-1">${{ today_revenue|floatformat:2|default:"0.00" }}</h4>
+                <p class="text-muted mb-0">Today's Revenue</p>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center border-left-success">
+                <div class="text-purple mb-2">
+                    <i class="bi bi-graph-up-arrow fs-1"></i>
+                </div>
+                <h4 class="mb-1">${{ month_revenue|floatformat:2|default:"0.00" }}</h4>
+                <p class="text-muted mb-0">Monthly Revenue</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-card p-4">
+                <form method="GET" action="{% url 'store_order_history' %}">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="all" {% if status_filter=='all' %}selected{% endif %}>All Statuses</option>
+                                <option value="pending" {% if status_filter=='pending' %}selected{% endif %}>Pending</option>
+                                <option value="approved" {% if status_filter=='approved' %}selected{% endif %}>Approved</option>
+                                <option value="preparing" {% if status_filter=='preparing' %}selected{% endif %}>Preparing</option>
+                                <option value="ready" {% if status_filter=='ready' %}selected{% endif %}>Ready</option>
+                                <option value="out_for_delivery" {% if status_filter=='out_for_delivery' %}selected{% endif %}>Out for Delivery</option>
+                                <option value="delivered" {% if status_filter=='delivered' %}selected{% endif %}>Delivered</option>
+                                <option value="completed" {% if status_filter=='completed' %}selected{% endif %}>Completed</option>
+                                <option value="cancelled" {% if status_filter=='cancelled' %}selected{% endif %}>Declined</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Order Type</label>
+                            <select name="type" class="form-select">
+                                <option value="all" {% if order_type_filter=='all' %}selected{% endif %}>All Types
+                                </option>
+                                <option value="rent" {% if order_type_filter=='rent' %}selected{% endif %}>Rental
+                                </option>
+                                <option value="buy" {% if order_type_filter=='buy' %}selected{% endif %}>Purchase
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Time Period</label>
+                            <select name="date" class="form-select">
+                                <option value="all" {% if date_filter=='all' %}selected{% endif %}>All Time</option>
+                                <option value="today" {% if date_filter=='today' %}selected{% endif %}>Today</option>
+                                <option value="week" {% if date_filter=='week' %}selected{% endif %}>This Week</option>
+                                <option value="month" {% if date_filter=='month' %}selected{% endif %}>This Month
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-funnel me-2"></i> Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0">Recent Orders</h4>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="exportData('csv')">
+                            <i class="bi bi-file-earmark-arrow-down me-1"></i> CSV
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="exportData('excel')">
+                            <i class="bi bi-file-earmark-excel me-1"></i> Excel
+                        </button>
+                    </div>
+                </div>
+
+                {% if orders %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Date & Time</th>
+                                <th class="text-center">Type</th>
+                                <th class="text-center">Items</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>
+                                    <strong class="text-book-color">#{{ order.order_number|default:"N/A" }}</strong>
+                                </td>
+                                <td>
+                                    <strong>{{ order.customer.username|default:"Customer" }}</strong>
+                                    {% if order.customer.email %}
+                                    <br>
+                                    <small class="text-muted">{{ order.customer.email }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ order.created_at|date:"M d, Y"|default:"N/A" }}
+                                    <br>
+                                    <small class="text-muted">{{ order.created_at|time:"g:i A"|default:"" }}</small>
+                                </td>
+                                <td class="text-center">
+                                    {% if order.order_type == 'rent' %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-arrow-repeat me-1"></i> RENTAL
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-cart-check me-1"></i> PURCHASE
+                                    </span>
+                                    {% endif %}
+                                    {% if order.rental_days %}
+                                    <br>
+                                    <small class="text-muted">{{ order.rental_days }} days</small>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% with order.items.all as items %}
+                                    <span class="badge bg-secondary">{{ items.count|default:"0" }}</span>
+                                    <br>
+                                    <small class="text-muted">
+                                        {% for item in items|slice:":2" %}
+                                        {{ item.book.title|truncatechars:15|default:"Book" }}{% if not forloop.last %},
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% if items.count > 2 %}...{% endif %}
+                                    </small>
+                                    {% endwith %}
+                                </td>
+                                <td class="text-end">
+                                    <strong>${{ order.total_amount|floatformat:2|default:"0.00" }}</strong>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge {% if order.status == 'completed' or order.status == 'delivered' %}bg-success
+                                        {% elif order.status == 'cancelled' %}bg-danger
+                                        {% elif order.status == 'out_for_delivery' %}bg-info
+                                        {% elif order.status == 'ready' %}bg-warning
+                                        {% else %}bg-primary{% endif %} 
+                                        rounded-pill p-2">
+                                        {{ order.get_status_display|default:"Pending" }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                            data-bs-toggle="dropdown">
+                                            Actions
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'process_order' order.id %}">
+                                                    <i class="bi bi-gear me-2"></i> Manage
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'store_order_detail' order.id %}">
+                                                    <i class="bi bi-eye me-2"></i> View Details
+                                                </a>
+                                            </li>
+                                            {% if order.delivery_option == 'delivery' %}
+                                            <li>
+                                                <a class="dropdown-item" href="#">
+                                                    <i class="bi bi-truck me-2"></i> Track Delivery
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="#"
+                                                    onclick="return confirm('Cancel this order?')">
+                                                    <i class="bi bi-x-circle me-2"></i> Cancel Order
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if orders.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if orders.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                                href="?page={{ orders.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Previous
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for i in orders.paginator.page_range %}
+                        {% if orders.number == i %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ i }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link"
+                                href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                {{ i }}
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if orders.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                                href="?page={{ orders.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Next
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+                {% else %}
+                <!-- Empty State -->
+                <div class="text-center py-5">
+                    <i class="bi bi-cart-x text-muted" style="font-size: 4rem;"></i>
+                    <h4 class="mt-3 mb-2">No orders found</h4>
+                    <p class="text-muted mb-4">
+                        {% if status_filter != 'all' or order_type_filter != 'all' or date_filter != 'all' %}
+                        No orders match your current filters
+                        {% else %}
+                        You haven't received any orders yet
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'store_order_history' %}" class="btn btn-primary">
+                        {% if status_filter != 'all' or order_type_filter != 'all' or date_filter != 'all' %}
+                        Clear filters
+                        {% else %}
+                        Refresh
+                        {% endif %}
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Summary -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="dashboard-card p-4">
+                <h4 class="mb-4">
+                    <i class="bi bi-bar-chart-line text-book-color me-2"></i>
+                    Sales Summary
+                </h4>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted mb-2">Today</h6>
+                                <h3 class="mb-0 text-success">${{ today_revenue|floatformat:2|default:"0.00" }}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted mb-2">This Week</h6>
+                                <h3 class="mb-0 text-primary">${{ week_revenue|floatformat:2|default:"0.00" }}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted mb-2">This Month</h6>
+                                <h3 class="mb-0 text-warning">${{ month_revenue|floatformat:2|default:"0.00" }}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted mb-2">All Time</h6>
+                                <h3 class="mb-0 text-book-color">${{ total_revenue|floatformat:2|default:"0.00" }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left-book {
+        border-left: 4px solid var(--book-color) !important;
+    }
+
+    .border-left-revenue {
+        border-left: 4px solid var(--success-color) !important;
+    }
+
+    .border-left-rental {
+        border-left: 4px solid var(--warning-color) !important;
+    }
+
+    .border-left-delivery {
+        border-left: 4px solid var(--danger-color) !important;
+    }
+
+    .border-left-primary {
+        border-left: 4px solid #4e73df !important;
+    }
+
+    .border-left-success {
+        border-left: 4px solid #1cc88a !important;
+    }
+
+    .text-book-color {
+        color: var(--book-color) !important;
+    }
+
+    .bg-purple {
+        background-color: #6f42c1 !important;
+    }
+
+    .text-purple {
+        color: #6f42c1 !important;
+    }
+
+    .btn-purple {
+        background-color: #6f42c1;
+        color: white;
+        border-color: #6f42c1;
+    }
+
+    .btn-purple:hover {
+        background-color: #5a32a3;
+        border-color: #5a32a3;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(67, 97, 238, 0.05);
+    }
+
+    .page-link {
+        color: var(--book-color);
+    }
+
+    .page-item.active .page-link {
+        background-color: var(--book-color);
+        border-color: var(--book-color);
+    }
+
+    @media print {
+
+        .btn,
+        .breadcrumb,
+        .dropdown,
+        .d-print-none {
+            display: none !important;
+        }
+
+        .dashboard-card {
+            box-shadow: none !important;
+            border: 1px solid #dee2e6 !important;
+        }
+    }
+</style>
+
+<script>
+    function printReport() {
+        window.print();
+    }
+
+    function exportData(format) {
+        // Get current URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('export', format);
+
+        // Show alert
+        showAlert('Export Started', `${format.toUpperCase()} export will begin shortly`);
+
+        // In production, this would trigger a download
+        // window.location.href = `/store/orders/export/?${urlParams.toString()}`;
+    }
+
+    // Quick status update
+    function quickUpdateStatus(orderId, status) {
+        if (confirm('Update order status?')) {
+            showAlert('Status Updating', 'Order status is being updated...');
+
+            // In production, this would be an API call
+            // fetch(`/api/order/${orderId}/status/`, {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //         'X-CSRFToken': getCookie('csrftoken')
+            //     },
+            //     body: JSON.stringify({status: status})
+            // })
+            // .then(response => response.json())
+            // .then(data => {
+            //     if (data.success) {
+            //         location.reload();
+            //     }
+            // });
+        }
+    }
+
+    function showAlert(title, message) {
+        // Remove any existing alerts
+        const existingAlerts = document.querySelectorAll('.custom-alert');
+        existingAlerts.forEach(alert => alert.remove());
+
+        // Create alert element
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'custom-alert alert alert-success alert-dismissible fade show position-fixed';
+        alertDiv.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+        <strong>${title}</strong><br>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+        document.body.appendChild(alertDiv);
+
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 3000);
+    }
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

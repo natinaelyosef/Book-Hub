@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Book Collection Tracker{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header with Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2">Dashboard Overview</h1>
+                    <p class="text-muted">Welcome back! Here's what's happening with your book collection today.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary">
+                        <i class="fas fa-download me-2"></i> Export
+                    </button>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i> Add Book
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-custom stat-card inventory h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-2">📚 Inventory</h6>
+                            <h2 class="fw-bold mb-0">150</h2>
+                            <p class="text-muted mb-0">books in collection</p>
+                        </div>
+                        <div class="avatar avatar-sm bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-book text-primary fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-success">
+                            <i class="fas fa-arrow-up me-1"></i> 5 new this week
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-custom stat-card revenue h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-2">💰 Today's Revenue</h6>
+                            <h2 class="fw-bold mb-0">$250</h2>
+                            <p class="text-muted mb-0">from 12 orders</p>
+                        </div>
+                        <div class="avatar avatar-sm bg-info bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-dollar-sign text-info fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-success">
+                            <i class="fas fa-arrow-up me-1"></i> 18% from yesterday
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-custom stat-card rentals h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-2">🔄 Active Rentals</h6>
+                            <h2 class="fw-bold mb-0">23</h2>
+                            <p class="text-muted mb-0">8 due this week</p>
+                        </div>
+                        <div class="avatar avatar-sm bg-purple bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-sync-alt text-purple fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-warning">
+                            <i class="fas fa-clock me-1"></i> 5 due tomorrow
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-custom stat-card deliveries h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-2">🚚 Pending Deliveries</h6>
+                            <h2 class="fw-bold mb-0">8</h2>
+                            <p class="text-muted mb-0">to be shipped today</p>
+                        </div>
+                        <div class="avatar avatar-sm bg-warning bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-truck text-warning fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-danger">
+                            <i class="fas fa-exclamation-circle me-1"></i> 2 delayed
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity & Alerts -->
+    <div class="row mb-4">
+        <!-- Recent Activity -->
+        <div class="col-lg-8 mb-4">
+            <div class="card card-custom h-100">
+                <div class="card-header border-0 bg-transparent">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-history text-primary me-2"></i>Recent Activity Feed
+                        </h5>
+                        <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item mb-4">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <h6 class="mb-0">🕒 TODAY</h6>
+                                    <small class="text-muted">10:30 AM</small>
+                                </div>
+                                <p class="mb-0">New order <strong>#ORD-1005</strong> from John Doe</p>
+                                <small class="text-muted">3 books • Total: $45.99</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item mb-4">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <h6 class="mb-0">Book Return</h6>
+                                    <small class="text-muted">11:15 AM</small>
+                                </div>
+                                <p class="mb-0">Book "1984" marked as returned</p>
+                                <small class="text-muted">Rental ID: #RNT-045 • Condition: Good</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item mb-4">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <h6 class="mb-0">Delivery Completed</h6>
+                                    <small class="text-muted">2:30 PM</small>
+                                </div>
+                                <p class="mb-0">Delivery completed for #ORD-1003</p>
+                                <small class="text-muted">Delivered to 123 Main St • 2 packages</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-secondary"></div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <h6 class="mb-0">🕒 YESTERDAY</h6>
+                                    <small class="text-muted">3:45 PM</small>
+                                </div>
+                                <p class="mb-0">5 books added to inventory</p>
+                                <small class="text-muted">New arrivals from Penguin Classics</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pending Actions -->
+        <div class="col-lg-4 mb-4">
+            <div class="card card-custom h-100">
+                <div class="card-header border-0 bg-transparent">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>Pending Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning d-flex align-items-start mb-3" role="alert">
+                        <i class="fas fa-exclamation-circle me-2 mt-1"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Contact Customer</h6>
+                            <p class="mb-0 small">Order #ORD-1004 pending for 2 hours</p>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info d-flex align-items-start mb-3" role="alert">
+                        <i class="fas fa-clock me-2 mt-1"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Rental Reminders</h6>
+                            <p class="mb-0 small">5 rentals due tomorrow - send reminders</p>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-danger d-flex align-items-start mb-3" role="alert">
+                        <i class="fas fa-box me-2 mt-1"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Low Stock Alert</h6>
+                            <p class="mb-0 small">"The Great Gatsby" (1 copy left)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-primary d-flex align-items-start" role="alert">
+                        <i class="fas fa-star me-2 mt-1"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Monthly Reviews</h6>
+                            <p class="mb-0 small">15 books pending review by end of week</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-custom">
+                <div class="card-header border-0 bg-transparent">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt text-primary me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3 col-sm-6">
+                            <button class="btn btn-primary w-100 h-100 py-3 d-flex flex-column align-items-center">
+                                <i class="fas fa-plus fa-2x mb-2"></i>
+                                <span>Add New Book</span>
+                            </button>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <button class="btn btn-info w-100 h-100 py-3 d-flex flex-column align-items-center">
+                                <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                                <span>View All Orders</span>
+                            </button>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <button class="btn btn-success w-100 h-100 py-3 d-flex flex-column align-items-center">
+                                <i class="fas fa-chart-pie fa-2x mb-2"></i>
+                                <span>View Reports</span>
+                            </button>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <button class="btn btn-warning w-100 h-100 py-3 d-flex flex-column align-items-center">
+                                <i class="fas fa-users fa-2x mb-2"></i>
+                                <span>Manage Customers</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline-item {
+        position: relative;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -30px;
+        top: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+    
+    .timeline-content {
+        padding-bottom: 10px;
+        border-bottom: 1px dashed var(--border-color);
+    }
+    
+    .timeline-item:last-child .timeline-content {
+        border-bottom: none;
+    }
+    
+    .bg-purple {
+        background-color: #7209b7;
+    }
+    
+    .text-purple {
+        color: #7209b7;
+    }
+</style>
+
+{% block extra_js %}
+<script>
+    // Dashboard specific JavaScript
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update stats with animation
+        const statNumbers = document.querySelectorAll('.stat-card h2');
+        statNumbers.forEach(number => {
+            const originalValue = number.textContent;
+            number.textContent = '0';
+            
+            let count = 0;
+            const target = parseInt(originalValue.replace(/,/g, ''));
+            const increment = target / 50;
+            
+            const timer = setInterval(() => {
+                count += increment;
+                number.textContent = Math.floor(count).toLocaleString();
+                
+                if (count >= target) {
+                    number.textContent = originalValue;
+                    clearInterval(timer);
+                }
+            }, 30);
+        });
+        
+        // Quick action buttons
+        const quickActions = document.querySelectorAll('.btn-action');
+        quickActions.forEach(button => {
+            button.addEventListener('click', function() {
+                const action = this.querySelector('span').textContent;
+                alert(`Action: ${action} initiated!`);
+            });
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

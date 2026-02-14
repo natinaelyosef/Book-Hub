@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Book Collection Tracker{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --info-color: #7209b7;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --sidebar-bg: #1e293b;
+            --sidebar-text: #e2e8f0;
+            --card-bg: #ffffff;
+            --body-bg: #f8fafc;
+            --text-color: #334155;
+            --border-color: #e2e8f0;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --light-color: #1e293b;
+            --dark-color: #f1f5f9;
+            --sidebar-bg: #0f172a;
+            --sidebar-text: #cbd5e1;
+            --card-bg: #1e293b;
+            --body-bg: #0f172a;
+            --text-color: #cbd5e1;
+            --border-color: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--body-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Utility Classes */
+        .text-primary { color: var(--primary-color) !important; }
+        .bg-primary { background-color: var(--primary-color) !important; }
+        .bg-card { background-color: var(--card-bg) !important; }
+        .border-light { border-color: var(--border-color) !important; }
+
+        .card-custom {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card {
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stat-card.inventory { border-left-color: #4361ee; }
+        .stat-card.revenue { border-left-color: #4cc9f0; }
+        .stat-card.rentals { border-left-color: #7209b7; }
+        .stat-card.deliveries { border-left-color: #f8961e; }
+
+        .badge-custom {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success { background-color: rgba(76, 201, 240, 0.1); color: #4cc9f0; }
+        .badge-warning { background-color: rgba(248, 150, 30, 0.1); color: #f8961e; }
+        .badge-danger { background-color: rgba(247, 37, 133, 0.1); color: #f72585; }
+
+        .theme-toggle {
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .theme-toggle:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        [data-theme="dark"] .light-icon { display: none; }
+        [data-theme="light"] .dark-icon { display: none; }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        {% include 'partials/_sidebar.html' %}
+        
+        <div class="flex-grow-1 d-flex flex-column">
+            {% include 'partials/_navbar.html' %}
+            
+            <main class="flex-grow-1 p-4">
+                {% block content %}
+                <!-- Main content goes here -->
+                {% endblock %}
+            </main>
+            
+            {% include 'partials/_footer.html' %}
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // Theme Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const html = document.documentElement;
+            
+            // Check for saved theme or prefer-color-scheme
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            html.setAttribute('data-theme', savedTheme);
+            
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = html.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+            
+            // Mobile sidebar toggle
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                });
+                
+                // Close sidebar when clicking outside on mobile
+                document.addEventListener('click', function(event) {
+                    if (window.innerWidth <= 768) {
+                        if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                            sidebar.classList.remove('show');
+                        }
+                    }
+                });
+            }
+            
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

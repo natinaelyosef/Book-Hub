@@ -1,0 +1,119 @@
+   <!-- Account Credentials -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="username" class="form-label required-field">
+                                            <i class="bi bi-person-badge"></i>
+                                            Username
+                                        </label>
+                                        <div class="input-with-icon">
+                                            <i class="bi bi-person-badge input-icon"></i>
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   id="username" 
+                                                   name="username"
+                                                   placeholder="Choose a username" 
+                                                   required>
+                                        </div>
+                                        <span class="helper-text">This will be your login username</span>
+                                        <div class="error-message" id="username_error">
+                                            <i class="bi bi-exclamation-circle"></i>
+                                            <span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="store_slug" class="form-label required-field">
+                                            <i class="bi bi-link"></i>
+                                            Store URL
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">bookhub.et/</span>
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   id="store_slug" 
+                                                   name="store_slug"
+                                                   placeholder="your-store-name" 
+                                                   required>
+                                        </div>
+                                        <span class="helper-text">Your unique store web address (English letters only)</span>
+                                        <div class="error-message" id="store_slug_error">
+                                            <i class="bi bi-exclamation-circle"></i>
+                                            <span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Password Fields -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="password" class="form-label required-field">
+                                            <i class="bi bi-key"></i>
+                                            Password
+                                        </label>
+                                        <div class="input-with-icon">
+                                            <i class="bi bi-key input-icon"></i>
+                                            <input type="password" 
+                                                   class="form-control" 
+                                                   id="password" 
+                                                   name="password"
+                                                   placeholder="Create a strong password" 
+                                                   required>
+                                            <button type="button" class="password-toggle" data-target="password" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--gray-600); cursor: pointer;">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                        <span class="helper-text">Minimum 8 characters with letters and numbers</span>
+                                        <div class="error-message" id="password_error">
+                                            <i class="bi bi-exclamation-circle"></i>
+                                            <span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="confirm_password" class="form-label required-field">
+                                            <i class="bi bi-key-fill"></i>
+                                            Confirm Password
+                                        </label>
+                                        <div class="input-with-icon">
+                                            <i class="bi bi-key-fill input-icon"></i>
+                                            <input type="password" 
+                                                   class="form-control" 
+                                                   id="confirm_password" 
+                                                   name="confirm_password"
+                                                   placeholder="Confirm your password" 
+                                                   required>
+                                            <button type="button" class="password-toggle" data-target="confirm_password" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--gray-600); cursor: pointer;">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="error-message" id="confirm_password_error">
+                                            <i class="bi bi-exclamation-circle"></i>
+                                            <span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Referral Source -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-megaphone"></i>
+                                    How did you hear about us?
+                                </label>
+                                <select class="form-select" name="referral_source">
+                                    <option value="">Select option</option>
+                                    <option value="friend">👥 Friend or Family</option>
+                                    <option value="social_media">📱 Social Media (Facebook, Telegram)</option>
+                                    <option value="google">🔍 Google Search</option>
+                                    <option value="advertisement">📺 Advertisement</option>
+                                    <option value="word_of_mouth">🗣️ Word of Mouth</option>
+                                    <option value="other">🤔 Other</option>
+                                </select>
+                            </div>

@@ -1,0 +1,130 @@
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Common JavaScript Functions
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const sidebar = document.getElementById('sidebar');
+        const body = document.body;
+
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        if (isDarkMode) {
+            body.setAttribute('data-bs-theme', 'dark');
+            if (darkModeToggle) darkModeToggle.checked = true;
+        }
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                body.classList.toggle('sidebar-open');
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (
+                window.innerWidth <= 768 &&
+                body.classList.contains('sidebar-open') &&
+                sidebar &&
+                !sidebar.contains(e.target) &&
+                sidebarToggle &&
+                !sidebarToggle.contains(e.target)
+            ) {
+                body.classList.remove('sidebar-open');
+            }
+        });
+
+        if (darkModeToggle) {
+            darkModeToggle.addEventListener('change', () => {
+                if (darkModeToggle.checked) {
+                    body.setAttribute('data-bs-theme', 'dark');
+                    localStorage.setItem('darkMode', 'true');
+                } else {
+                    body.setAttribute('data-bs-theme', 'light');
+                    localStorage.setItem('darkMode', 'false');
+                }
+            });
+        }
+
+        const addBookBtn = document.getElementById('addBookBtnSidebar');
+        if (addBookBtn) {
+            addBookBtn.addEventListener('click', () => {
+                window.location.href = "{% url 'add_book_registration' %}";
+            });
+        }
+
+        const manageOrdersBtn = document.getElementById('manageOrdersBtn');
+        if (manageOrdersBtn) {
+            manageOrdersBtn.addEventListener('click', () => {
+                window.location.href = "{% url 'store_orders' %}";
+            });
+        }
+
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                document.querySelectorAll('.sidebar-item').forEach(el => {
+                    el.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                const href = this.getAttribute('href');
+                const hasRealLink = href && href !== '#' && !href.startsWith('javascript:');
+                if (!hasRealLink) {
+                    e.preventDefault();
+                }
+
+                if (window.innerWidth <= 768) {
+                    body.classList.remove('sidebar-open');
+                }
+            });
+        });
+
+        document.querySelectorAll('.header-nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.header-nav-item').forEach(el => {
+                    el.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+
+        window.showAlert = function(title, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            alertDiv.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                <strong>${title}</strong><br>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        };
+
+        setInterval(() => {
+            const notificationBadge = document.querySelector('.notification-badge');
+            if (notificationBadge) {
+                const currentCount = parseInt(notificationBadge.textContent);
+                const newCount = Math.max(1, Math.floor(Math.random() * 5));
+                if (newCount !== currentCount) {
+                    notificationBadge.textContent = newCount;
+                    notificationBadge.classList.add('animate__animated', 'animate__headShake');
+                    setTimeout(() => {
+                        notificationBadge.classList.remove('animate__animated', 'animate__headShake');
+                    }, 1000);
+                }
+            }
+        }, 15000);
+
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>

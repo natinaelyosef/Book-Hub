@@ -1,0 +1,526 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'store_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Order Management</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-card p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h3 class="mb-2">
+                            <i class="bi bi-cart-check text-primary me-2"></i>
+                            Order Management
+                        </h3>
+                        <p class="text-muted mb-0">
+                            Manage, approve, and process customer orders
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'store_dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                            </a>
+                            <button class="btn btn-primary" onclick="window.location.reload();">
+                                <i class="bi bi-arrow-clockwise me-2"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center border-left-warning">
+                <div class="text-warning mb-2">
+                    <i class="bi bi-hourglass-split fs-1"></i>
+                </div>
+                <h4 class="mb-1">{{ pending_orders|default:"0" }}</h4>
+                <p class="text-muted mb-0">Pending Approval</p>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center border-left-info">
+                <div class="text-info mb-2">
+                    <i class="bi bi-gear fs-1"></i>
+                </div>
+                <h4 class="mb-1">{{ active_orders|default:"0" }}</h4>
+                <p class="text-muted mb-0">Active Orders</p>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center border-left-success">
+                <div class="text-success mb-2">
+                    <i class="bi bi-check-circle fs-1"></i>
+                </div>
+                <h4 class="mb-1">{{ completed_orders|default:"0" }}</h4>
+                <p class="text-muted mb-0">Completed</p>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center border-left-danger">
+                <div class="text-danger mb-2">
+                    <i class="bi bi-x-circle fs-1"></i>
+                </div>
+                <h4 class="mb-1">{{ cancelled_orders|default:"0" }}</h4>
+                <p class="text-muted mb-0">Declined</p>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center border-left-primary">
+                <div class="text-primary mb-2">
+                    <i class="bi bi-cash-stack fs-1"></i>
+                </div>
+                <h4 class="mb-1">${{ today_revenue|floatformat:2|default:"0.00" }}</h4>
+                <p class="text-muted mb-0">Today's Revenue</p>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center border-left-book">
+                <div class="text-book-color mb-2">
+                    <i class="bi bi-calendar-range fs-1"></i>
+                </div>
+                <h4 class="mb-1">${{ month_revenue|floatformat:2|default:"0.00" }}</h4>
+                <p class="text-muted mb-0">Monthly Revenue</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-card p-4">
+                <form method="GET" action="{% url 'store_orders' %}">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Order Status</label>
+                            <select name="status" class="form-select">
+                                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+                                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>⏳ Pending Approval</option>
+                                <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                                <option value="preparing" {% if status_filter == 'preparing' %}selected{% endif %}>📦 Preparing</option>
+                                <option value="ready" {% if status_filter == 'ready' %}selected{% endif %}>📦 Ready</option>
+                                <option value="out_for_delivery" {% if status_filter == 'out_for_delivery' %}selected{% endif %}>🚚 Out for Delivery</option>
+                                <option value="delivered" {% if status_filter == 'delivered' %}selected{% endif %}>✅ Delivered</option>
+                                <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>✅ Completed</option>
+                                <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Declined</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Order Type</label>
+                            <select name="type" class="form-select">
+                                <option value="all" {% if order_type_filter == 'all' %}selected{% endif %}>All Types</option>
+                                <option value="rent" {% if order_type_filter == 'rent' %}selected{% endif %}>📚 Rental</option>
+                                <option value="buy" {% if order_type_filter == 'buy' %}selected{% endif %}>🛒 Purchase</option>
+                                <option value="mixed" {% if order_type_filter == 'mixed' %}selected{% endif %}>🔄 Mixed</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Time Period</label>
+                            <select name="date" class="form-select">
+                                <option value="all" {% if date_filter == 'all' %}selected{% endif %}>All Time</option>
+                                <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                                <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
+                                <option value="month" {% if date_filter == 'month' %}selected{% endif %}>This Month</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-funnel me-2"></i> Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0">
+                        <i class="bi bi-receipt me-2"></i>
+                        Orders ({{ total_orders }})
+                    </h4>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="exportOrders()">
+                            <i class="bi bi-download me-1"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                {% if orders %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Items</th>
+                                <th class="text-end">Total</th>
+                                <th>Status</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr class="{% if order.status == 'pending' %}table-warning{% endif %}">
+                                <td>
+                                    <strong class="text-primary">#{{ order.order_number }}</strong>
+                                    <br>
+                                    <small class="text-muted">ID: {{ order.id }}</small>
+                                </td>
+                                <td>
+                                    <strong>{{ order.customer.username }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ order.customer.email }}</small>
+                                </td>
+                                <td>
+                                    {{ order.created_at|date:"M d, Y" }}
+                                    <br>
+                                    <small class="text-muted">{{ order.created_at|time:"g:i A" }}</small>
+                                </td>
+                                <td>
+                                    {% if order.order_type == 'rent' %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-arrow-repeat me-1"></i> Rental
+                                    </span>
+                                    {% elif order.order_type == 'buy' %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-cart-check me-1"></i> Purchase
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-info">
+                                        <i class="bi bi-arrow-left-right me-1"></i> Mixed
+                                    </span>
+                                    {% endif %}
+                                    
+                                    {% if order.rental_days %}
+                                    <br>
+                                    <small class="text-muted">{{ order.rental_days }} days</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ order.items.count }}</span>
+                                    <br>
+                                    <small class="text-muted">
+                                        {% for item in order.items.all|slice:":2" %}
+                                            {{ item.book.title|truncatechars:15 }}{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                        {% if order.items.count > 2 %}...{% endif %}
+                                    </small>
+                                </td>
+                                <td class="text-end">
+                                    <strong class="text-primary">${{ order.total_amount|floatformat:2 }}</strong>
+                                    {% if order.delivery_fee > 0 %}
+                                    <br>
+                                    <small class="text-muted">+${{ order.delivery_fee }} delivery</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if order.status == 'pending' %}
+                                    <span class="badge bg-warning p-2">
+                                        <i class="bi bi-hourglass-split me-1"></i> PENDING APPROVAL
+                                    </span>
+                                    {% elif order.status == 'approved' %}
+                                    <span class="badge bg-primary p-2">
+                                        <i class="bi bi-check-circle me-1"></i> APPROVED
+                                    </span>
+                                    {% elif order.status == 'preparing' %}
+                                    <span class="badge bg-info p-2">
+                                        <i class="bi bi-gear me-1"></i> PREPARING
+                                    </span>
+                                    {% elif order.status == 'ready' %}
+                                    <span class="badge bg-primary p-2">
+                                        <i class="bi bi-box me-1"></i> READY
+                                    </span>
+                                    {% elif order.status == 'out_for_delivery' %}
+                                    <span class="badge bg-secondary p-2">
+                                        <i class="bi bi-truck me-1"></i> OUT FOR DELIVERY
+                                    </span>
+                                    {% elif order.status == 'delivered' %}
+                                    <span class="badge bg-success p-2">
+                                        <i class="bi bi-check-circle me-1"></i> DELIVERED
+                                    </span>
+                                    {% elif order.status == 'completed' %}
+                                    <span class="badge bg-success p-2">
+                                        <i class="bi bi-check-circle-fill me-1"></i> COMPLETED
+                                    </span>
+                                    {% elif order.status == 'cancelled' %}
+                                    <span class="badge bg-danger p-2">
+                                        <i class="bi bi-x-circle me-1"></i> DECLINED
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if order.status == 'pending' %}
+                                    <div class="d-flex justify-content-center gap-2 mb-2">
+                                        <form method="POST" action="{% url 'process_order' order.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="approve">
+                                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Approve this order?');">
+                                                <i class="bi bi-check-circle me-1"></i> Approve
+                                            </button>
+                                        </form>
+                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ order.id }}">
+                                            <i class="bi bi-x-circle me-1"></i> Decline
+                                        </button>
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            Actions
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'process_order' order.id %}">
+                                                    <i class="bi bi-gear me-2"></i> Manage Order
+                                                </a>
+                                            </li>
+                                            
+                                            {% if order.status == 'pending' %}
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li>
+                                                <form method="POST" action="{% url 'process_order' order.id %}" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="approve">
+                                                    <button type="submit" class="dropdown-item text-success" onclick="return confirm('Approve this order?');">
+                                                        <i class="bi bi-check-circle me-2"></i> Approve Order
+                                                    </button>
+                                                </form>
+                                            </li>
+                                            <li>
+                                                <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ order.id }}">
+                                                    <i class="bi bi-x-circle me-2"></i> Decline Order
+                                                </button>
+                                            </li>
+                                            {% endif %}
+                                            
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'store_order_detail' order.id %}">
+                                                    <i class="bi bi-eye me-2"></i> View Details
+                                                </a>
+                                            </li>
+                                            
+                                            {% if order.delivery_option == 'delivery' and order.status != 'cancelled' %}
+                                            <li>
+                                                <a class="dropdown-item" href="#">
+                                                    <i class="bi bi-truck me-2"></i> Track Delivery
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                    
+                                    <!-- Reject Modal -->
+                                    {% if order.status == 'pending' %}
+                                    <div class="modal fade" id="rejectModal{{ order.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Decline Order #{{ order.order_number }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form method="POST" action="{% url 'process_order' order.id %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="reject">
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold">Reason for Decline</label>
+                                                            <textarea name="rejection_reason" class="form-control" rows="4" required placeholder="Please provide a reason for declining this order..."></textarea>
+                                                        </div>
+                                                        <div class="alert alert-warning">
+                                                            <i class="bi bi-exclamation-triangle me-2"></i>
+                                                            This will decline the order and restore the books to inventory.
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-danger">Decline Order</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if orders.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if orders.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-left"></i> Previous
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="bi bi-chevron-left"></i> Previous</span>
+                        </li>
+                        {% endif %}
+
+                        {% for i in orders.paginator.page_range %}
+                            {% if orders.number == i %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ i }}</span>
+                            </li>
+                            {% elif i > orders.number|add:'-3' and i < orders.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if orders.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Next <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Next <i class="bi bi-chevron-right"></i></span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+                {% else %}
+                <!-- Empty State -->
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-inbox text-muted" style="font-size: 5rem;"></i>
+                    </div>
+                    <h4 class="mb-3">No orders found</h4>
+                    <p class="text-muted mb-4">
+                        {% if status_filter != 'all' or order_type_filter != 'all' or date_filter != 'all' %}
+                            No orders match your current filters.
+                            <br>
+                            <a href="{% url 'store_orders' %}" class="btn btn-sm btn-primary mt-2">
+                                <i class="bi bi-x-circle me-1"></i> Clear Filters
+                            </a>
+                        {% else %}
+                            You haven't received any orders yet.
+                            <br>
+                            Once customers place orders, they will appear here.
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left-warning {
+        border-left: 4px solid #f6c23e !important;
+    }
+    .border-left-info {
+        border-left: 4px solid #36b9cc !important;
+    }
+    .border-left-success {
+        border-left: 4px solid #1cc88a !important;
+    }
+    .border-left-danger {
+        border-left: 4px solid #e74a3b !important;
+    }
+    .border-left-primary {
+        border-left: 4px solid #4e73df !important;
+    }
+    .border-left-book {
+        border-left: 4px solid var(--book-color, #4361ee) !important;
+    }
+    .table-hover tbody tr:hover {
+        background-color: rgba(67, 97, 238, 0.05);
+    }
+    .dashboard-card {
+        transition: all 0.3s ease;
+    }
+    .dashboard-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.1);
+    }
+    .page-link {
+        color: #4361ee;
+    }
+    .page-item.active .page-link {
+        background-color: #4361ee;
+        border-color: #4361ee;
+    }
+</style>
+
+<script>
+    function exportOrders() {
+        const status = document.querySelector('select[name="status"]').value;
+        const type = document.querySelector('select[name="type"]').value;
+        const date = document.querySelector('select[name="date"]').value;
+        
+        let url = '?export=csv';
+        if (status !== 'all') url += `&status=${status}`;
+        if (type !== 'all') url += `&type=${type}`;
+        if (date !== 'all') url += `&date=${date}`;
+        
+        // Show alert (you can implement actual export here)
+        showAlert('Export Started', 'Orders export will begin shortly');
+        // window.location.href = url;
+    }
+    
+    function showAlert(title, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        alertDiv.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            <strong>${title}</strong><br>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 3000);
+    }
+</script>
+{% endblock %}
+
+

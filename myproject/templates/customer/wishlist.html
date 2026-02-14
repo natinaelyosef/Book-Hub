@@ -1,0 +1,179 @@
+<!-- customer/wishlist.html -->
+{% extends 'customer/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <!-- Page Header -->
+        <div style="margin-bottom: 30px;">
+            <h1 style="color: #2c3e50; margin-bottom: 10px;">My Wishlist</h1>
+            <p style="color: #7f8c8d;">
+                Save your favorite books here for easy access
+                {% if wishlist_count > 0 %}
+                - {{ wishlist_count }} item{{ wishlist_count|pluralize }}
+                {% endif %}
+            </p>
+        </div>
+        
+        {% if wishlist_books %}
+        <!-- Wishlist Grid -->
+        <div class="book-grid">
+            {% for book in wishlist_books %}
+            <div class="book-card">
+                <div class="book-image">
+                    {% if book.store %}
+                    <div class="store-badge">{{ book.store.store_name }}</div>
+                    {% endif %}
+                    <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="{{ book.title }}">
+                </div>
+                <div class="book-info">
+                    <h3 class="book-title">{{ book.title }}</h3>
+                    <div class="book-author">{{ book.author }}</div>
+                    <div class="book-genre" style="color: #3498db; margin-bottom: 10px; font-weight: 500;">
+                        {{ book.genre }}
+                    </div>
+                    
+                    <div class="book-pricing">
+                        {% if book.available_copies > 0 %}
+                        <div class="price-option">
+                            <span class="price-label">RENT FOR</span>
+                            <span class="price-amount rent-price">${{ book.rental_price }}</span>
+                            <span class="price-label">/month</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if book.available_sales > 0 %}
+                        <div class="price-option">
+                            <span class="price-label">BUY FOR</span>
+                            <span class="price-amount buy-price">${{ book.sale_price }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="book-availability" style="margin-bottom: 15px;">
+                        {% if book.available_copies > 0 %}
+                        <span style="color: #27ae60; font-weight: 500;">
+                            <i class="fas fa-check-circle"></i> Available for rent
+                        </span>
+                        {% else %}
+                        <span style="color: #e74c3c; font-weight: 500;">
+                            <i class="fas fa-times-circle"></i> Not available for rent
+                        </span>
+                        {% endif %}
+                        
+                        <br>
+                        
+                        {% if book.available_sales > 0 %}
+                        <span style="color: #27ae60; font-weight: 500;">
+                            <i class="fas fa-check-circle"></i> Available for purchase
+                        </span>
+                        {% else %}
+                        <span style="color: #e74c3c; font-weight: 500;">
+                            <i class="fas fa-times-circle"></i> Not available for purchase
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="book-actions">
+                        {% if book.available_copies > 0 %}
+                        <a href="{% url 'add_to_cart_rent' book.id %}" class="btn btn-rent" style="flex: 1;">
+                            <i class="fas fa-exchange-alt"></i> Rent
+                        </a>
+                        {% endif %}
+                        
+                        {% if book.available_sales > 0 %}
+                        <a href="{% url 'add_to_cart_buy' book.id %}" class="btn btn-buy" style="flex: 1;">
+                            <i class="fas fa-shopping-cart"></i> Buy
+                        </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'remove_from_wishlist' book.id %}" class="btn" 
+                           style="background-color: #e74c3c; color: white; flex: 0.5;"
+                           onclick="return confirm('Remove from wishlist?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Empty Wishlist Message -->
+        {% else %}
+        <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <div style="font-size: 5rem; color: #ecf0f1; margin-bottom: 20px;">
+                <i class="fas fa-heart"></i>
+            </div>
+            <h3 style="color: #7f8c8d; margin-bottom: 15px;">Your wishlist is empty</h3>
+            <p style="color: #bdc3c7; max-width: 400px; margin: 0 auto 25px;">
+                Save books you're interested in by clicking the heart icon on any book page.
+            </p>
+            <a href="{% url 'customer_dashboard' %}" class="btn" 
+               style="background-color: #3498db; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+                <i class="fas fa-book"></i> Browse Books
+            </a>
+        </div>
+        {% endif %}
+        
+        <!-- Quick Actions -->
+        {% if wishlist_books %}
+        <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 12px;">
+            <h4 style="margin-top: 0; color: #2c3e50;">Quick Actions</h4>
+            <div style="display: flex; gap: 15px; margin-top: 15px;">
+                <a href="{% url 'customer_dashboard' %}" class="btn" 
+                   style="background: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 0.9rem;">
+                    <i class="fas fa-plus"></i> Add More Books
+                </a>
+                <a href="{% url 'shopping_cart' %}" class="btn" 
+                   style="background: #2ecc71; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 0.9rem;">
+                    <i class="fas fa-shopping-cart"></i> View Cart
+                </a>
+                <a href="#" class="btn" 
+                   style="background: #e74c3c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 0.9rem;"
+                   onclick="if(confirm('Clear all items from wishlist?')) { window.location='{% url "wishlist_clear_all" %}'; }">
+                    <i class="fas fa-trash"></i> Clear All
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+.book-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.btn-rent {
+    background-color: #3498db;
+    color: white;
+    padding: 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    text-align: center;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-buy {
+    background-color: #2ecc71;
+    color: white;
+    padding: 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    text-align: center;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+</style>
+{% endblock %}

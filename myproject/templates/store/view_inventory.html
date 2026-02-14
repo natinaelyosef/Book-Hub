@@ -1,0 +1,61 @@
+{% extends 'store/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="table-responsive">
+    <table class="table table-hover table-striped align-middle shadow-sm">
+        <thead class="table-dark text-center">
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Genre</th>
+                <th>Publication Year</th>
+                <th>Total Copies</th>
+                <th>Available Rent</th>
+                <th>Available Sale</th>
+                <th>Rental Price</th>
+                <th>Sale Price</th>
+                <th>
+                    <a href="{% url 'add_book_registration' %}" 
+                       class="btn btn-success btn-sm px-3">
+                        <i class="fas fa-plus-circle me-1"></i> Add New
+                    </a>
+                </th>
+            </tr>
+        </thead>
+
+        <tbody class="text-center">
+            {% for book in books %}
+            <tr>
+                <td class="fw-semibold">{{ book.id }}</td>
+                <td>{{ book.title }}</td>
+                <td>{{ book.author }}</td>
+                <td>{{ book.genre }}</td>
+                <td>{{ book.publication_year }}</td>
+                <td>{{ book.total_copies }}</td>
+                <td>{{ book.available_copies }}</td>
+                <td>{{ book.available_sales }}</td>
+                <td>${{ book.rental_price }}</td>
+                <td>${{ book.sale_price }}</td>
+                <td>
+                    <a href="{% url 'edit_book' book.id %}" class="btn btn-outline-primary btn-sm me-2">
+                        <i class="far fa-edit"></i> edit
+                    </a>
+
+                    <form action="{% url 'book_delete' book.id %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="btn btn-outline-danger btn-sm">
+                            <i class="far fa-trash-alt"></i>delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock content %}
