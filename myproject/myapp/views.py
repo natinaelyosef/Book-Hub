@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.http import HttpResponse, JsonResponse
 import json
 from decimal import Decimal
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from .models import Features, Store, Book, Order, OrderItem, Delivery, CustomerReview, Wishlist
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout as auth_logout
@@ -42,24 +42,46 @@ def get_managed_stores(user):
             continue
         has_filter = True
         store_filter |= Q(owner_full_name__iexact=value)
-        store_filter |= Q(owner_full_name__icontains=value)
-        store_filter |= Q(store_name__iexact=value)
 
     if user.email:
         has_filter = True
-        email_value = user.email.strip()
-        store_filter |= Q(email__iexact=email_value)
-        email_local = email_value.split('@')[0]
-        if email_local:
-            store_filter |= Q(owner_full_name__icontains=email_local)
+        store_filter |= Q(email__iexact=user.email.strip())
 
     return Store.objects.filter(store_filter).distinct() if has_filter else Store.objects.none()
 
 
 def can_manage_order(user, order):
+    if not user.is_authenticated or get_account_type(user) != STORE_OWNER_GROUP:
+        return False
     if user.is_superuser:
         return True
     return get_managed_stores(user).filter(id=order.store_id).exists()
+
+
+STORE_OWNER_GROUP = "store_owner"
+CUSTOMER_GROUP = "customer"
+VALID_ACCOUNT_TYPES = {STORE_OWNER_GROUP, CUSTOMER_GROUP}
+
+
+def get_account_type(user):
+    if user.is_superuser:
+        return STORE_OWNER_GROUP
+    if user.groups.filter(name=STORE_OWNER_GROUP).exists():
+        return STORE_OWNER_GROUP
+    if user.groups.filter(name=CUSTOMER_GROUP).exists():
+        return CUSTOMER_GROUP
+    if user.is_authenticated and get_managed_stores(user).exists():
+        return STORE_OWNER_GROUP
+    return CUSTOMER_GROUP
+
+
+def ensure_store_owner(request):
+    if get_account_type(request.user) != STORE_OWNER_GROUP:
+        messages.error(request, "This page is only available for store owners.")
+        if request.user.is_authenticated:
+            return redirect('customer_dashboard')
+        return redirect('login')
+    return None
 
 
 def index(request):
@@ -73,6 +95,11 @@ def register(request):
         email = request.POST.get("email")
         password = request.POST.get("password")
         password2 = request.POST.get("password2")
+        account_type = request.POST.get("account_type", CUSTOMER_GROUP)
+
+        if account_type not in VALID_ACCOUNT_TYPES:
+            messages.info(request, "Please select a valid account type")
+            return redirect('register')
 
         if password == password2:
             if User.objects.filter(email=email).exists():
@@ -83,7 +110,8 @@ def register(request):
                 return redirect('register')
             else:
                 user = User.objects.create_user(username=username, email=email, password=password)
-                user.save()
+                role_group, _ = Group.objects.get_or_create(name=account_type)
+                user.groups.add(role_group)
                 messages.success(request, "Registration successful! Please log in.")
                 return redirect('login')
         else:
@@ -101,7 +129,9 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('store_dashboard')
+            if get_account_type(user) == STORE_OWNER_GROUP:
+                return redirect('store_dashboard')
+            return redirect('customer_dashboard')
         else:
             messages.error(request, "Invalid credentials")
             return redirect('login')
@@ -437,15 +467,23 @@ def store_dashboard(request):
 
 
 
+@login_required
 def add_book(request):
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
     if request.method == 'POST':
         messages.success(request, 'Book added (stub).')
         return redirect('store_dashboard')
     return render(request, "store/add_book.html")
 
 
+@login_required
 def view_inventory(request):
-    books = Book.objects.all()
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
+    books = Book.objects.filter(store__in=get_managed_stores(request.user)).order_by('-created_at')
     return render(request, 'store/view_inventory.html', {'books': books})
 '''
 
@@ -488,29 +526,36 @@ def add_book_registration(request):
         
 
 
+@login_required
 def add_book_registration(request):
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
+
+    managed_stores = get_managed_stores(request.user).order_by('id')
+    if not managed_stores.exists():
+        messages.warning(request, "You don't have an assigned store yet.")
+        return redirect('store_registration')
+
     if request.method == 'POST':
         title = request.POST.get("title")
         author = request.POST.get("author")
         genre = request.POST.get("genre")
         publication_year = request.POST.get("publication_year")
         total_copies = int(request.POST.get("total_copies") or 0)
-        available_copies = int(request.POST.get("available_copies") or 0)
-        available_sales = int(request.POST.get("available_sales") or 0)
+        available_copies = int((request.POST.get("available_copies") or request.POST.get("available_rent") or 0))
+        available_sales = int((request.POST.get("available_sales") or request.POST.get("available_sale") or 0))
         rental_price = float(request.POST.get("rental_price") or 0)
         sale_price = float(request.POST.get("sale_price") or 0)
-        
-        # CRITICAL FIX: Get store for the logged in user
-        store = None
-        if request.user.is_authenticated:
-            # Try to find a store owned by this user
-            stores = Store.objects.filter(owner_full_name=request.user.username)
-            if stores.exists():
-                store = stores.first()
-                messages.info(request, f"Book will be added to store: {store.store_name}")
-            else:
-                messages.warning(request, "You don't have a store yet. Please register a store first.")
-                return redirect('store_registration')
+
+        selected_store_id = request.POST.get("store_id")
+        if selected_store_id:
+            store = managed_stores.filter(id=selected_store_id).first()
+            if not store:
+                messages.error(request, "Invalid store selected.")
+                return redirect('add_book_registration')
+        else:
+            store = managed_stores.first()
 
         if title and author:
             # Check for existing book in this store
@@ -526,7 +571,7 @@ def add_book_registration(request):
                 messages.info(request, f"Book updated successfully in {store.store_name}.")
             else:
                 # Create new book with store
-                book = Book.objects.create(
+                Book.objects.create(
                     title=title,
                     author=author,
                     genre=genre,
@@ -539,7 +584,7 @@ def add_book_registration(request):
                     store=store,  # This is crucial!
                 )
                 messages.success(request, f"Book added successfully to {store.store_name}!")
-            
+             
             return redirect('add_book_registration')
 
         messages.info(request, "Title and Author are required")
@@ -613,8 +658,14 @@ def edit_book(request, id):
 
 
 
+@login_required
 def edit_book(request, id):
-    book = Book.objects.get(pk=id)
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
+
+    managed_stores = get_managed_stores(request.user)
+    book = get_object_or_404(Book, pk=id, store__in=managed_stores)
     
     if request.method == 'POST':
         title = request.POST.get("title")
@@ -622,8 +673,8 @@ def edit_book(request, id):
         genre = request.POST.get("genre")
         publication_year = request.POST.get("publication_year")
         total_copies = int(request.POST.get("total_copies") or 0)
-        available_copies = int(request.POST.get("available_copies") or 0)
-        available_sales = int(request.POST.get("available_sales") or 0)
+        available_copies = int((request.POST.get("available_copies") or request.POST.get("available_rent") or 0))
+        available_sales = int((request.POST.get("available_sales") or request.POST.get("available_sale") or 0))
         rental_price = float(request.POST.get("rental_price") or 0)
         sale_price = float(request.POST.get("sale_price") or 0)
         
@@ -651,16 +702,24 @@ def edit_book(request, id):
 #store registration view and edit   and  delete
 
 
+@login_required
 def store_registration_view(request):
-    stores = Store.objects.all()
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
+    stores = get_managed_stores(request.user)
     return render(request, 'store/registration/registration_view.html', {'stores': stores})
 
 
+@login_required
 def edit_store(request, id):
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
     try:
-        store = Store.objects.get(pk=id)
+        store = get_managed_stores(request.user).get(pk=id)
     except Store.DoesNotExist:
-        messages.error(request, "Store not found.")
+        messages.error(request, "Store not found or not assigned to your account.")
         return redirect('store_registration_view')
 
     if request.method == 'POST':
@@ -777,11 +836,15 @@ def edit_store(request, id):
 
 
 
+@login_required
 def delete_store(request, id):
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
     try:
-        store = Store.objects.get(pk=id)
+        store = get_managed_stores(request.user).get(pk=id)
     except Store.DoesNotExist:
-        messages.error(request, "Store not found.")
+        messages.error(request, "Store not found or not assigned to your account.")
         return redirect('store_registration_view')
 
     store.delete()
@@ -817,9 +880,20 @@ def delete_store(request, id):
 
 
 
+@login_required
 def book_delete(request, id):
-    book = Book.objects.get(pk=id)
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
+
+    managed_stores = get_managed_stores(request.user)
+    book = get_object_or_404(Book, pk=id, store__in=managed_stores)
+    if request.method != 'POST':
+        messages.error(request, "Invalid request method.")
+        return redirect('view_inventory')
+
     book.delete()
+    messages.success(request, "Book deleted successfully.")
     return redirect('view_inventory')
 
 
@@ -2079,8 +2153,14 @@ def update_delivery_location(request, delivery_id):
 
 @login_required
 def store_dashboard(request):
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
+
     # Get stores owned by the user
     stores = get_managed_stores(request.user)
+    if not stores.exists():
+        messages.info(request, "No store is assigned to this account yet.")
     
     # Get orders for these stores
     orders = Order.objects.filter(store__in=stores)
@@ -2155,6 +2235,10 @@ def clear_wishlist(request):
 
 @login_required
 def update_book_availability(request):
+    guard = ensure_store_owner(request)
+    if guard:
+        return JsonResponse({'success': False, 'message': 'Store-owner access required.'}, status=403)
+
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -2162,8 +2246,8 @@ def update_book_availability(request):
             total_copies = int(data.get('total_copies', 0))
             available_copies = int(data.get('available_copies', 0))
             available_sales = int(data.get('available_sales', 0))
-            
-            book = Book.objects.get(id=book_id)
+
+            book = Book.objects.get(id=book_id, store__in=get_managed_stores(request.user))
             book.total_copies = total_copies
             book.available_copies = available_copies
             book.available_sales = available_sales
@@ -2178,7 +2262,10 @@ def update_book_availability(request):
 
 @login_required
 def manage_books(request):
-    books = Book.objects.all().order_by('-created_at')
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
+    books = Book.objects.filter(store__in=get_managed_stores(request.user)).order_by('-created_at')
     return render(request, 'store/manage_books.html', {'books': books})
 
 
@@ -2359,12 +2446,18 @@ def _build_store_orders_context(request):
 
 @login_required
 def store_orders(request):
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
     context = _build_store_orders_context(request)
     return render(request, 'store/order_management.html', context)
 
 
 @login_required
 def store_order_history(request):
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
     context = _build_store_orders_context(request)
     return render(request, 'store/order_history.html', context)
 
@@ -2375,6 +2468,9 @@ def store_order_history(request):
 
 @login_required
 def store_order_detail(request, order_id):
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
     order = get_object_or_404(Order, id=order_id)
     
     # Check if user owns the store
@@ -2419,6 +2515,9 @@ def store_order_detail(request, order_id):
 
 @login_required
 def store_wishlist(request):
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
     # Get stores owned by the user
     stores = get_managed_stores(request.user)
     if not stores.exists():
