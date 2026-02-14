@@ -114,26 +114,26 @@
                         <div class="col-md-3">
                             <label class="form-label">Status</label>
                             <select name="status" class="form-select">
-                                <option value="all" {% if status_filter=='all' %}selected{% endif %}>All Statuses</option>
-                                <option value="pending" {% if status_filter=='pending' %}selected{% endif %}>Pending</option>
-                                <option value="approved" {% if status_filter=='approved' %}selected{% endif %}>Approved</option>
-                                <option value="preparing" {% if status_filter=='preparing' %}selected{% endif %}>Preparing</option>
-                                <option value="ready" {% if status_filter=='ready' %}selected{% endif %}>Ready</option>
-                                <option value="out_for_delivery" {% if status_filter=='out_for_delivery' %}selected{% endif %}>Out for Delivery</option>
-                                <option value="delivered" {% if status_filter=='delivered' %}selected{% endif %}>Delivered</option>
-                                <option value="completed" {% if status_filter=='completed' %}selected{% endif %}>Completed</option>
-                                <option value="cancelled" {% if status_filter=='cancelled' %}selected{% endif %}>Declined</option>
+                                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+                                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                                <option value="preparing" {% if status_filter == 'preparing' %}selected{% endif %}>Preparing</option>
+                                <option value="ready" {% if status_filter == 'ready' %}selected{% endif %}>Ready</option>
+                                <option value="out_for_delivery" {% if status_filter == 'out_for_delivery' %}selected{% endif %}>Out for Delivery</option>
+                                <option value="delivered" {% if status_filter == 'delivered' %}selected{% endif %}>Delivered</option>
+                                <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Declined</option>
                             </select>
                         </div>
 
                         <div class="col-md-3">
                             <label class="form-label">Order Type</label>
                             <select name="type" class="form-select">
-                                <option value="all" {% if order_type_filter=='all' %}selected{% endif %}>All Types
+                                <option value="all" {% if order_type_filter == 'all' %}selected{% endif %}>All Types
                                 </option>
-                                <option value="rent" {% if order_type_filter=='rent' %}selected{% endif %}>Rental
+                                <option value="rent" {% if order_type_filter == 'rent' %}selected{% endif %}>Rental
                                 </option>
-                                <option value="buy" {% if order_type_filter=='buy' %}selected{% endif %}>Purchase
+                                <option value="buy" {% if order_type_filter == 'buy' %}selected{% endif %}>Purchase
                                 </option>
                             </select>
                         </div>
@@ -141,10 +141,10 @@
                         <div class="col-md-3">
                             <label class="form-label">Time Period</label>
                             <select name="date" class="form-select">
-                                <option value="all" {% if date_filter=='all' %}selected{% endif %}>All Time</option>
-                                <option value="today" {% if date_filter=='today' %}selected{% endif %}>Today</option>
-                                <option value="week" {% if date_filter=='week' %}selected{% endif %}>This Week</option>
-                                <option value="month" {% if date_filter=='month' %}selected{% endif %}>This Month
+                                <option value="all" {% if date_filter == 'all' %}selected{% endif %}>All Time</option>
+                                <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                                <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
+                                <option value="month" {% if date_filter == 'month' %}selected{% endif %}>This Month
                                 </option>
                             </select>
                         </div>

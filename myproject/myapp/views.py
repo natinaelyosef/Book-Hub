@@ -1742,6 +1742,8 @@ def checkout(request):
 def order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id, customer=request.user)
     items = order.items.all()
+    delivery_fee = order.delivery_fee or Decimal('0')
+    subtotal = (order.total_amount or Decimal('0')) - delivery_fee
     
     # Check if delivery exists
     try:
@@ -1753,6 +1755,7 @@ def order_detail(request, order_id):
         'order': order,
         'items': items,
         'delivery': delivery,
+        'subtotal': subtotal,
     }
     
     return render(request, 'customer/order_detail.html', context)
@@ -2380,6 +2383,8 @@ def store_order_detail(request, order_id):
         return redirect('store_orders')
     
     items = order.items.all()
+    delivery_fee = order.delivery_fee or Decimal('0')
+    subtotal = (order.total_amount or Decimal('0')) - delivery_fee
     
     # Check if delivery exists
     try:
@@ -2391,6 +2396,7 @@ def store_order_detail(request, order_id):
         'order': order,
         'items': items,
         'delivery': delivery,
+        'subtotal': subtotal,
     }
     
     return render(request, 'store/order_detail.html', context)

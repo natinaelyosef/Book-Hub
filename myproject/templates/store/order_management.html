@@ -341,37 +341,6 @@
                                         </ul>
                                     </div>
                                     
-                                    <!-- Reject Modal -->
-                                    {% if order.status == 'pending' %}
-                                    <div class="modal fade" id="rejectModal{{ order.id }}" tabindex="-1">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Decline Order #{{ order.order_number }}</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <form method="POST" action="{% url 'process_order' order.id %}">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="action" value="reject">
-                                                    <div class="modal-body">
-                                                        <div class="mb-3">
-                                                            <label class="form-label fw-bold">Reason for Decline</label>
-                                                            <textarea name="rejection_reason" class="form-control" rows="4" required placeholder="Please provide a reason for declining this order..."></textarea>
-                                                        </div>
-                                                        <div class="alert alert-warning">
-                                                            <i class="bi bi-exclamation-triangle me-2"></i>
-                                                            This will decline the order and restore the books to inventory.
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                        <button type="submit" class="btn btn-danger">Decline Order</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}
@@ -448,6 +417,41 @@
         </div>
     </div>
 </div>
+
+{% if orders %}
+    {% for order in orders %}
+        {% if order.status == 'pending' %}
+        <div class="modal fade" id="rejectModal{{ order.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Decline Order #{{ order.order_number }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="{% url 'process_order' order.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="reject">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Reason for Decline</label>
+                                <textarea name="rejection_reason" class="form-control" rows="4" required placeholder="Please provide a reason for declining this order..."></textarea>
+                            </div>
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                This will decline the order and restore the books to inventory.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Decline Order</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
 
 <style>
     .border-left-warning {

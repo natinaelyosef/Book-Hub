@@ -87,7 +87,7 @@
                 <div style="max-width: 300px; margin-left: auto;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                         <span style="color: #7f8c8d;">Subtotal</span>
-                        <span>${{ order.total_amount|add:-order.delivery_fee|floatformat:2 }}</span>
+                        <span>${{ subtotal|floatformat:2 }}</span>
                     </div>
                     {% if order.delivery_fee > 0 %}
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
