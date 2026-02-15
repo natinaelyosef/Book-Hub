@@ -127,3 +127,8 @@ USE_TZ = True
 STATIC_URL = '/assets/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
   # i add it
+
+# Auth redirects
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/store/dashboard/'
+LOGOUT_REDIRECT_URL = '/login/'

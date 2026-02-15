@@ -92,7 +92,8 @@
             box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
             transition: all var(--transition-speed) ease;
             overflow-y: auto;
-            display: block !important;
+            display: flex !important;
+            flex-direction: column;
         }
 
         .sidebar-heading {
@@ -131,6 +132,11 @@
 
         .sidebar-item span {
             transition: opacity var(--transition-speed);
+        }
+
+        .sidebar-item.logout-bottom {
+            margin-top: auto;
+            border-top: 1px solid #e3e6f0;
         }
 
         /* Main Content Area */
@@ -217,6 +223,34 @@
         .store-stat-card.customers {
             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
             color: #333;
+        }
+
+        .store-stat-card.owner {
+            background: linear-gradient(135deg, #3a506b 0%, #1c2541 100%);
+        }
+
+        .store-stat-card.pending {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        }
+
+        .store-stat-card.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .store-stat-card.completed {
+            background: linear-gradient(135deg, #2af598 0%, #009efd 100%);
+        }
+
+        .store-stat-card.declined {
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+        }
+
+        .store-stat-card.today {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .store-stat-card.month {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
         }
 
         /* Recent Orders Styling */
@@ -320,6 +354,10 @@
         body[data-bs-theme="dark"] .sidebar-item.active {
             background-color: #12151e;
             color: var(--book-color);
+        }
+
+        body[data-bs-theme="dark"] .sidebar-item.logout-bottom {
+            border-top-color: #2a2d38;
         }
 
         body[data-bs-theme="dark"] .table {
@@ -586,7 +624,7 @@
                 <!-- Store Name Display -->
                 <div class="me-4 d-none d-md-block">
                     <span class="text-muted">Welcome,</span>
-                    <span class="fw-bold ms-1">Admin!</span>
+                    <span class="fw-bold ms-1">{{ account_owner|default:request.user.get_full_name|default:request.user.username }}</span>
                 </div>
 
                 <!-- Dark Mode Toggle -->
@@ -628,9 +666,9 @@
                 <div class="dropdown">
                     <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
                         id="userDropdown" data-bs-toggle="dropdown">
-                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=4361ee&color=fff&size=128"
+                        <img src="https://ui-avatars.com/api/?name={{ account_owner|default:request.user.username|urlencode }}&background=4361ee&color=fff&size=128"
                             alt="User" class="nav-user-img me-2">
-                        <span class="d-none d-md-inline">Admin User</span>
+                        <span class="d-none d-md-inline">{{ account_owner|default:request.user.username }}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
@@ -638,7 +676,7 @@
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                     </ul>
                 </div>
             </div>
@@ -648,7 +686,7 @@
     <!-- Sidebar -->
  <!-- Sidebar -->
 <div id="sidebar">
-    <div class="sidebar-heading">Book Management</div>
+    <div class="sidebar-heading">Order Management</div>
     <a href="{% url 'store_dashboard' %}" class="sidebar-item active">
         <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
     </a>
@@ -682,37 +720,18 @@
         <i class="bi bi-people"></i> <span>View Inventory</span>
         <span class="badge bg-success ms-auto">{{ store_metrics.total_books|default:"0" }}</span>
     </a>
+       <a href="{% url 'manage_books' %}" class="sidebar-item {% if request.resolver_match.url_name == 'manage_books' %}active{% endif %}">
+                <i class="bi bi-pencil-square"></i>
+                <span>Manage Books</span>
+            </a>
     
-    <div class="sidebar-heading">Collection</div>
-    <a href="#" class="sidebar-item">
-        <i class="bi bi-book"></i> <span>All Books</span>
-        <span class="badge bg-primary ms-auto">{{ store_metrics.total_books|default:"0" }}</span>
-    </a>
+             
+            <a href="{% url 'logout' %}" class="sidebar-item logout-bottom">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </a>
     
-    <!-- Quick Stats -->
-    <div class="sidebar-heading">Quick Stats</div>
-    <div class="px-3 py-2">
-        <div class="small mb-2">
-            <span class="text-muted">💰 Revenue Today:</span>
-            <span class="fw-bold float-end">${{ store_metrics.revenue_today|default:"0" }}</span>
-        </div>
-        <div class="small mb-2">
-            <span class="text-muted">📚 Total Books:</span>
-            <span class="fw-bold float-end">{{ store_metrics.total_books|default:"0" }}</span>
-        </div>
-        <div class="small mb-2">
-            <span class="text-muted">🔄 Active Rentals:</span>
-            <span class="fw-bold float-end">{{ store_metrics.active_rentals|default:"0" }}</span>
-        </div>
-        <div class="small mb-2">
-            <span class="text-muted">🚚 Pending Deliveries:</span>
-            <span class="fw-bold float-end">{{ store_metrics.pending_deliveries|default:"0" }}</span>
-        </div>
-        <div class="small">
-            <span class="text-muted">⏳ Pending Orders:</span>
-            <span class="fw-bold float-end text-warning">{{ pending_orders_count|default:"0" }}</span>
-        </div>
-    </div>
+    
 </div>
     <!-- Main Content -->
     <div id="content">
@@ -721,68 +740,99 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
                 <!-- Simple Generate Report button (stub for now) -->
-                <button class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
-                    onclick="alert('Generating report...')">
-                    <i class="bi bi-download fa-sm text-white-50"></i> Generate Report
-                </button>
+              
             </div>
 
             <!-- Stats Row -->
             <div class="row">
-                <!-- Revenue Card -->
                 <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="store-stat-card revenue h-100">
+                    <div class="store-stat-card owner h-100">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="text-white-50 small text-uppercase fw-bold mb-1">Total Revenue</div>
-                                <div class="h5 mb-0 fw-bold text-white">${{ store_metrics.revenue_total }}</div>
+                                <div class="text-white-50 small text-uppercase fw-bold mb-1">Account Owner</div>
+                                <div class="h5 mb-0 fw-bold text-white">
+                                    {{ account_owner|default:request.user.get_full_name|default:request.user.username }}
+                                </div>
                             </div>
-                            <i class="bi bi-currency-dollar card-icon text-white-50"></i>
-                        </div>
-                        <div class="mt-3 small text-white-50">
-                            <span class="text-white">Month: ${{ store_metrics.revenue_month }}</span>
+                            <i class="bi bi-person-badge card-icon text-white-50"></i>
                         </div>
                     </div>
                 </div>
 
-                <!-- Orders Card -->
                 <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="store-stat-card deliveries h-100">
+                    <div class="store-stat-card pending h-100">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="text-white-50 small text-uppercase fw-bold mb-1">Pending Orders</div>
-                                <div class="h5 mb-0 fw-bold text-white">{{ store_metrics.pending_orders }}</div>
+                                <div class="text-white-50 small text-uppercase fw-bold mb-1">Pending Approval</div>
+                                <div class="h5 mb-0 fw-bold text-white">
+                                    {{ pending_orders|default:store_metrics.pending_orders|default:"0" }}
+                                </div>
                             </div>
-                            <i class="bi bi-cart card-icon text-white-50"></i>
+                            <i class="bi bi-hourglass-split card-icon text-white-50"></i>
                         </div>
                     </div>
                 </div>
 
-                <!-- Books Card -->
                 <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="store-stat-card books h-100">
+                    <div class="store-stat-card active h-100">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="text-white-50 small text-uppercase fw-bold mb-1">Low Stock Books</div>
-                                <div class="h5 mb-0 fw-bold text-white">{{ store_metrics.low_stock_books }}</div>
+                                <div class="text-white-50 small text-uppercase fw-bold mb-1">Active Orders</div>
+                                <div class="h5 mb-0 fw-bold text-white">{{ active_orders|default:"0" }}</div>
                             </div>
-                            <i class="bi bi-book card-icon text-white-50"></i>
-                        </div>
-                        <div class="mt-3 small text-white-50">
-                            Total: {{ store_metrics.total_books }}
+                            <i class="bi bi-gear card-icon text-white-50"></i>
                         </div>
                     </div>
                 </div>
 
-                <!-- Rentals Card -->
                 <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="store-stat-card rentals h-100">
+                    <div class="store-stat-card completed h-100">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="text-white-50 small text-uppercase fw-bold mb-1">Active Rentals</div>
-                                <div class="h5 mb-0 fw-bold text-white">{{ store_metrics.active_rentals }}</div>
+                                <div class="text-white-50 small text-uppercase fw-bold mb-1">Completed</div>
+                                <div class="h5 mb-0 fw-bold text-white">{{ completed_orders|default:"0" }}</div>
                             </div>
-                            <i class="bi bi-clock-history card-icon text-white-50"></i>
+                            <i class="bi bi-check-circle card-icon text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="store-stat-card declined h-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="text-white-50 small text-uppercase fw-bold mb-1">Declined</div>
+                                <div class="h5 mb-0 fw-bold text-white">{{ cancelled_orders|default:"0" }}</div>
+                            </div>
+                            <i class="bi bi-x-circle card-icon text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="store-stat-card today h-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="text-white-50 small text-uppercase fw-bold mb-1">Today's Revenue</div>
+                                <div class="h5 mb-0 fw-bold text-white">
+                                    ${{ today_revenue|default:revenue_today|default:store_metrics.revenue_today|default:0|floatformat:2 }}
+                                </div>
+                            </div>
+                            <i class="bi bi-cash-stack card-icon text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="store-stat-card month h-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="text-white-50 small text-uppercase fw-bold mb-1">Monthly Revenue</div>
+                                <div class="h5 mb-0 fw-bold text-white">
+                                    ${{ month_revenue|default:store_metrics.revenue_month|default:0|floatformat:2 }}
+                                </div>
+                            </div>
+                            <i class="bi bi-calendar-range card-icon text-white-50"></i>
                         </div>
                     </div>
                 </div>

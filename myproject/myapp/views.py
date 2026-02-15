@@ -140,7 +140,7 @@ def login_view(request):
 
 def logout(request):
     auth_logout(request)
-    return redirect('index')
+    return redirect('login')
 
 
 def post(request, pk):
@@ -2164,23 +2164,53 @@ def store_dashboard(request):
     
     # Get orders for these stores
     orders = Order.objects.filter(store__in=stores)
+    today = datetime.now().date()
     
     # Calculate metrics
     total_orders = orders.count()
-    pending_orders = orders.filter(status__in=['pending', 'approved', 'contacted', 'preparing']).count()
-    revenue_today = orders.filter(
-        created_at__date=datetime.now().date(),
+    pending_orders = orders.filter(status='pending').count()
+    active_orders = orders.filter(status__in=['approved', 'contacted', 'preparing', 'ready', 'out_for_delivery']).count()
+    completed_orders = orders.filter(status='completed').count()
+    cancelled_orders = orders.filter(status='cancelled').count()
+    today_revenue = orders.filter(
+        created_at__date=today,
+        status__in=['completed', 'delivered']
+    ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+    month_revenue = orders.filter(
+        created_at__date__gte=today.replace(day=1),
         status__in=['completed', 'delivered']
     ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
     
     # Recent orders
     recent_orders = orders.order_by('-created_at')[:5]
+
+    # Sidebar / dashboard support data
+    books = Book.objects.filter(store__in=stores)
+    primary_store = stores.first()
+    account_owner = (
+        primary_store.owner_full_name
+        if primary_store and primary_store.owner_full_name
+        else (request.user.get_full_name().strip() or request.user.username)
+    )
     
     context = {
         'stores': stores,
         'total_orders': total_orders,
         'pending_orders': pending_orders,
-        'revenue_today': revenue_today,
+        'active_orders': active_orders,
+        'completed_orders': completed_orders,
+        'cancelled_orders': cancelled_orders,
+        'today_revenue': today_revenue,
+        'month_revenue': month_revenue,
+        'revenue_today': today_revenue,  # Backward-compatible alias
+        'pending_orders_count': pending_orders,
+        'account_owner': account_owner,
+        'store_metrics': {
+            'pending_orders': pending_orders,
+            'revenue_today': today_revenue,
+            'revenue_month': month_revenue,
+            'total_books': books.count(),
+        },
         'recent_orders': recent_orders,
     }
     
