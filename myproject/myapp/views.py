@@ -2585,3 +2585,86 @@ def store_wishlist(request):
     }
     
     return render(request, 'store/wishlist.html', context)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# views.py
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.core.mail import send_mail
+
+def contact(request):
+    if request.method == 'POST':
+        # Get form data
+        first_name = request.POST.get('first_name', '')
+        last_name = request.POST.get('last_name', '')
+        email = request.POST.get('email', '')
+        phone = request.POST.get('phone', '')
+        subject = request.POST.get('subject', '')
+        message = request.POST.get('message', '')
+        newsletter = request.POST.get('newsletter', '')
+        
+        # Prepare email content
+        email_subject = f"Contact Form: {subject}"
+        email_message = f"""
+Contact Form Submission from BookHub
+
+Name: {first_name} {last_name}
+Email: {email}
+Phone: {phone}
+Subject: {subject}
+
+Message:
+{message}
+
+Newsletter Subscription: {'Yes' if newsletter == 'yes' else 'No'}
+        """
+        
+        try:
+            # Send email
+            send_mail(
+                email_subject,
+                email_message,
+                email,  # From email (sender's email)
+                ['lastherio9396@gmail.com'],  # To email
+                fail_silently=False,
+            )
+            messages.success(request, 'Thank you for your message! We\'ll get back to you soon.')
+        except Exception as e:
+            messages.error(request, 'There was an error sending your message. Please try again.')
+        
+        return redirect('contact')
+    
+    return render(request, 'contact.html')
+
+# --- Added missing views for privacy policy, terms of service, and FAQ ---
+from django.views.decorators.http import require_GET
+
+@require_GET
+def privacy_policy(request):
+    return render(request, 'privacy_policy.html')
+
+@require_GET
+def terms_of_service(request):
+    return render(request, 'terms_of_service.html')
+
+@require_GET
+def faq(request):
+    return render(request, 'faq.html')

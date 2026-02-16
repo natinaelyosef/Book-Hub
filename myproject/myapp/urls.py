@@ -77,4 +77,24 @@ urlpatterns = [
     
     # Customer Profile
     path('customer/profile/', views.customer_profile, name='customer_profile'),
+
+
+
+
+
+
+
+
+# urls.py
+path('contact/', views.contact, name='contact'),
+
+path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
+path('faq/', views.faq, name='faq'),
+
+
+
+
+
+
 ]

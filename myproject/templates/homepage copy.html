@@ -47,7 +47,6 @@
             align-items: center;
             font-size: 1.8rem;
             font-weight: 700;
-            cursor: pointer;
         }
         
         .logo i {
@@ -206,7 +205,6 @@
             text-decoration: none;
             display: flex;
             align-items: center;
-            cursor: pointer;
         }
         
         .view-all:hover {
@@ -238,7 +236,6 @@
         .book-image {
             height: 280px;
             overflow: hidden;
-            position: relative;
         }
         
         .book-image img {
@@ -262,7 +259,6 @@
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
-            z-index: 1;
         }
         
         .book-info {
@@ -397,14 +393,14 @@
             color: white;
         }
         
-        .category-card:hover i {
-            color: white;
-        }
-        
         .category-card i {
             font-size: 2.5rem;
             margin-bottom: 15px;
             color: #3498db;
+        }
+        
+        .category-card:hover i {
+            color: white;
         }
         
         .category-card h3 {
@@ -444,7 +440,6 @@
             color: #bdc3c7;
             text-decoration: none;
             transition: color 0.3s;
-            cursor: pointer;
         }
         
         .footer-links a:hover {
@@ -457,43 +452,6 @@
             border-top: 1px solid #34495e;
             color: #bdc3c7;
             font-size: 0.9rem;
-        }
-        
-        /* Login/Register buttons */
-        .auth-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn-login {
-            background-color: transparent;
-            color: white;
-            border: 1px solid #3498db;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        .btn-login:hover {
-            background-color: #3498db;
-            color: white;
-        }
-        
-        .btn-register {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        .btn-register:hover {
-            background-color: #2980b9;
         }
         
         /* Responsive */
@@ -559,29 +517,29 @@
     <!-- Header -->
     <header>
         <div class="container header-container">
-            <div class="logo" onclick="redirectToLogin()">
+            <div class="logo">
                 <i class="fas fa-book"></i>
                 BookHub Store
             </div>
             <div class="nav-links">
-                <div class="nav-item" onclick="redirectToLogin()">
+                <div class="nav-item">
                     <i class="fas fa-home"></i>
                     <span>Home</span>
                 </div>
-                <div class="nav-item" onclick="redirectToLogin()">
+                <div class="nav-item">
                     <i class="fas fa-store"></i>
                     <span>Stores</span>
                 </div>
-                <div class="nav-item" onclick="redirectToLogin()">
+                <div class="nav-item">
                     <i class="fas fa-book-open"></i>
                     <span>My Books</span>
                 </div>
-               
-                <div class="nav-item" onclick="location.href='{% url 'contact' %}'">
-    <i class="fas fa-envelope"></i>
-    <span>Contact Us</span>
-</div>
-                <div class="nav-item" onclick="redirectToLogin()">
+                <div class="nav-item">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Cart</span>
+                    <div class="cart-badge">3</div>
+                </div>
+                <div class="nav-item">
                     <i class="fas fa-user-circle"></i>
                     <span>Account</span>
                 </div>
@@ -596,8 +554,8 @@
             <p>Browse thousands of books from multiple stores. Rent or buy with just a click. Your literary journey starts here.</p>
             
             <div class="search-box">
-                <input type="text" placeholder="Search for books, authors, or genres..." id="searchInput">
-                <button onclick="redirectToLogin()"><i class="fas fa-search"></i> Search</button>
+                <input type="text" placeholder="Search for books, authors, or genres...">
+                <button><i class="fas fa-search"></i> Search</button>
             </div>
         </div>
     </section>
@@ -608,12 +566,12 @@
         <section class="store-filter">
             <h2>Browse Books From Different Stores</h2>
             <div class="store-tags">
-                <div class="store-tag active" onclick="redirectToLogin()">All Stores</div>
-                <div class="store-tag" onclick="redirectToLogin()">Book Haven</div>
-                <div class="store-tag" onclick="redirectToLogin()">Literary Lounge</div>
-                <div class="store-tag" onclick="redirectToLogin()">Page Turners</div>
-                <div class="store-tag" onclick="redirectToLogin()">Novel Nook</div>
-                <div class="store-tag" onclick="redirectToLogin()">The Reading Room</div>
+                <div class="store-tag active">All Stores</div>
+                <div class="store-tag">Book Haven</div>
+                <div class="store-tag">Literary Lounge</div>
+                <div class="store-tag">Page Turners</div>
+                <div class="store-tag">Novel Nook</div>
+                <div class="store-tag">The Reading Room</div>
             </div>
         </section>
 
@@ -624,38 +582,38 @@
                     <i class="fas fa-star"></i>
                     Featured Books This Week
                 </div>
-                <div class="view-all" onclick="redirectToLogin()">View All <i class="fas fa-arrow-right"></i></div>
+                <a href="#" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
             </div>
             
             <div class="book-grid">
                 <!-- Book 1 -->
                 <div class="book-card">
-                    <div class="book-image" onclick="redirectToLogin()">
+                    <div class="book-image">
                         <div class="store-badge">Book Haven</div>
                         <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="The Silent Patient">
                     </div>
                     <div class="book-info">
-                        <h3 class="book-title" onclick="redirectToLogin()">The Silent Patient</h3>
-                        <div class="book-author" onclick="redirectToLogin()">Alex Michaelides</div>
-                        <p class="book-description" onclick="redirectToLogin()">A psychological thriller about a woman who shoots her husband and then stops speaking, and the criminal psychotherapist who is determined to get her to talk.</p>
+                        <h3 class="book-title">The Silent Patient</h3>
+                        <div class="book-author">Alex Michaelides</div>
+                        <p class="book-description">A psychological thriller about a woman who shoots her husband and then stops speaking, and the criminal psychotherapist who is determined to get her to talk.</p>
                         
                         <div class="book-pricing">
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">RENT FOR</span>
                                 <span class="price-amount rent-price">$4.99</span>
                                 <span class="price-label">/month</span>
                             </div>
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">BUY FOR</span>
                                 <span class="price-amount buy-price">$24.99</span>
                             </div>
                         </div>
                         
                         <div class="book-actions">
-                            <button class="btn btn-rent" onclick="redirectToLogin()">
+                            <button class="btn btn-rent">
                                 <i class="fas fa-exchange-alt"></i> Rent Now
                             </button>
-                            <button class="btn btn-buy" onclick="redirectToLogin()">
+                            <button class="btn btn-buy">
                                 <i class="fas fa-shopping-cart"></i> Buy Now
                             </button>
                         </div>
@@ -664,32 +622,32 @@
                 
                 <!-- Book 2 -->
                 <div class="book-card">
-                    <div class="book-image" onclick="redirectToLogin()">
+                    <div class="book-image">
                         <div class="store-badge">Literary Lounge</div>
                         <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Project Hail Mary">
                     </div>
                     <div class="book-info">
-                        <h3 class="book-title" onclick="redirectToLogin()">Project Hail Mary</h3>
-                        <div class="book-author" onclick="redirectToLogin()">Andy Weir</div>
-                        <p class="book-description" onclick="redirectToLogin()">A lone astronaut must save the earth from disaster in this incredible new science-based thriller from the #1 New York Times bestselling author of The Martian.</p>
+                        <h3 class="book-title">Project Hail Mary</h3>
+                        <div class="book-author">Andy Weir</div>
+                        <p class="book-description">A lone astronaut must save the earth from disaster in this incredible new science-based thriller from the #1 New York Times bestselling author of The Martian.</p>
                         
                         <div class="book-pricing">
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">RENT FOR</span>
                                 <span class="price-amount rent-price">$5.99</span>
                                 <span class="price-label">/month</span>
                             </div>
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">BUY FOR</span>
                                 <span class="price-amount buy-price">$28.99</span>
                             </div>
                         </div>
                         
                         <div class="book-actions">
-                            <button class="btn btn-rent" onclick="redirectToLogin()">
+                            <button class="btn btn-rent">
                                 <i class="fas fa-exchange-alt"></i> Rent Now
                             </button>
-                            <button class="btn btn-buy" onclick="redirectToLogin()">
+                            <button class="btn btn-buy">
                                 <i class="fas fa-shopping-cart"></i> Buy Now
                             </button>
                         </div>
@@ -698,32 +656,32 @@
                 
                 <!-- Book 3 -->
                 <div class="book-card">
-                    <div class="book-image" onclick="redirectToLogin()">
+                    <div class="book-image">
                         <div class="store-badge">Page Turners</div>
                         <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Klara and the Sun">
                     </div>
                     <div class="book-info">
-                        <h3 class="book-title" onclick="redirectToLogin()">Klara and the Sun</h3>
-                        <div class="book-author" onclick="redirectToLogin()">Kazuo Ishiguro</div>
-                        <p class="book-description" onclick="redirectToLogin()">A magnificent new novel from the Nobel laureate Kazuo Ishiguro—author of Never Let Me Go and the Booker Prize-winning The Remains of the Day.</p>
+                        <h3 class="book-title">Klara and the Sun</h3>
+                        <div class="book-author">Kazuo Ishiguro</div>
+                        <p class="book-description">A magnificent new novel from the Nobel laureate Kazuo Ishiguro—author of Never Let Me Go and the Booker Prize-winning The Remains of the Day.</p>
                         
                         <div class="book-pricing">
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">RENT FOR</span>
                                 <span class="price-amount rent-price">$3.99</span>
                                 <span class="price-label">/month</span>
                             </div>
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">BUY FOR</span>
                                 <span class="price-amount buy-price">$22.50</span>
                             </div>
                         </div>
                         
                         <div class="book-actions">
-                            <button class="btn btn-rent" onclick="redirectToLogin()">
+                            <button class="btn btn-rent">
                                 <i class="fas fa-exchange-alt"></i> Rent Now
                             </button>
-                            <button class="btn btn-buy" onclick="redirectToLogin()">
+                            <button class="btn btn-buy">
                                 <i class="fas fa-shopping-cart"></i> Buy Now
                             </button>
                         </div>
@@ -732,32 +690,32 @@
                 
                 <!-- Book 4 -->
                 <div class="book-card">
-                    <div class="book-image" onclick="redirectToLogin()">
+                    <div class="book-image">
                         <div class="store-badge">Novel Nook</div>
                         <img src="https://images.unsplash.com/photo-1516979187457-637abb4f9353?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="The Midnight Library">
                     </div>
                     <div class="book-info">
-                        <h3 class="book-title" onclick="redirectToLogin()">The Midnight Library</h3>
-                        <div class="book-author" onclick="redirectToLogin()">Matt Haig</div>
-                        <p class="book-description" onclick="redirectToLogin()">A novel about a young woman who, after deciding to die, finds herself in a library with books that contain different versions of the life she could have lived.</p>
+                        <h3 class="book-title">The Midnight Library</h3>
+                        <div class="book-author">Matt Haig</div>
+                        <p class="book-description">A novel about a young woman who, after deciding to die, finds herself in a library with books that contain different versions of the life she could have lived.</p>
                         
                         <div class="book-pricing">
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">RENT FOR</span>
                                 <span class="price-amount rent-price">$4.50</span>
                                 <span class="price-label">/month</span>
                             </div>
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">BUY FOR</span>
                                 <span class="price-amount buy-price">$26.75</span>
                             </div>
                         </div>
                         
                         <div class="book-actions">
-                            <button class="btn btn-rent" onclick="redirectToLogin()">
+                            <button class="btn btn-rent">
                                 <i class="fas fa-exchange-alt"></i> Rent Now
                             </button>
-                            <button class="btn btn-buy" onclick="redirectToLogin()">
+                            <button class="btn btn-buy">
                                 <i class="fas fa-shopping-cart"></i> Buy Now
                             </button>
                         </div>
@@ -773,31 +731,31 @@
                     <i class="fas fa-layer-group"></i>
                     Browse by Category
                 </div>
-                <div class="view-all" onclick="redirectToLogin()">All Categories <i class="fas fa-arrow-right"></i></div>
+                <a href="#" class="view-all">All Categories <i class="fas fa-arrow-right"></i></a>
             </div>
             
             <div class="category-grid">
-                <div class="category-card" onclick="redirectToLogin()">
+                <div class="category-card">
                     <i class="fas fa-user-secret"></i>
                     <h3>Mystery & Thriller</h3>
                 </div>
-                <div class="category-card" onclick="redirectToLogin()">
+                <div class="category-card">
                     <i class="fas fa-rocket"></i>
                     <h3>Science Fiction</h3>
                 </div>
-                <div class="category-card" onclick="redirectToLogin()">
+                <div class="category-card">
                     <i class="fas fa-heart"></i>
                     <h3>Romance</h3>
                 </div>
-                <div class="category-card" onclick="redirectToLogin()">
+                <div class="category-card">
                     <i class="fas fa-hat-wizard"></i>
                     <h3>Fantasy</h3>
                 </div>
-                <div class="category-card" onclick="redirectToLogin()">
+                <div class="category-card">
                     <i class="fas fa-graduation-cap"></i>
                     <h3>Non-Fiction</h3>
                 </div>
-                <div class="category-card" onclick="redirectToLogin()">
+                <div class="category-card">
                     <i class="fas fa-child"></i>
                     <h3>Young Adult</h3>
                 </div>
@@ -811,38 +769,38 @@
                     <i class="fas fa-fire"></i>
                     Popular This Month
                 </div>
-                <div class="view-all" onclick="redirectToLogin()">View All <i class="fas fa-arrow-right"></i></div>
+                <a href="#" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
             </div>
             
             <div class="book-grid">
                 <!-- Book 5 -->
                 <div class="book-card">
-                    <div class="book-image" onclick="redirectToLogin()">
+                    <div class="book-image">
                         <div class="store-badge">The Reading Room</div>
                         <img src="https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Educated">
                     </div>
                     <div class="book-info">
-                        <h3 class="book-title" onclick="redirectToLogin()">Educated: A Memoir</h3>
-                        <div class="book-author" onclick="redirectToLogin()">Tara Westover</div>
-                        <p class="book-description" onclick="redirectToLogin()">A memoir about a young girl who, kept out of school, leaves her survivalist family and goes on to earn a PhD from Cambridge University.</p>
+                        <h3 class="book-title">Educated: A Memoir</h3>
+                        <div class="book-author">Tara Westover</div>
+                        <p class="book-description">A memoir about a young girl who, kept out of school, leaves her survivalist family and goes on to earn a PhD from Cambridge University.</p>
                         
                         <div class="book-pricing">
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">RENT FOR</span>
                                 <span class="price-amount rent-price">$4.25</span>
                                 <span class="price-label">/month</span>
                             </div>
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">BUY FOR</span>
                                 <span class="price-amount buy-price">$21.99</span>
                             </div>
                         </div>
                         
                         <div class="book-actions">
-                            <button class="btn btn-rent" onclick="redirectToLogin()">
+                            <button class="btn btn-rent">
                                 <i class="fas fa-exchange-alt"></i> Rent Now
                             </button>
-                            <button class="btn btn-buy" onclick="redirectToLogin()">
+                            <button class="btn btn-buy">
                                 <i class="fas fa-shopping-cart"></i> Buy Now
                             </button>
                         </div>
@@ -851,32 +809,32 @@
                 
                 <!-- Book 6 -->
                 <div class="book-card">
-                    <div class="book-image" onclick="redirectToLogin()">
+                    <div class="book-image">
                         <div class="store-badge">Book Haven</div>
                         <img src="https://images.unsplash.com/photo-1541963463532-d68292c34b19?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Where the Crawdads Sing">
                     </div>
                     <div class="book-info">
-                        <h3 class="book-title" onclick="redirectToLogin()">Where the Crawdads Sing</h3>
-                        <div class="book-author" onclick="redirectToLogin()">Delia Owens</div>
-                        <p class="book-description" onclick="redirectToLogin()">For years, rumors of the "Marsh Girl" have haunted Barkley Cove. Then the time comes when she yearns to be touched and loved.</p>
+                        <h3 class="book-title">Where the Crawdads Sing</h3>
+                        <div class="book-author">Delia Owens</div>
+                        <p class="book-description">For years, rumors of the "Marsh Girl" have haunted Barkley Cove. Then the time comes when she yearns to be touched and loved.</p>
                         
                         <div class="book-pricing">
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">RENT FOR</span>
                                 <span class="price-amount rent-price">$5.25</span>
                                 <span class="price-label">/month</span>
                             </div>
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">BUY FOR</span>
                                 <span class="price-amount buy-price">$27.50</span>
                             </div>
                         </div>
                         
                         <div class="book-actions">
-                            <button class="btn btn-rent" onclick="redirectToLogin()">
+                            <button class="btn btn-rent">
                                 <i class="fas fa-exchange-alt"></i> Rent Now
                             </button>
-                            <button class="btn btn-buy" onclick="redirectToLogin()">
+                            <button class="btn btn-buy">
                                 <i class="fas fa-shopping-cart"></i> Buy Now
                             </button>
                         </div>
@@ -885,32 +843,32 @@
                 
                 <!-- Book 7 -->
                 <div class="book-card">
-                    <div class="book-image" onclick="redirectToLogin()">
+                    <div class="book-image">
                         <div class="store-badge">Literary Lounge</div>
                         <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="The Four Winds">
                     </div>
                     <div class="book-info">
-                        <h3 class="book-title" onclick="redirectToLogin()">The Four Winds</h3>
-                        <div class="book-author" onclick="redirectToLogin()">Kristin Hannah</div>
-                        <p class="book-description" onclick="redirectToLogin()">An epic novel of love and heroism and hope, set against the backdrop of one of America's most defining eras—the Great Depression.</p>
+                        <h3 class="book-title">The Four Winds</h3>
+                        <div class="book-author">Kristin Hannah</div>
+                        <p class="book-description">An epic novel of love and heroism and hope, set against the backdrop of one of America's most defining eras—the Great Depression.</p>
                         
                         <div class="book-pricing">
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">RENT FOR</span>
                                 <span class="price-amount rent-price">$5.50</span>
                                 <span class="price-label">/month</span>
                             </div>
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">BUY FOR</span>
                                 <span class="price-amount buy-price">$29.99</span>
                             </div>
                         </div>
                         
                         <div class="book-actions">
-                            <button class="btn btn-rent" onclick="redirectToLogin()">
+                            <button class="btn btn-rent">
                                 <i class="fas fa-exchange-alt"></i> Rent Now
                             </button>
-                            <button class="btn btn-buy" onclick="redirectToLogin()">
+                            <button class="btn btn-buy">
                                 <i class="fas fa-shopping-cart"></i> Buy Now
                             </button>
                         </div>
@@ -919,32 +877,32 @@
                 
                 <!-- Book 8 -->
                 <div class="book-card">
-                    <div class="book-image" onclick="redirectToLogin()">
+                    <div class="book-image">
                         <div class="store-badge">Page Turners</div>
                         <img src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="The Invisible Life of Addie LaRue">
                     </div>
                     <div class="book-info">
-                        <h3 class="book-title" onclick="redirectToLogin()">The Invisible Life of Addie LaRue</h3>
-                        <div class="book-author" onclick="redirectToLogin()">V.E. Schwab</div>
-                        <p class="book-description" onclick="redirectToLogin()">A life no one will remember. A story you will never forget. France, 1714: in a moment of desperation, a young woman makes a Faustian bargain to live forever.</p>
+                        <h3 class="book-title">The Invisible Life of Addie LaRue</h3>
+                        <div class="book-author">V.E. Schwab</div>
+                        <p class="book-description">A life no one will remember. A story you will never forget. France, 1714: in a moment of desperation, a young woman makes a Faustian bargain to live forever.</p>
                         
                         <div class="book-pricing">
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">RENT FOR</span>
                                 <span class="price-amount rent-price">$4.75</span>
                                 <span class="price-label">/month</span>
                             </div>
-                            <div class="price-option" onclick="redirectToLogin()">
+                            <div class="price-option">
                                 <span class="price-label">BUY FOR</span>
                                 <span class="price-amount buy-price">$25.50</span>
                             </div>
                         </div>
                         
                         <div class="book-actions">
-                            <button class="btn btn-rent" onclick="redirectToLogin()">
+                            <button class="btn btn-rent">
                                 <i class="fas fa-exchange-alt"></i> Rent Now
                             </button>
-                            <button class="btn btn-buy" onclick="redirectToLogin()">
+                            <button class="btn btn-buy">
                                 <i class="fas fa-shopping-cart"></i> Buy Now
                             </button>
                         </div>
@@ -966,32 +924,32 @@
                 <div class="footer-column">
                     <h3>Quick Links</h3>
                     <ul class="footer-links">
-                        <li><a onclick="redirectToLogin()">Home</a></li>
-                        <li><a onclick="redirectToLogin()">All Books</a></li>
-                        <li><a onclick="redirectToLogin()">Stores</a></li>
-                        <li><a onclick="redirectToLogin()">Categories</a></li>
-                        <li><a onclick="redirectToLogin()">My Account</a></li>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">All Books</a></li>
+                        <li><a href="#">Stores</a></li>
+                        <li><a href="#">Categories</a></li>
+                        <li><a href="#">My Account</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-column">
                     <h3>Help & Support</h3>
                     <ul class="footer-links">
-                        <li><a onclick="redirectToLogin()">FAQ</a></li>
-                        <li><a onclick="redirectToLogin()">Shipping Info</a></li>
-                        <li><a onclick="redirectToLogin()">Return Policy</a></li>
-                        <li><a onclick="redirectToLogin()">Rental Terms</a></li>
-                        <li><a onclick="redirectToLogin()">Contact Us</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Shipping Info</a></li>
+                        <li><a href="#">Return Policy</a></li>
+                        <li><a href="#">Rental Terms</a></li>
+                        <li><a href="#">Contact Us</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-column">
                     <h3>Connect With Us</h3>
                     <ul class="footer-links">
-                        <li><a onclick="redirectToLogin()"><i class="fab fa-facebook"></i> Facebook</a></li>
-                        <li><a onclick="redirectToLogin()"><i class="fab fa-twitter"></i> Twitter</a></li>
-                        <li><a onclick="redirectToLogin()"><i class="fab fa-instagram"></i> Instagram</a></li>
-                        <li><a onclick="redirectToLogin()"><i class="fab fa-goodreads"></i> Goodreads</a></li>
+                        <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
+                        <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+                        <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+                        <li><a href="#"><i class="fab fa-goodreads"></i> Goodreads</a></li>
                     </ul>
                 </div>
             </div>
@@ -1003,65 +961,98 @@
     </footer>
 
     <script>
-        // Redirect function for login page
-        function redirectToLogin() {
-            window.location.href = "login";
-        }
-
-        // Handle Enter key on search input
-        document.getElementById('searchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                redirectToLogin();
-            }
-        });
-
-        // Remove all previous interactive functionality and replace with redirects
+        // Interactive functionality
         document.addEventListener('DOMContentLoaded', function() {
-            // Override any existing click handlers
-            const allClickableElements = document.querySelectorAll('[onclick]');
-            
-            // Make sure all store tags redirect
+            // Store filtering
             const storeTags = document.querySelectorAll('.store-tag');
             storeTags.forEach(tag => {
-                tag.onclick = redirectToLogin;
+                tag.addEventListener('click', function() {
+                    // Remove active class from all tags
+                    storeTags.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tag
+                    this.classList.add('active');
+                    
+                    const storeName = this.textContent;
+                    if (storeName === 'All Stores') {
+                        // Show all books
+                        document.querySelectorAll('.book-card').forEach(card => {
+                            card.style.display = 'flex';
+                        });
+                    } else {
+                        // Show only books from selected store
+                        document.querySelectorAll('.book-card').forEach(card => {
+                            const badge = card.querySelector('.store-badge');
+                            if (badge && badge.textContent === storeName) {
+                                card.style.display = 'flex';
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+                    }
+                });
             });
             
-            // Make sure all category cards redirect
+            // Add to cart functionality
+            const buyButtons = document.querySelectorAll('.btn-buy');
+            const rentButtons = document.querySelectorAll('.btn-rent');
+            const cartBadge = document.querySelector('.cart-badge');
+            
+            buyButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const bookCard = this.closest('.book-card');
+                    const bookTitle = bookCard.querySelector('.book-title').textContent;
+                    const storeName = bookCard.querySelector('.store-badge').textContent;
+                    const price = bookCard.querySelector('.buy-price').textContent;
+                    
+                    // Update cart count
+                    let currentCount = parseInt(cartBadge.textContent);
+                    cartBadge.textContent = currentCount + 1;
+                    
+                    // Show confirmation
+                    alert(`"${bookTitle}" from ${storeName} has been added to your cart for ${price}!`);
+                });
+            });
+            
+            rentButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const bookCard = this.closest('.book-card');
+                    const bookTitle = bookCard.querySelector('.book-title').textContent;
+                    const storeName = bookCard.querySelector('.store-badge').textContent;
+                    const price = bookCard.querySelector('.rent-price').textContent;
+                    
+                    // Show rental confirmation
+                    alert(`Rental started for "${bookTitle}" from ${storeName} at ${price}/month! You'll be redirected to the rental agreement.`);
+                });
+            });
+            
+            // Search functionality
+            const searchInput = document.querySelector('.search-box input');
+            const searchButton = document.querySelector('.search-box button');
+            
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            function performSearch() {
+                const searchTerm = searchInput.value.trim();
+                if (searchTerm) {
+                    alert(`Searching for: "${searchTerm}"... Results will be displayed on the search page.`);
+                }
+            }
+            
+            // Category cards
             const categoryCards = document.querySelectorAll('.category-card');
             categoryCards.forEach(card => {
-                card.onclick = redirectToLogin;
-            });
-            
-            // Make sure all view all links redirect
-            const viewAllLinks = document.querySelectorAll('.view-all');
-            viewAllLinks.forEach(link => {
-                link.onclick = redirectToLogin;
-            });
-            
-            // Make sure all footer links redirect
-            const footerLinks = document.querySelectorAll('.footer-links a');
-            footerLinks.forEach(link => {
-                link.onclick = redirectToLogin;
-            });
-            
-            // Remove all interactive alerts and replace with redirect
-            const buttons = document.querySelectorAll('button');
-            buttons.forEach(button => {
-                button.onclick = redirectToLogin;
+                card.addEventListener('click', function() {
+                    const categoryName = this.querySelector('h3').textContent;
+                    alert(`Loading books in the "${categoryName}" category...`);
+                });
             });
         });
     </script>
-
-    <!-- Django authentication template tags - uncomment and use in your Django template -->
-    <!--
-    <div class="auth-buttons">
-        {% if user.is_authenticated %}
-            <a class="btn-login" href="logout">Logout</a>
-        {% else %}
-            <a class="btn-login" href="login">Login</a>
-            <a class="btn-register" href="register">Register</a>
-        {% endif %}
-    </div>
-    -->
 </body>
 </html>

@@ -132,3 +132,22 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/store/dashboard/'
 LOGOUT_REDIRECT_URL = '/login/'
+
+# Email Configuration
+# For development: emails will be printed to the console
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# For production with Gmail (uncomment and configure):
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your-email@gmail.com'  # Your Gmail address
+# EMAIL_HOST_PASSWORD = 'your-app-password'  # Gmail App Password (not regular password)
+# DEFAULT_FROM_EMAIL = 'your-email@gmail.com'
+
+# Note: To use Gmail, you need to:
+# 1. Enable 2-factor authentication on your Google account
+# 2. Generate an App Password: https://myaccount.google.com/apppasswords
+# 3. Use the App Password (not your regular Gmail password)
+
