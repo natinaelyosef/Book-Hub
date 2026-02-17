@@ -1,704 +1,784 @@
 <!-- customer/book_detail.html -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ book.title }} - BookHub Store</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: #f8f9fa;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+        border-bottom: 1px solid #e0e0e0;
+        margin-bottom: 30px;
+      }
+
+      .logo {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+      }
+
+      .logo i {
+        margin-right: 10px;
+        color: #3498db;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 25px;
+      }
+
+      .nav-link {
+        text-decoration: none;
+        color: #2c3e50;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .nav-link:hover {
+        color: #3498db;
+      }
+
+      .cart-badge {
+        background-color: #e74c3c;
+        color: white;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        margin-left: 5px;
+      }
+
+      .breadcrumb {
+        margin-bottom: 30px;
+      }
+
+      .breadcrumb a {
+        color: #3498db;
+        text-decoration: none;
+      }
+
+      .book-detail-container {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 40px;
+        margin-bottom: 50px;
+      }
+
+      .book-cover {
+        background-color: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      .book-cover img {
+        width: 100%;
+        max-width: 300px;
+        height: auto;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+
+      .store-badge {
+        display: inline-block;
+        background-color: #3498db;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+      }
+
+      .book-info {
+        background-color: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .book-title {
+        font-size: 2.2rem;
+        margin-bottom: 15px;
+        color: #2c3e50;
+      }
+
+      .book-author {
+        font-size: 1.3rem;
+        color: #7f8c8d;
+        margin-bottom: 20px;
+      }
+
+      .book-meta {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+      }
+
+      .meta-item {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .meta-label {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+        margin-bottom: 5px;
+      }
+
+      .meta-value {
+        font-weight: 600;
+        color: #2c3e50;
+      }
+
+      .pricing-section {
+        background-color: #f8f9fa;
+        padding: 25px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+      }
+
+      .price-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 25px;
+      }
+
+      .price-option {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        border: 2px solid transparent;
+        transition: all 0.3s;
+        cursor: pointer;
+      }
+
+      .price-option.selected {
+        border-color: #3498db;
+        background-color: #f0f8ff;
+      }
+
+      .price-option:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .price-type {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #2c3e50;
+      }
+
+      .price-amount {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      .rent-price {
+        color: #3498db;
+      }
+
+      .buy-price {
+        color: #2ecc71;
+      }
+
+      .price-desc {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 15px 30px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s;
+        flex: 1;
+      }
+
+      .btn-primary {
+        background-color: #3498db;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background-color: #2980b9;
+      }
+
+      .btn-secondary {
+        background-color: #2ecc71;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background-color: #27ae60;
+      }
+
+      .btn-wishlist {
+        background-color: #f39c12;
+        color: white;
+      }
+
+      .btn-wishlist:hover {
+        background-color: #d68910;
+      }
+
+      .btn-disabled {
+        background-color: #bdc3c7;
+        color: #7f8c8d;
+        cursor: not-allowed;
+      }
+
+      .store-info {
+        background-color: white;
+        padding: 25px;
+        border-radius: 10px;
+        margin-top: 30px;
+      }
+
+      .store-info h3 {
+        margin-bottom: 20px;
+        color: #2c3e50;
+      }
+
+      .store-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .opening-hours {
+        margin-top: 20px;
+      }
+
+      .opening-hours h4 {
+        margin-bottom: 15px;
+        color: #2c3e50;
+      }
+
+      .hours-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .hours-table tr {
+        border-bottom: 1px solid #eee;
+      }
+
+      .hours-table td {
+        padding: 10px 0;
+      }
+
+      .similar-books {
+        margin-top: 50px;
+      }
+
+      .similar-books h2 {
+        margin-bottom: 30px;
+        color: #2c3e50;
+      }
+
+      .similar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 25px;
+      }
+
+      .similar-card {
+        background-color: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+      }
+
+      .similar-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .similar-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+      }
+
+      .similar-card-content {
+        padding: 15px;
+      }
+
+      .similar-card h4 {
+        margin-bottom: 10px;
+        color: #2c3e50;
+      }
+
+      .similar-card p {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+      }
+
+      .similar-card .price {
+        font-weight: 600;
+        color: #3498db;
+      }
+
+      .messages {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+      }
+
+      .alert {
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        animation: slideIn 0.3s ease-out;
+      }
+
+      .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
         }
-        
-        body {
-            background-color: #f8f9fa;
-            color: #333;
-            line-height: 1.6;
+        to {
+          transform: translateX(0);
+          opacity: 1;
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid #e0e0e0;
-            margin-bottom: 30px;
-        }
-        
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #2c3e50;
-            display: flex;
-            align-items: center;
-        }
-        
-        .logo i {
-            margin-right: 10px;
-            color: #3498db;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 25px;
-        }
-        
-        .nav-link {
-            text-decoration: none;
-            color: #2c3e50;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .nav-link:hover {
-            color: #3498db;
-        }
-        
-        .cart-badge {
-            background-color: #e74c3c;
-            color: white;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            margin-left: 5px;
-        }
-        
-        .breadcrumb {
-            margin-bottom: 30px;
-        }
-        
-        .breadcrumb a {
-            color: #3498db;
-            text-decoration: none;
-        }
-        
+      }
+
+      @media (max-width: 768px) {
         .book-detail-container {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 40px;
-            margin-bottom: 50px;
+          grid-template-columns: 1fr;
         }
-        
-        .book-cover {
-            background-color: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            text-align: center;
+
+        .nav-links {
+          display: none;
         }
-        
-        .book-cover img {
-            width: 100%;
-            max-width: 300px;
-            height: auto;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .store-badge {
-            display: inline-block;
-            background-color: #3498db;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-        
-        .book-info {
-            background-color: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .book-title {
-            font-size: 2.2rem;
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-        
-        .book-author {
-            font-size: 1.3rem;
-            color: #7f8c8d;
-            margin-bottom: 20px;
-        }
-        
-        .book-meta {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-        
-        .meta-item {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .meta-label {
-            font-size: 0.9rem;
-            color: #7f8c8d;
-            margin-bottom: 5px;
-        }
-        
-        .meta-value {
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        .pricing-section {
-            background-color: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
-        
+
         .price-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
+          grid-template-columns: 1fr;
         }
-        
-        .price-option {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            border: 2px solid transparent;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-        
-        .price-option.selected {
-            border-color: #3498db;
-            background-color: #f0f8ff;
-        }
-        
-        .price-option:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .price-type {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #2c3e50;
-        }
-        
-        .price-amount {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-        
-        .rent-price {
-            color: #3498db;
-        }
-        
-        .buy-price {
-            color: #2ecc71;
-        }
-        
-        .price-desc {
-            font-size: 0.9rem;
-            color: #7f8c8d;
-        }
-        
+
         .action-buttons {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+          flex-direction: column;
         }
-        
-        .btn {
-            padding: 15px 30px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s;
-            flex: 1;
-        }
-        
-        .btn-primary {
-            background-color: #3498db;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: #2980b9;
-        }
-        
-        .btn-secondary {
-            background-color: #2ecc71;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #27ae60;
-        }
-        
-        .btn-wishlist {
-            background-color: #f39c12;
-            color: white;
-        }
-        
-        .btn-wishlist:hover {
-            background-color: #d68910;
-        }
-        
-        .btn-disabled {
-            background-color: #bdc3c7;
-            color: #7f8c8d;
-            cursor: not-allowed;
-        }
-        
-        .store-info {
-            background-color: white;
-            padding: 25px;
-            border-radius: 10px;
-            margin-top: 30px;
-        }
-        
-        .store-info h3 {
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-        
-        .store-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .opening-hours {
-            margin-top: 20px;
-        }
-        
-        .opening-hours h4 {
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-        
-        .hours-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .hours-table tr {
-            border-bottom: 1px solid #eee;
-        }
-        
-        .hours-table td {
-            padding: 10px 0;
-        }
-        
-        .similar-books {
-            margin-top: 50px;
-        }
-        
-        .similar-books h2 {
-            margin-bottom: 30px;
-            color: #2c3e50;
-        }
-        
+
         .similar-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 25px;
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         }
-        
-        .similar-card {
-            background-color: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-        }
-        
-        .similar-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .similar-card img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-        }
-        
-        .similar-card-content {
-            padding: 15px;
-        }
-        
-        .similar-card h4 {
-            margin-bottom: 10px;
-            color: #2c3e50;
-        }
-        
-        .similar-card p {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-        }
-        
-        .similar-card .price {
-            font-weight: 600;
-            color: #3498db;
-        }
-        
-        .messages {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        
-        .alert {
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .alert-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .book-detail-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .nav-links {
-                display: none;
-            }
-            
-            .price-options {
-                grid-template-columns: 1fr;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .similar-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Messages Display -->
     {% if messages %}
     <div class="messages">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-        </div>
-        {% endfor %}
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
     </div>
     {% endif %}
 
     <!-- Header -->
     <div class="container">
-        <div class="header">
-            <a href="{% url 'customer_dashboard' %}" class="logo">
-                <i class="fas fa-book"></i>
-                BookHub Store
-            </a>
-            <div class="nav-links">
-                <a href="{% url 'customer_dashboard' %}" class="nav-link">
-                    <i class="fas fa-home"></i> Home
-                </a><!--
+      <div class="header">
+        <a href="{% url 'customer_dashboard' %}" class="logo">
+          <i class="fas fa-book"></i>
+          BookHub Store
+        </a>
+        <div class="nav-links">
+          <a href="{% url 'customer_dashboard' %}" class="nav-link">
+            <i class="fas fa-home"></i> Home </a
+          ><!--
                 <a href="{% url 'store_list' %}" class="nav-link">
                     <i class="fas fa-store"></i> Stores
                 </a>-->
-                <a href="{% url 'wishlist' %}" class="nav-link">
-                    <i class="fas fa-heart"></i> Wishlist
-                    <span id="wishlist-count" class="cart-badge">0</span>
-                </a>
-                <a href="{% url 'shopping_cart' %}" class="nav-link">
-                    <i class="fas fa-shopping-cart"></i> Cart
-                    <span id="cart-count" class="cart-badge">{{ cart_count }}</span>
-                </a>
-                <a href="{% url 'customer_profile' %}" class="nav-link">
-                    <i class="fas fa-user-circle"></i> Profile
-                </a>
+          <a href="{% url 'wishlist' %}" class="nav-link">
+            <i class="fas fa-heart"></i> Wishlist
+            <span id="wishlist-count" class="cart-badge">0</span>
+          </a>
+          <a href="{% url 'shopping_cart' %}" class="nav-link">
+            <i class="fas fa-shopping-cart"></i> Cart
+            <span id="cart-count" class="cart-badge">{{ cart_count }}</span>
+          </a>
+          <a href="{% url 'customer_profile' %}" class="nav-link">
+            <i class="fas fa-user-circle"></i> Profile
+          </a>
+        </div>
+      </div>
+
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <a href="{% url 'customer_dashboard' %}">Home</a> &gt;
+        <a href="{% url 'customer_dashboard' %}?genre={{ book.genre }}"
+          >{{ book.genre }}</a
+        >
+        &gt;
+        <span>{{ book.title }}</span>
+      </div>
+
+      <!-- Book Detail -->
+      <div class="book-detail-container">
+        <!-- Book Cover -->
+        <div class="book-cover">
+          <div class="store-badge">
+            {% if book.store %}
+              {{ book.store.store_name }}
+            {% else %}
+              Book Store
+            {% endif %}
+          </div>
+          {% if book.cover_image %}
+          <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" />
+          {% else %}
+          <img
+            src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+            alt="{{ book.title }}"
+          />
+          {% endif %}
+          <div style="margin-top: 20px">
+            <div style="display: flex; gap: 10px; justify-content: center">
+              <span
+                style="
+                  background-color: #e8f4fc;
+                  color: #3498db;
+                  padding: 5px 10px;
+                  border-radius: 5px;
+                  font-size: 0.9rem;
+                "
+              >
+                {{ book.genre }}
+              </span>
+              {% if book.publication_year %}
+              <span
+                style="
+                  background-color: #f0f0f0;
+                  color: #666;
+                  padding: 5px 10px;
+                  border-radius: 5px;
+                  font-size: 0.9rem;
+                "
+              >
+                Published: {{ book.publication_year }}
+              </span>
+              {% endif %}
             </div>
+          </div>
         </div>
 
-        <!-- Breadcrumb -->
-        <div class="breadcrumb">
-            <a href="{% url 'customer_dashboard' %}">Home</a> &gt; 
-            <a href="{% url 'customer_dashboard' %}?genre={{ book.genre }}">{{ book.genre }}</a> &gt; 
-            <span>{{ book.title }}</span>
-        </div>
+        <!-- Book Info -->
+        <div class="book-info">
+          <h1 class="book-title">{{ book.title }}</h1>
+          <h2 class="book-author">by {{ book.author }}</h2>
 
-        <!-- Book Detail -->
-        <div class="book-detail-container">
-            <!-- Book Cover -->
-            <div class="book-cover">
-                <div class="store-badge">
-                    {% if book.store %}{{ book.store.store_name }}{% else %}Book Store{% endif %}
+          <div class="book-meta">
+            <div class="meta-item">
+              <span class="meta-label">Total Copies</span>
+              <span class="meta-value">{{ book.total_copies }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Available for Rent</span>
+              <span
+                class="meta-value"
+                style="color: {% if can_rent %}#27ae60{% else %}#e74c3c{% endif %};"
+              >
+                {{ book.available_copies }} copies
+              </span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Available for Purchase</span>
+              <span
+                class="meta-value"
+                style="color: {% if can_buy %}#27ae60{% else %}#e74c3c{% endif %};"
+              >
+                {{ book.available_sales }} copies
+              </span>
+            </div>
+          </div>
+
+          <!-- Pricing Section -->
+          <div class="pricing-section">
+            <h3 style="margin-bottom: 20px; color: #2c3e50">
+              Choose Your Option
+            </h3>
+
+            <div class="price-options">
+              <!-- Rental Option -->
+              <div class="price-option" id="rental-option">
+                <div class="price-type">Rent This Book</div>
+                <div class="price-amount rent-price">
+                  ${{ book.rental_price }}
                 </div>
-                <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="{{ book.title }}">
-                <div style="margin-top: 20px;">
-                    <div style="display: flex; gap: 10px; justify-content: center;">
-                        <span style="background-color: #e8f4fc; color: #3498db; padding: 5px 10px; border-radius: 5px; font-size: 0.9rem;">
-                            {{ book.genre }}
-                        </span>
-                        {% if book.publication_year %}
-                        <span style="background-color: #f0f0f0; color: #666; padding: 5px 10px; border-radius: 5px; font-size: 0.9rem;">
-                            Published: {{ book.publication_year }}
-                        </span>
-                        {% endif %}
-                    </div>
+                <div class="price-desc">per month</div>
+                <div style="margin-top: 10px; font-size: 0.9rem">
+                  {% if can_rent %}
+                  <span style="color: #27ae60">
+                    <i class="fas fa-check-circle"></i> {{ book.available_copies
+                    }} available
+                  </span>
+                  {% else %}
+                  <span style="color: #e74c3c">
+                    <i class="fas fa-times-circle"></i> Currently unavailable
+                  </span>
+                  {% endif %}
                 </div>
+              </div>
+
+              <!-- Purchase Option -->
+              <div class="price-option" id="purchase-option">
+                <div class="price-type">Buy This Book</div>
+                <div class="price-amount buy-price">${{ book.sale_price }}</div>
+                <div class="price-desc">one-time purchase</div>
+                <div style="margin-top: 10px; font-size: 0.9rem">
+                  {% if can_buy %}
+                  <span style="color: #27ae60">
+                    <i class="fas fa-check-circle"></i> {{ book.available_sales
+                    }} available
+                  </span>
+                  {% else %}
+                  <span style="color: #e74c3c">
+                    <i class="fas fa-times-circle"></i> Currently unavailable
+                  </span>
+                  {% endif %}
+                </div>
+              </div>
             </div>
 
-            <!-- Book Info -->
-            <div class="book-info">
-                <h1 class="book-title">{{ book.title }}</h1>
-                <h2 class="book-author">by {{ book.author }}</h2>
-                
-                <div class="book-meta">
-                    <div class="meta-item">
-                        <span class="meta-label">Total Copies</span>
-                        <span class="meta-value">{{ book.total_copies }}</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Available for Rent</span>
-                        <span class="meta-value" style="color: {% if can_rent %}#27ae60{% else %}#e74c3c{% endif %};">
-                            {{ book.available_copies }} copies
-                        </span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Available for Purchase</span>
-                        <span class="meta-value" style="color: {% if can_buy %}#27ae60{% else %}#e74c3c{% endif %};">
-                            {{ book.available_sales }} copies
-                        </span>
-                    </div>
-                </div>
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+              {% if can_rent %}
+              <a
+                href="{% url 'add_to_cart_rent' book.id %}"
+                class="btn btn-primary"
+              >
+                <i class="fas fa-exchange-alt"></i> Add to Rental Cart
+              </a>
+              {% else %}
+              <button class="btn btn-disabled" disabled>
+                <i class="fas fa-exchange-alt"></i> Not Available for Rent
+              </button>
+              {% endif %} {% if can_buy %}
+              <a
+                href="{% url 'add_to_cart_buy' book.id %}"
+                class="btn btn-secondary"
+              >
+                <i class="fas fa-shopping-cart"></i> Add to Purchase Cart
+              </a>
+              {% else %}
+              <button class="btn btn-disabled" disabled>
+                <i class="fas fa-shopping-cart"></i> Not Available for Purchase
+              </button>
+              {% endif %}
 
-                <!-- Pricing Section -->
-                <div class="pricing-section">
-                    <h3 style="margin-bottom: 20px; color: #2c3e50;">Choose Your Option</h3>
-                    
-                    <div class="price-options">
-                        <!-- Rental Option -->
-                        <div class="price-option" id="rental-option">
-                            <div class="price-type">Rent This Book</div>
-                            <div class="price-amount rent-price">${{ book.rental_price }}</div>
-                            <div class="price-desc">per month</div>
-                            <div style="margin-top: 10px; font-size: 0.9rem;">
-                                {% if can_rent %}
-                                <span style="color: #27ae60;">
-                                    <i class="fas fa-check-circle"></i> {{ book.available_copies }} available
-                                </span>
-                                {% else %}
-                                <span style="color: #e74c3c;">
-                                    <i class="fas fa-times-circle"></i> Currently unavailable
-                                </span>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <!-- Purchase Option -->
-                        <div class="price-option" id="purchase-option">
-                            <div class="price-type">Buy This Book</div>
-                            <div class="price-amount buy-price">${{ book.sale_price }}</div>
-                            <div class="price-desc">one-time purchase</div>
-                            <div style="margin-top: 10px; font-size: 0.9rem;">
-                                {% if can_buy %}
-                                <span style="color: #27ae60;">
-                                    <i class="fas fa-check-circle"></i> {{ book.available_sales }} available
-                                </span>
-                                {% else %}
-                                <span style="color: #e74c3c;">
-                                    <i class="fas fa-times-circle"></i> Currently unavailable
-                                </span>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="action-buttons">
-                        {% if can_rent %}
-                        <a href="{% url 'add_to_cart_rent' book.id %}" class="btn btn-primary">
-                            <i class="fas fa-exchange-alt"></i> Add to Rental Cart
-                        </a>
-                        {% else %}
-                        <button class="btn btn-disabled" disabled>
-                            <i class="fas fa-exchange-alt"></i> Not Available for Rent
-                        </button>
-                        {% endif %}
-                        
-                        {% if can_buy %}
-                        <a href="{% url 'add_to_cart_buy' book.id %}" class="btn btn-secondary">
-                            <i class="fas fa-shopping-cart"></i> Add to Purchase Cart
-                        </a>
-                        {% else %}
-                        <button class="btn btn-disabled" disabled>
-                            <i class="fas fa-shopping-cart"></i> Not Available for Purchase
-                        </button>
-                        {% endif %}
-                        
-                        <a href="{% url 'add_to_wishlist' book.id %}" class="btn btn-wishlist">
-                            <i class="fas fa-heart"></i> Add to Wishlist
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Store Info -->
-                {% if store %}
-                <div class="store-info">
-                    <h3>Available at: {{ store.store_name }}</h3>
-                    <div class="store-details">
-                        <div>
-                            <p><strong>Address:</strong> {{ store.address }}, {{ store.city }}</p>
-                            <p><strong>Phone:</strong> {{ store.phone }}</p>
-                            <p><strong>Email:</strong> {{ store.email }}</p>
-                        </div>
-                        <div>
-                            <p><strong>Store Type:</strong> {{ store.store_type }}</p>
-                            <p><strong>Services:</strong> 
-                                {% if store.offers_rental %}Rental{% endif %}
-                                {% if store.offers_sale %}, Sale{% endif %}
-                                {% if store.offers_delivery %}, Delivery{% endif %}
-                            </p>
-                        </div>
-                    </div>
-                    
-                    {% if opening_hours %}
-                    <div class="opening-hours">
-                        <h4>Opening Hours</h4>
-                        <table class="hours-table">
-                            {% for hour in opening_hours %}
-                            <tr>
-                                <td>{{ hour.day }}</td>
-                                <td>{{ hour.hours }}</td>
-                            </tr>
-                            {% endfor %}
-                        </table>
-                    </div>
-                    {% endif %}
-                    
-                    <a href="{% url 'store_detail' store.id %}" style="display: inline-block; margin-top: 15px; color: #3498db; text-decoration: none;">
-                        <i class="fas fa-external-link-alt"></i> Visit Store Page
-                    </a>
-                </div>
-                {% endif %}
+              <a
+                href="{% url 'add_to_wishlist' book.id %}"
+                class="btn btn-wishlist"
+              >
+                <i class="fas fa-heart"></i> Add to Wishlist
+              </a>
             </div>
-        </div>
+          </div>
 
-        <!-- Similar Books -->
-        {% if similar_books %}
-        <div class="similar-books">
-            <h2>Similar Books You Might Like</h2>
-            <div class="similar-grid">
-                {% for similar_book in similar_books %}
-                <a href="{% url 'book_detail' similar_book.id %}" class="similar-card">
-                    <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="{{ similar_book.title }}">
-                    <div class="similar-card-content">
-                        <h4>{{ similar_book.title|truncatechars:30 }}</h4>
-                        <p>{{ similar_book.author }}</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span class="price">${{ similar_book.sale_price }}</span>
-                            <span style="font-size: 0.8rem; color: #7f8c8d;">
-                                {% if similar_book.available_copies > 0 %}
-                                <i class="fas fa-exchange-alt" style="color: #3498db;"></i> Rent
-                                {% endif %}
-                                {% if similar_book.available_sales > 0 %}
-                                <i class="fas fa-shopping-cart" style="color: #2ecc71; margin-left: 5px;"></i> Buy
-                                {% endif %}
-                            </span>
-                        </div>
-                    </div>
-                </a>
+          <!-- Store Info -->
+          {% if store %}
+          <div class="store-info">
+            <h3>Available at: {{ store.store_name }}</h3>
+            <div class="store-details">
+              <div>
+                <p>
+                  <strong>Address:</strong> {{ store.address }}, {{ store.city
+                  }}
+                </p>
+                <p><strong>Phone:</strong> {{ store.phone }}</p>
+                <p><strong>Email:</strong> {{ store.email }}</p>
+              </div>
+              <div>
+                <p><strong>Store Type:</strong> {{ store.store_type }}</p>
+                <p>
+                  <strong>Services:</strong>
+                  {% if store.offers_rental %}Rental{% endif %}
+                  {% if store.offers_sale %}, Sale{% endif %}
+                  {% if store.offers_delivery %}, Delivery{% endif %}
+                </p>
+              </div>
+            </div>
+
+            {% if opening_hours %}
+            <div class="opening-hours">
+              <h4>Opening Hours</h4>
+              <table class="hours-table">
+                {% for hour in opening_hours %}
+                <tr>
+                  <td>{{ hour.day }}</td>
+                  <td>{{ hour.hours }}</td>
+                </tr>
                 {% endfor %}
+              </table>
             </div>
+            {% endif %}
+
+            <a
+              href="{% url 'store_detail' store.id %}"
+              style="
+                display: inline-block;
+                margin-top: 15px;
+                color: #3498db;
+                text-decoration: none;
+              "
+            >
+              <i class="fas fa-external-link-alt"></i> Visit Store Page
+            </a>
+          </div>
+          {% endif %}
         </div>
-        {% endif %}
+      </div>
+
+      <!-- Similar Books -->
+      {% if similar_books %}
+      <div class="similar-books">
+        <h2>Similar Books You Might Like</h2>
+        <div class="similar-grid">
+          {% for similar_book in similar_books %}
+          <a
+            href="{% url 'book_detail' similar_book.id %}"
+            class="similar-card"
+          >
+            {% if similar_book.cover_image %}
+              <img src="{{ similar_book.cover_image.url }}" alt="{{ similar_book.title }}" />
+            {% else %}
+              <img
+                src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                alt="{{ similar_book.title }}"
+              />
+            {% endif %}
+            <div class="similar-card-content">
+              <h4>{{ similar_book.title|truncatechars:30 }}</h4>
+              <p>{{ similar_book.author }}</p>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span class="price">${{ similar_book.sale_price }}</span>
+                <span style="font-size: 0.8rem; color: #7f8c8d">
+                  {% if similar_book.available_copies > 0 %}
+                  <i class="fas fa-exchange-alt" style="color: #3498db"></i>
+                  Rent {% endif %} {% if similar_book.available_sales > 0 %}
+                  <i
+                    class="fas fa-shopping-cart"
+                    style="color: #2ecc71; margin-left: 5px"
+                  ></i>
+                  Buy {% endif %}
+                </span>
+              </div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
     </div>
 
     <script>
-        // Update cart count
-        function updateCartCount() {
-            fetch('/get-cart-count/')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('cart-count').textContent = data.count;
-                });
-        }
-        
-        // Update cart count on page load
-        document.addEventListener('DOMContentLoaded', updateCartCount);
-        
-        // Price option selection
-        document.querySelectorAll('.price-option').forEach(option => {
-            option.addEventListener('click', function() {
-                document.querySelectorAll('.price-option').forEach(opt => {
-                    opt.classList.remove('selected');
-                });
-                this.classList.add('selected');
-            });
+      // Update cart count
+      function updateCartCount() {
+        fetch("/get-cart-count/")
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("cart-count").textContent = data.count;
+          });
+      }
+
+      // Update cart count on page load
+      document.addEventListener("DOMContentLoaded", updateCartCount);
+
+      // Price option selection
+      document.querySelectorAll(".price-option").forEach((option) => {
+        option.addEventListener("click", function () {
+          document.querySelectorAll(".price-option").forEach((opt) => {
+            opt.classList.remove("selected");
+          });
+          this.classList.add("selected");
         });
-        
-        // Auto-remove messages after 5 seconds
-        setTimeout(() => {
-            const messages = document.querySelectorAll('.alert');
-            messages.forEach(message => {
-                message.style.transition = 'opacity 0.5s';
-                message.style.opacity = '0';
-                setTimeout(() => message.remove(), 500);
-            });
-        }, 5000);
+      });
+
+      // Auto-remove messages after 5 seconds
+      setTimeout(() => {
+        const messages = document.querySelectorAll(".alert");
+        messages.forEach((message) => {
+          message.style.transition = "opacity 0.5s";
+          message.style.opacity = "0";
+          setTimeout(() => message.remove(), 500);
+        });
+      }, 5000);
     </script>
-</body>
+  </body>
 </html>

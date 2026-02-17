@@ -121,7 +121,6 @@ def register(request):
     return render(request, "register.html")
 
 
-
 def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -304,7 +303,6 @@ def counter(request):
     return render(request, "counter.html", {"posts": posts})
 
 
-
 def store_list(request):
     # Only show stores that have at least one book
     stores = Store.objects.filter(book__isnull=False).distinct()
@@ -379,7 +377,6 @@ def store_detail(request, store_id):
     return render(request, 'customer/store_detail.html', context)
 
 
-
 def dashboard(request):
     context = {
         'page_title': 'Dashboard',
@@ -400,13 +397,6 @@ def dashboard(request):
         ],
     }
     return render(request, 'dashboard.html', context)
-
-
-
-
-
-
-
 
 
 @login_required
@@ -465,8 +455,6 @@ def store_dashboard(request):
     return render(request, 'store/dashboard.html', context)
 
 
-
-
 @login_required
 def add_book(request):
     guard = ensure_store_owner(request)
@@ -485,45 +473,6 @@ def view_inventory(request):
         return guard
     books = Book.objects.filter(store__in=get_managed_stores(request.user)).order_by('-created_at')
     return render(request, 'store/view_inventory.html', {'books': books})
-'''
-
-def add_book_registration(request):
-    if request.method == 'POST':
-        title = request.POST.get("title")
-        author = request.POST.get("author")
-        genre = request.POST.get("genre")
-        publication_year = request.POST.get("publication_year")
-        total_copies = request.POST.get("total_copies") or 0
-        available_copies = request.POST.get("availble_rent") or 0
-        available_sales = request.POST.get("availble_sale") or 0
-        rental_price = request.POST.get("rental_price") or 0
-        sale_price = request.POST.get("sale_price") or 0
-
-        if title and author:
-            if Book.objects.filter(title=title, author=author).exists():
-                messages.info(request, "Book already exists")
-                return redirect('add_book')
-            else:
-                book = Book.objects.create(
-                    title=title,
-                    author=author,
-                    genre=genre,
-                    publication_year=publication_year or None,
-                    total_copies=total_copies,
-                    available_copies=available_copies,
-                    available_sales=available_sales,
-                    rental_price=rental_price,
-                    sale_price=sale_price,
-                )
-                book.save()
-                messages.success(request, "Book added successfully.")
-                return redirect('add_book_registration')
-
-        messages.info(request, "Title and Author are required")
-        return redirect('add_book')
-
-    return render(request, "store/add_book.html")   '''
-        
 
 
 @login_required
@@ -547,6 +496,9 @@ def add_book_registration(request):
         available_sales = int((request.POST.get("available_sales") or request.POST.get("available_sale") or 0))
         rental_price = float(request.POST.get("rental_price") or 0)
         sale_price = float(request.POST.get("sale_price") or 0)
+        
+        # Handle image upload
+        cover_image = request.FILES.get('cover_image')
 
         selected_store_id = request.POST.get("store_id")
         if selected_store_id:
@@ -567,11 +519,17 @@ def add_book_registration(request):
                 existing_book.available_sales = available_sales
                 existing_book.rental_price = rental_price
                 existing_book.sale_price = sale_price
+                # Update image if new one provided
+                if cover_image:
+                    # Delete old image if it exists
+                    if existing_book.cover_image:
+                        existing_book.cover_image.delete(save=False)
+                    existing_book.cover_image = cover_image
                 existing_book.save()
                 messages.info(request, f"Book updated successfully in {store.store_name}.")
             else:
-                # Create new book with store
-                Book.objects.create(
+                # Create new book with store and image
+                book = Book.objects.create(
                     title=title,
                     author=author,
                     genre=genre,
@@ -581,7 +539,8 @@ def add_book_registration(request):
                     available_sales=available_sales,
                     rental_price=rental_price,
                     sale_price=sale_price,
-                    store=store,  # This is crucial!
+                    store=store,
+                    cover_image=cover_image,  # Save the uploaded image
                 )
                 messages.success(request, f"Book added successfully to {store.store_name}!")
              
@@ -591,71 +550,6 @@ def add_book_registration(request):
         return redirect('add_book')
 
     return render(request, "store/add_book.html")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-'''
-
-        
-# views.py - Update the edit_book function
-def edit_book(request, id):
-    book = Book.objects.get(pk=id)
-    
-    if request.method == 'POST':
-        # Handle the form submission
-        title = request.POST.get("title")
-        author = request.POST.get("author")
-        genre = request.POST.get("genre")
-        publication_year = request.POST.get("publication_year")
-        total_copies = request.POST.get("total_copies") or 0
-        available_copies = request.POST.get("available_rent") or 0  # Fixed: changed from "availble_rent"
-        available_sales = request.POST.get("available_sale") or 0   # Fixed: changed from "availble_sale"
-        rental_price = request.POST.get("rental_price") or 0
-        sale_price = request.POST.get("sale_price") or 0
-        
-        # Update the book object
-        book.title = title
-        book.author = author
-        book.genre = genre
-        book.publication_year = publication_year or None
-        book.total_copies = total_copies
-        book.available_copies = available_copies
-        book.available_sales = available_sales
-        book.rental_price = rental_price
-        book.sale_price = sale_price
-        
-        book.save()
-        messages.success(request, "Book updated successfully.")
-        return redirect('view_inventory')
-    
-    # GET request - show form with existing data
-    return render(request, 'store/edit_book.html', {'book': book})
-
-
-
-'''
-
-
 
 
 @login_required
@@ -678,6 +572,9 @@ def edit_book(request, id):
         rental_price = float(request.POST.get("rental_price") or 0)
         sale_price = float(request.POST.get("sale_price") or 0)
         
+        # Handle image upload
+        cover_image = request.FILES.get('cover_image')
+        
         # Update the book object
         book.title = title
         book.author = author
@@ -688,7 +585,13 @@ def edit_book(request, id):
         book.available_sales = available_sales
         book.rental_price = rental_price
         book.sale_price = sale_price
-        # Store remains the same, don't change it
+        
+        # Update image if new one provided
+        if cover_image:
+            # Delete old image if it exists
+            if book.cover_image:
+                book.cover_image.delete(save=False)
+            book.cover_image = cover_image
         
         book.save()
         messages.success(request, "Book updated successfully.")
@@ -697,11 +600,7 @@ def edit_book(request, id):
     return render(request, 'store/edit_book.html', {'book': book})
 
 
-
-
-#store registration view and edit   and  delete
-
-
+#store registration view and edit and delete
 @login_required
 def store_registration_view(request):
     guard = ensure_store_owner(request)
@@ -796,46 +695,6 @@ def edit_store(request, id):
     return render(request, 'store/registration/registration_update.html', {'store': store})
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @login_required
 def delete_store(request, id):
     guard = ensure_store_owner(request)
@@ -852,34 +711,6 @@ def delete_store(request, id):
     return redirect('store_registration_view')
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @login_required
 def book_delete(request, id):
     guard = ensure_store_owner(request)
@@ -888,6 +719,11 @@ def book_delete(request, id):
 
     managed_stores = get_managed_stores(request.user)
     book = get_object_or_404(Book, pk=id, store__in=managed_stores)
+    
+    # Delete the cover image file when deleting the book
+    if book.cover_image:
+        book.cover_image.delete(save=False)
+        
     if request.method != 'POST':
         messages.error(request, "Invalid request method.")
         return redirect('view_inventory')
@@ -897,112 +733,10 @@ def book_delete(request, id):
     return redirect('view_inventory')
 
 
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Update the customer_dashboard view with pagination
+# Update the customer_dashboard view with pagination and image display
 def customer_dashboard(request):
-    
-    # Ensure any store-added `add_book_registration` rows are present in `Book` model.
-    try:
-        existing = Book.objects.values_list('title', 'author')
-        existing_set = set(existing)
-        for ab in add_book_registration.objects.select_related('store').all():
-            key = (ab.title, ab.author)
-            if key not in existing_set:
-                Book.objects.create(
-                    title=ab.title,
-                    author=ab.author,
-                    genre=getattr(ab, 'genre', 'fiction') or 'fiction',
-                    publication_year=ab.publication_year,
-                    total_copies=ab.total_copies or 0,
-                    available_copies=ab.available_copies or 0,  # This is correct
-                    available_sales=ab.available_sales or 0,    # This is correct
-                    rental_price=ab.rental_price or 0,
-                    sale_price=ab.sale_price or 0,
-                    store=ab.store if hasattr(ab, 'store') else None,
-                )
-        
-    except Exception as e:
-        print(f"Error syncing books: {e}")
-        # Fall back silently if migration step fails for any reason
-        pass
-
-        # Get all books
-        books = Book.objects.select_related('store').filter(store__isnull=False)
+    # Get all books with stores
+    books = Book.objects.select_related('store').filter(store__isnull=False)
     
     # Debug: Print first few books
     print("\n=== DEBUG: First 5 Books ===")
@@ -1011,24 +745,8 @@ def customer_dashboard(request):
         print(f"  Available Copies (rent): {book.available_copies}")
         print(f"  Available Sales (purchase): {book.available_sales}")
         print(f"  Total Copies: {book.total_copies}")
+        print(f"  Has Cover Image: {bool(book.cover_image)}")
     print("=== END DEBUG ===\n")
-    
-    # ... rest of your existing code ...
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     # Get distinct genres for filtering
     genres = Book.objects.values_list('genre', flat=True).distinct()
@@ -1112,19 +830,6 @@ def customer_dashboard(request):
     return render(request, 'customer/dashboard.html', context)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 def book_detail(request, book_id):
     # IMPORTANT: Only get books that have a store
     book = get_object_or_404(
@@ -1197,7 +902,6 @@ def book_detail(request, book_id):
     return render(request, 'customer/book_detail.html', context)
 
 
-
 # Shopping Cart with session management
 @login_required
 def shopping_cart(request):
@@ -1243,6 +947,7 @@ def shopping_cart(request):
     }
     
     return render(request, 'customer/cart.html', context)
+
 
 @login_required
 def add_to_cart_rent(request, book_id):
@@ -1352,11 +1057,6 @@ def add_to_cart_buy(request, book_id):
     return redirect('book_detail', book_id=book_id)
 
 
-
-
-
-
-
 def remove_from_cart(request, book_id, item_type):
     if 'cart' in request.session:
         cart = request.session['cart']
@@ -1371,6 +1071,7 @@ def remove_from_cart(request, book_id, item_type):
     
     return redirect('shopping_cart')
 
+
 # Checkout process
 def checkout(request):
     if not request.user.is_authenticated:
@@ -1378,22 +1079,45 @@ def checkout(request):
         return redirect('login')
     
     cart = request.session.get('cart', {'rental': [], 'purchase': []})
-    
+
     if not cart['rental'] and not cart['purchase']:
         messages.warning(request, "Your cart is empty.")
         return redirect('customer_dashboard')
-    
-    # Get cart items
-    rental_items = Book.objects.filter(id__in=cart['rental'])
-    purchase_items = Book.objects.filter(id__in=cart['purchase'])
+
+    # Load cart items and remove any that lack a store
+    rental_items_qs = Book.objects.filter(id__in=cart['rental'])
+    purchase_items_qs = Book.objects.filter(id__in=cart['purchase'])
+
+    removed_titles = []
+    rental_items = []
+    for b in rental_items_qs:
+        if b.store:
+            rental_items.append(b)
+        else:
+            removed_titles.append(b.title)
+
+    purchase_items = []
+    for b in purchase_items_qs:
+        if b.store:
+            purchase_items.append(b)
+        else:
+            removed_titles.append(b.title)
+
+    if removed_titles:
+        # Remove invalid ids from session cart
+        cart['rental'] = [i for i in cart.get('rental', []) if Book.objects.filter(id=i, store__isnull=False).exists()]
+        cart['purchase'] = [i for i in cart.get('purchase', []) if Book.objects.filter(id=i, store__isnull=False).exists()]
+        request.session['cart'] = cart
+        request.session.modified = True
+        messages.warning(request, 'Some items were removed from your cart because they are not available in any store: ' + ', '.join(removed_titles))
     
     # Calculate totals
     rental_total = sum(float(item.rental_price) for item in rental_items)
     purchase_total = sum(float(item.sale_price) for item in purchase_items)
     total = rental_total + purchase_total
     
-    # Get user's saved addresses (placeholder)
-    addresses = []
+    # Get default rental days
+    default_rental_days = 7
     
     context = {
         'rental_items': rental_items,
@@ -1401,171 +1125,10 @@ def checkout(request):
         'rental_total': rental_total,
         'purchase_total': purchase_total,
         'total': total,
-        'addresses': addresses,
+        'default_rental_days': default_rental_days,
     }
     
     return render(request, 'customer/checkout.html', context)
-
-def process_order(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({'success': False, 'message': 'Please login to place order'})
-    
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            
-            # Here you would create an Order model instance
-            # For now, just clear the cart
-            if 'cart' in request.session:
-                del request.session['cart']
-            
-            return JsonResponse({
-                'success': True,
-                'message': 'Order placed successfully!',
-                'order_id': 'ORD-' + str(datetime.now().timestamp()).replace('.', '')[:10]
-            })
-        except Exception as e:
-            return JsonResponse({'success': False, 'message': str(e)})
-    
-    return JsonResponse({'success': False, 'message': 'Invalid request'})
-
-# Wishlist functionality
-@login_required
-def wishlist(request):
-    # Get wishlist items from database
-    wishlist_items = Wishlist.objects.filter(user=request.user).select_related('book', 'book__store')
-    
-    # Extract books from wishlist items
-    books = [item.book for item in wishlist_items]
-    
-    context = {
-        'wishlist_books': books,
-        'wishlist_count': len(books),
-    }
-    
-    return render(request, 'customer/wishlist.html', context)
-
-@login_required
-def add_to_wishlist(request, book_id):
-    book = get_object_or_404(Book, id=book_id)
-    
-    # Check if already in wishlist
-    if Wishlist.objects.filter(user=request.user, book=book).exists():
-        messages.info(request, f"'{book.title}' is already in your wishlist.")
-    else:
-        Wishlist.objects.create(user=request.user, book=book)
-        messages.success(request, f"Added '{book.title}' to your wishlist!")
-    
-    return redirect('book_detail', book_id=book_id)
-
-@login_required
-def remove_from_wishlist(request, book_id):
-    book = get_object_or_404(Book, id=book_id)
-    Wishlist.objects.filter(user=request.user, book=book).delete()
-    messages.success(request, "Removed from wishlist.")
-    return redirect('wishlist')
-
-@login_required
-def clear_wishlist(request):
-    Wishlist.objects.filter(user=request.user).delete()
-    messages.success(request, "Wishlist cleared.")
-    return redirect('wishlist')
-
-
-# Customer profile
-def customer_profile(request):
-    if not request.user.is_authenticated:
-        messages.warning(request, "Please login to view your profile.")
-        return redirect('login')
-    
-    # Get user's orders (placeholder)
-    orders = []
-    
-    context = {
-        'user': request.user,
-        'orders': orders,
-    }
-    
-    return render(request, 'customer/profile.html', context)
-
-# Order history
-def order_history(request):
-    if not request.user.is_authenticated:
-        messages.warning(request, "Please login to view your orders.")
-        return redirect('login')
-    
-    # Mock orders for demonstration
-    orders = [
-        {
-            'id': 'ORD-1001',
-            'date': datetime.now() - timedelta(days=5),
-            'items': 3,
-            'total': 45.50,
-            'status': 'Delivered',
-            'type': 'Purchase',
-        },
-        {
-            'id': 'ORD-1002',
-            'date': datetime.now() - timedelta(days=15),
-            'items': 2,
-            'total': 12.00,
-            'status': 'Rented',
-            'type': 'Rental',
-        },
-    ]
-    
-    context = {
-        'orders': orders,
-        'active_rentals': [orders[1]] if len(orders) > 1 else [],
-        'past_orders': [orders[0]] if orders else [],
-    }
-    
-    return render(request, 'customer/order_history.html', context)
-
-# Get cart count for AJAX
-def get_cart_count(request):
-    cart = request.session.get('cart', {'rental': [], 'purchase': []})
-    count = len(cart['rental']) + len(cart['purchase'])
-    return JsonResponse({'count': count})
-
-
-# Quick Search API (for AJAX)
-def quick_search(request):
-    query = request.GET.get('q', '')
-    query = query.strip()
-    
-    if query:
-        books = Book.objects.filter(title__icontains=query)[:10]
-        
-        results = [
-            {
-                'id': book.id,
-                'title': book.title,
-                'author': book.author,
-                'genre': book.genre,
-                'rental_price': str(book.rental_price),
-                'sale_price': str(book.sale_price),
-                'available_rent': book.available_copies > 0,
-                'available_buy': book.available_sales > 0,
-                'url': f"/book/{book.id}/"
-            }
-            for book in books
-        ]
-    else:
-        results = []
-    
-    return JsonResponse({'results': results})
-
-
-
-
-
-
-
-
-
-
-
 
 
 @login_required
@@ -1731,85 +1294,6 @@ def create_order(request):
     except Exception as e:
         messages.error(request, f'Error creating order: {str(e)}')
         return redirect('checkout')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@login_required
-def checkout(request):
-    if not request.user.is_authenticated:
-        messages.warning(request, "Please login to checkout.")
-        return redirect('login')
-    
-    cart = request.session.get('cart', {'rental': [], 'purchase': []})
-
-    if not cart['rental'] and not cart['purchase']:
-        messages.warning(request, "Your cart is empty.")
-        return redirect('customer_dashboard')
-
-    # Load cart items and remove any that lack a store
-    rental_items_qs = Book.objects.filter(id__in=cart['rental'])
-    purchase_items_qs = Book.objects.filter(id__in=cart['purchase'])
-
-    removed_titles = []
-    rental_items = []
-    for b in rental_items_qs:
-        if b.store:
-            rental_items.append(b)
-        else:
-            removed_titles.append(b.title)
-
-    purchase_items = []
-    for b in purchase_items_qs:
-        if b.store:
-            purchase_items.append(b)
-        else:
-            removed_titles.append(b.title)
-
-    if removed_titles:
-        # Remove invalid ids from session cart
-        cart['rental'] = [i for i in cart.get('rental', []) if Book.objects.filter(id=i, store__isnull=False).exists()]
-        cart['purchase'] = [i for i in cart.get('purchase', []) if Book.objects.filter(id=i, store__isnull=False).exists()]
-        request.session['cart'] = cart
-        request.session.modified = True
-        messages.warning(request, 'Some items were removed from your cart because they are not available in any store: ' + ', '.join(removed_titles))
-    
-    # Calculate totals
-    rental_total = sum(float(item.rental_price) for item in rental_items)
-    purchase_total = sum(float(item.sale_price) for item in purchase_items)
-    total = rental_total + purchase_total
-    
-    # Get default rental days
-    default_rental_days = 7
-    
-    context = {
-        'rental_items': rental_items,
-        'purchase_items': purchase_items,
-        'rental_total': rental_total,
-        'purchase_total': purchase_total,
-        'total': total,
-        'default_rental_days': default_rental_days,
-    }
-    
-    return render(request, 'customer/checkout.html', context)
 
 
 @login_required
@@ -1996,10 +1480,6 @@ def store_orders(request):
     }
     
     return render(request, 'store/order_management.html', context)
-   # return render(request, 'customer/order_history.html', context)
-
-
-
 
 
 @login_required
@@ -2130,7 +1610,6 @@ def process_order(request, order_id):
     return render(request, 'store/process_order.html', context)
 
 
-
 @login_required
 def update_delivery_location(request, delivery_id):
     if request.method == 'POST':
@@ -2149,72 +1628,6 @@ def update_delivery_location(request, delivery_id):
             return JsonResponse({'success': True, 'message': 'Location updated'})
     
     return JsonResponse({'success': False, 'message': 'Invalid request'})
-
-
-@login_required
-def store_dashboard(request):
-    guard = ensure_store_owner(request)
-    if guard:
-        return guard
-
-    # Get stores owned by the user
-    stores = get_managed_stores(request.user)
-    if not stores.exists():
-        messages.info(request, "No store is assigned to this account yet.")
-    
-    # Get orders for these stores
-    orders = Order.objects.filter(store__in=stores)
-    today = datetime.now().date()
-    
-    # Calculate metrics
-    total_orders = orders.count()
-    pending_orders = orders.filter(status='pending').count()
-    active_orders = orders.filter(status__in=['approved', 'contacted', 'preparing', 'ready', 'out_for_delivery']).count()
-    completed_orders = orders.filter(status='completed').count()
-    cancelled_orders = orders.filter(status='cancelled').count()
-    today_revenue = orders.filter(
-        created_at__date=today,
-        status__in=['completed', 'delivered']
-    ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
-    month_revenue = orders.filter(
-        created_at__date__gte=today.replace(day=1),
-        status__in=['completed', 'delivered']
-    ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
-    
-    # Recent orders
-    recent_orders = orders.order_by('-created_at')[:5]
-
-    # Sidebar / dashboard support data
-    books = Book.objects.filter(store__in=stores)
-    primary_store = stores.first()
-    account_owner = (
-        primary_store.owner_full_name
-        if primary_store and primary_store.owner_full_name
-        else (request.user.get_full_name().strip() or request.user.username)
-    )
-    
-    context = {
-        'stores': stores,
-        'total_orders': total_orders,
-        'pending_orders': pending_orders,
-        'active_orders': active_orders,
-        'completed_orders': completed_orders,
-        'cancelled_orders': cancelled_orders,
-        'today_revenue': today_revenue,
-        'month_revenue': month_revenue,
-        'revenue_today': today_revenue,  # Backward-compatible alias
-        'pending_orders_count': pending_orders,
-        'account_owner': account_owner,
-        'store_metrics': {
-            'pending_orders': pending_orders,
-            'revenue_today': today_revenue,
-            'revenue_month': month_revenue,
-            'total_books': books.count(),
-        },
-        'recent_orders': recent_orders,
-    }
-    
-    return render(request, 'store/dashboard.html', context)
 
 
 @login_required
@@ -2248,19 +1661,64 @@ def add_review(request, order_id):
     return render(request, 'customer/add_review.html', {'order': order})
 
 
-
-
 def clear_wishlist(request):
+    # Clear session wishlist
     if 'wishlist' in request.session:
         request.session['wishlist'] = []
         request.session.modified = True
-        messages.success(request, "Wishlist cleared.")
+
+    # Also clear DB wishlist for authenticated users
+    if request.user.is_authenticated:
+        Wishlist.objects.filter(user=request.user).delete()
+
+    messages.success(request, "Wishlist cleared.")
     return redirect('wishlist')
 
 
+def wishlist(request):
+    # Show wishlist for current user or session
+    if request.user.is_authenticated:
+        wishlist_items = Wishlist.objects.filter(user=request.user).select_related('book')
+        books = [w.book for w in wishlist_items]
+    else:
+        ids = request.session.get('wishlist', [])
+        books = Book.objects.filter(id__in=ids)
+
+    context = {
+        'books': books,
+    }
+    return render(request, 'customer/wishlist.html', context)
 
 
+@login_required
+def add_to_wishlist(request, book_id):
+    try:
+        book = Book.objects.get(id=book_id)
+    except Book.DoesNotExist:
+        messages.error(request, "Book not found.")
+        return redirect('customer_dashboard')
 
+    # Create wishlist entry if not exists
+    Wishlist.objects.get_or_create(user=request.user, book=book)
+    messages.success(request, f"Added '{book.title}' to your wishlist.")
+    return redirect('book_detail', book_id=book_id)
+
+
+@login_required
+def remove_from_wishlist(request, book_id):
+    if request.user.is_authenticated:
+        Wishlist.objects.filter(user=request.user, book_id=book_id).delete()
+        messages.success(request, "Removed item from wishlist.")
+    else:
+        # Fallback for session-based wishlist
+        ids = request.session.get('wishlist', [])
+        if book_id in ids:
+            ids.remove(book_id)
+            request.session['wishlist'] = ids
+            request.session.modified = True
+            messages.success(request, "Removed item from wishlist.")
+
+    return redirect('wishlist')
 
 
 @login_required
@@ -2298,91 +1756,6 @@ def manage_books(request):
     books = Book.objects.filter(store__in=get_managed_stores(request.user)).order_by('-created_at')
     return render(request, 'store/manage_books.html', {'books': books})
 
-
-
-
-
-'''
-
-@login_required
-def store_orders(request):
-    # Get stores owned by the user
-    stores = get_managed_stores(request.user)
-    if not stores.exists():
-        messages.info(request, "No store assigned to this account yet. Showing empty order management.")
-    
-    # Get orders for these stores
-    orders = Order.objects.filter(store__in=stores).order_by('-created_at')
-    
-    # Calculate statistics
-    total_orders = orders.count()
-    total_revenue = orders.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
-    
-    # Get today's date
-    today = datetime.now().date()
-    today_revenue = orders.filter(created_at__date=today).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
-    
-    # Get this week's revenue
-    week_ago = datetime.now() - timedelta(days=7)
-    week_revenue = orders.filter(created_at__gte=week_ago).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
-    
-    # Get this month's revenue
-    month_ago = datetime.now() - timedelta(days=30)
-    month_revenue = orders.filter(created_at__gte=month_ago).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
-    
-    # Apply filters
-    status_filter = request.GET.get('status', 'all')
-    if status_filter != 'all':
-        orders = orders.filter(status=status_filter)
-    
-    order_type_filter = request.GET.get('type', 'all')
-    if order_type_filter != 'all':
-        orders = orders.filter(order_type=order_type_filter)
-    
-    date_filter = request.GET.get('date', 'all')
-    if date_filter == 'today':
-        orders = orders.filter(created_at__date=today)
-    elif date_filter == 'week':
-        orders = orders.filter(created_at__gte=week_ago)
-    elif date_filter == 'month':
-        orders = orders.filter(created_at__gte=month_ago)
-    
-    # Count pending orders
-    pending_orders = orders.filter(status__in=['pending', 'contacted', 'preparing']).count()
-    
-    # Count rental orders
-    rental_orders = orders.filter(order_type='rent', status__in=['pending', 'preparing', 'ready', 'out_for_delivery']).count()
-    
-    # Pagination
-    paginator = Paginator(orders, 20)
-    page_number = request.GET.get('page', 1)
-    
-    try:
-        orders_page = paginator.page(page_number)
-    except PageNotAnInteger:
-        orders_page = paginator.page(1)
-    except EmptyPage:
-        orders_page = paginator.page(paginator.num_pages)
-    
-    context = {
-        'orders': orders_page,
-        'stores': stores,
-        'status_filter': status_filter,
-        'order_type_filter': order_type_filter,
-        'date_filter': date_filter,
-        'total_orders': total_orders,
-        'total_revenue': total_revenue,
-        'today_revenue': today_revenue,
-        'week_revenue': week_revenue,
-        'month_revenue': month_revenue,
-        'pending_orders': pending_orders,
-        'rental_orders': rental_orders,
-    }
-    
-    return render(request, 'store/order_history.html', context)
-
-
-'''
 
 def _build_store_orders_context(request):
     # Get stores owned by the user
@@ -2492,10 +1865,6 @@ def store_order_history(request):
     return render(request, 'store/order_history.html', context)
 
 
-
-
-
-
 @login_required
 def store_order_detail(request, order_id):
     guard = ensure_store_owner(request)
@@ -2526,21 +1895,6 @@ def store_order_detail(request, order_id):
     }
     
     return render(request, 'store/order_detail.html', context)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 @login_required
@@ -2587,25 +1941,7 @@ def store_wishlist(request):
     return render(request, 'store/wishlist.html', context)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# views.py
+# Contact and static pages
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.mail import send_mail
@@ -2654,7 +1990,7 @@ Newsletter Subscription: {'Yes' if newsletter == 'yes' else 'No'}
     
     return render(request, 'contact.html')
 
-# --- Added missing views for privacy policy, terms of service, and FAQ ---
+
 from django.views.decorators.http import require_GET
 
 @require_GET
@@ -2670,34 +2006,11 @@ def faq(request):
     return render(request, 'faq.html')
 
 
-
-
-
-
-
-
-
-
-
-
-
-# Add these imports at the top of your views.py if not already present
+# Profile management
 from django.contrib.auth import update_session_auth_hash
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 import json
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 @login_required
@@ -2715,7 +2028,7 @@ def profile(request):
     # Get wishlist count
     wishlist_count = Wishlist.objects.filter(user=request.user).count()
     
-    # Get user preferences (you can create a UserProfile model for these)
+    # Get user preferences
     preferences = {
         'email_notifications': True,
         'order_updates': True,
@@ -2733,6 +2046,13 @@ def profile(request):
         'preferences': preferences,
     }
     return render(request, 'profile.html', context)
+
+
+@login_required
+def customer_profile(request):
+    # Reuse the main `profile` view for customer-facing profile page
+    return profile(request)
+
 
 @login_required
 @require_POST
@@ -2761,12 +2081,6 @@ def update_profile(request):
                 return redirect('profile')
             user.email = email
         
-        # Update phone (if you have a UserProfile model)
-        # For now, we'll store it in session or you can create a UserProfile model
-        if hasattr(user, 'profile'):
-            user.profile.phone = request.POST.get('phone', '')
-            user.profile.save()
-        
         user.save()
         
         messages.success(request, 'Profile updated successfully!')
@@ -2774,6 +2088,7 @@ def update_profile(request):
         messages.error(request, f'Error updating profile: {str(e)}')
     
     return redirect('profile')
+
 
 @login_required
 @require_POST
@@ -2811,34 +2126,31 @@ def update_account(request):
     
     return redirect('profile')
 
+
 @login_required
 @require_POST
 def update_preferences(request):
     """Update user preferences"""
     try:
         # Here you would save preferences to a UserProfile model
-        # For now, we'll just show a success message
         messages.success(request, 'Preferences updated successfully!')
     except Exception as e:
         messages.error(request, f'Error updating preferences: {str(e)}')
     
     return redirect('profile')
 
+
 @login_required
 @require_POST
 def update_avatar(request):
     """Update user avatar via AJAX"""
     try:
-        # Handle avatar upload
-        # You'll need to add an ImageField to your User model or create a UserProfile model
         if request.FILES.get('avatar'):
-            # Save the file
-            # user.profile.avatar = request.FILES['avatar']
-            # user.profile.save()
             return JsonResponse({'success': True, 'message': 'Avatar updated successfully'})
         return JsonResponse({'success': False, 'message': 'No file uploaded'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})
+
 
 @login_required
 def delete_account(request):
@@ -2854,64 +2166,10 @@ def delete_account(request):
     return render(request, 'delete_account_confirm.html')
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    #store
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
+# Store Owner Profile
 @login_required
 def profile_store_owner(request):
-    """Main profile page for users to update their information"""
+    """Main profile page for store owners"""
     account_type = get_account_type(request.user)
     stores = get_managed_stores(request.user) if account_type == STORE_OWNER_GROUP else None
     
@@ -2924,7 +2182,7 @@ def profile_store_owner(request):
     # Get wishlist count
     wishlist_count = Wishlist.objects.filter(user=request.user).count()
     
-    # Get user preferences (you can create a UserProfile model for these)
+    # Get user preferences
     preferences = {
         'email_notifications': True,
         'order_updates': True,
@@ -2942,6 +2200,7 @@ def profile_store_owner(request):
         'preferences': preferences,
     }
     return render(request, 'profile_store_owner.html', context)
+
 
 @login_required
 @require_POST
@@ -2970,19 +2229,14 @@ def update_profile_store_owner(request):
                 return redirect('profile_store_owner')
             user.email = email
         
-        # Update phone (if you have a UserProfile model)
-        # For now, we'll store it in session or you can create a UserProfile model
-        if hasattr(user, 'profile'):
-            user.profile.phone = request.POST.get('phone', '')
-            user.profile.save()
-        
         user.save()
         
         messages.success(request, 'Profile updated successfully!')
     except Exception as e:
         messages.error(request, f'Error updating profile: {str(e)}')
     
-    return redirect('store/profile_store_owner.html')
+    return redirect('profile_store_owner')
+
 
 @login_required
 @require_POST
@@ -3020,34 +2274,30 @@ def update_account_store_owner(request):
     
     return redirect('profile_store_owner')
 
+
 @login_required
 @require_POST
 def update_preferences_store_owner(request):
     """Update user preferences"""
     try:
-        # Here you would save preferences to a UserProfile model
-        # For now, we'll just show a success message
         messages.success(request, 'Preferences updated successfully!')
     except Exception as e:
         messages.error(request, f'Error updating preferences: {str(e)}')
     
     return redirect('profile_store_owner')
 
+
 @login_required
 @require_POST
 def update_avatar_store_owner(request):
     """Update user avatar via AJAX"""
     try:
-        # Handle avatar upload
-        # You'll need to add an ImageField to your User model or create a UserProfile model
         if request.FILES.get('avatar'):
-            # Save the file
-            # user.profile.avatar = request.FILES['avatar']
-            # user.profile.save()
             return JsonResponse({'success': True, 'message': 'Avatar updated successfully'})
         return JsonResponse({'success': False, 'message': 'No file uploaded'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})
+
 
 @login_required
 def delete_account_store_owner(request):
@@ -3063,40 +2313,37 @@ def delete_account_store_owner(request):
     return render(request, 'delete_account_store.html')
 
 
+# Get cart count for AJAX
+def get_cart_count(request):
+    cart = request.session.get('cart', {'rental': [], 'purchase': []})
+    count = len(cart['rental']) + len(cart['purchase'])
+    return JsonResponse({'count': count})
 
 
+# Quick Search API (for AJAX)
 
-
-
-
-
-
-
-
-
-
-
-    #store
-
+def quick_search(request):
+    query = request.GET.get('q', '')
+    query = query.strip()
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    if query:
+        books = Book.objects.filter(title__icontains=query)[:10]
+        
+        results = [
+            {
+                'id': book.id,
+                'title': book.title,
+                'author': book.author,
+                'genre': book.genre,
+                'rental_price': str(book.rental_price),
+                'sale_price': str(book.sale_price),
+                'available_rent': book.available_copies > 0,
+                'available_buy': book.available_sales > 0,
+                'url': f"/book/{book.id}/"
+            }
+            for book in books
+        ]
+    else:
+        results = []
     
+    return JsonResponse({'results': results})

@@ -1,145 +1,121 @@
-<!-- store/edit_book.html -->
 {% extends "store/dashboard.html" %}
 {% load static %}
 
 {% block content %}
-
-<div class="min-h-screen bg-gray-100 py-10">
-    <div class="max-w-6xl mx-auto px-6">
-        <!-- HEADER -->
-        <div class="mb-10">
-            <h1 class="text-4xl font-bold text-gray-800 tracking-tight">
-                Edit Book Details
-            </h1>
-            <p class="text-gray-500 mt-2 tracking-tight">Update book information in your catalog</p>
-        </div>
-
-        <form method="POST" action="{% url 'edit_book' book.id %}" class="space-y-10">
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Edit Book</h1>
+        
+        <form method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow-lg p-8">
             {% csrf_token %}
             
-            <!-- BOOK INFORMATION -->
-            <div class=" rounded-2xl shadow-lg border border-gray-200 p-8 space-y-6">
-                <h2 class="text-lg font-semibold text-gray-700 flex items-center gap-2 tracking-tight">
-                    📘 Book Information
-                </h2>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-1">
-                        <label class="text-sm font-medium text-gray-600">Title *</label>
-                        <input type="text" name="title" required value="{{ book.title }}"
-                            class="w-full px-4 py-3 rounded-xl border border-gray-300 
-                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition form-control"
-                            placeholder="Enter book title">
+            <!-- Current Image Display -->
+            {% if book.cover_image %}
+            <div class="mb-6 text-center">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Current Cover Image</label>
+                <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" class="max-h-48 mx-auto rounded-lg shadow-md">
+            </div>
+            {% endif %}
+            
+            <!-- Image Upload Field -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    {% if book.cover_image %}Update Cover Image{% else %}Upload Cover Image{% endif %}
+                </label>
+                
+                <!-- Image preview for new upload -->
+                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-blue-500 transition cursor-pointer mb-3"
+                     onclick="document.getElementById('cover_image').click()">
+                    <input type="file" name="cover_image" id="cover_image" accept="image/*" class="hidden" onchange="previewNewImage(this)">
+                    
+                    <div id="new_image_preview" class="hidden mb-3">
+                        <img id="new_image_preview_img" src="#" alt="New cover preview" class="max-h-32 mx-auto rounded-lg shadow">
                     </div>
-
-                    <div class="space-y-1">
-                        <label class="text-sm font-medium text-gray-600">Author *</label>
-                        <input type="text" name="author" required value="{{ book.author }}"
-                            class="w-full px-4 py-3 rounded-xl border border-gray-300 
-                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition form-control"
-                            placeholder="Enter author name">
-                    </div>
-
-                    <div class="space-y-1">
-                        <label class="text-sm font-medium text-gray-600">Genre *</label>
-                        <select name="genre" required
-                            class="w-full px-4 py-3 rounded-xl border border-gray-300 
-                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                            <option value="">Select Genre</option>
-                            <option value="fiction" {% if book.genre == 'fiction' %}selected{% endif %}>Fiction</option>
-                            <option value="non-fiction" {% if book.genre == 'non-fiction' %}selected{% endif %}>Non-Fiction</option>
-                            <option value="sci-fi" {% if book.genre == 'sci-fi' %}selected{% endif %}>Science Fiction</option>
-                            <option value="fantasy" {% if book.genre == 'fantasy' %}selected{% endif %}>Fantasy</option>
-                            <option value="mystery" {% if book.genre == 'mystery' %}selected{% endif %}>Mystery</option>
-                            <option value="romance" {% if book.genre == 'romance' %}selected{% endif %}>Romance</option>
-                            <option value="biography" {% if book.genre == 'biography' %}selected{% endif %}>Biography</option>
-                            <option value="history" {% if book.genre == 'history' %}selected{% endif %}>History</option>
-                        </select>
-                    </div>
-
-                    <div class="space-y-1">
-                        <label class="text-sm font-medium text-gray-600">Publication Year</label>
-                        <input type="number" name="publication_year" value="{{ book.publication_year|default:'' }}"
-                            class="w-full px-4 py-3 rounded-xl border border-gray-300 
-                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                            placeholder="e.g., 2020">
-                    </div>
+                    
+                    <svg class="mx-auto h-8 w-8 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H8a4 4 0 01-4-4v-20m32 12h-8m-12 0h-8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <p class="mt-1 text-sm text-gray-600">Click to select new image</p>
+                </div>
+                
+                <p class="text-xs text-gray-500">Leave empty to keep current image. PNG, JPG, GIF up to 5MB</p>
+            </div>
+            
+            <!-- Book Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                    <input type="text" name="title" value="{{ book.title }}" required
+                           class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Author *</label>
+                    <input type="text" name="author" value="{{ book.author }}" required
+                           class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Genre *</label>
+                    <select name="genre" required class="w-full px-4 py-3 rounded-xl border border-gray-300">
+                        <option value="fiction" {% if book.genre == 'fiction' %}selected{% endif %}>Fiction</option>
+                        <option value="non-fiction" {% if book.genre == 'non-fiction' %}selected{% endif %}>Non-Fiction</option>
+                        <option value="sci-fi" {% if book.genre == 'sci-fi' %}selected{% endif %}>Science Fiction</option>
+                        <option value="fantasy" {% if book.genre == 'fantasy' %}selected{% endif %}>Fantasy</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Publication Year</label>
+                    <input type="number" name="publication_year" value="{{ book.publication_year }}"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-300">
                 </div>
             </div>
-
-            <!-- INVENTORY DETAILS -->
-            <div class=" rounded-2xl shadow-lg border border-gray-200 p-8 space-y-6">
-                <h2 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
-                    📦 Inventory Details
-                </h2>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="space-y-1">
-                        <label class="text-sm font-medium text-gray-600">Total Copies</label>
-                        <input type="number" name="total_copies" required value="{{ book.total_copies|default:'0' }}"
-                            class="w-full px-4 py-3 rounded-xl border border-gray-300 
-                            focus:ring-2 focus:ring-blue-500 transition"
-                            placeholder="Total copies">
-                    </div>
-
-                    <div class="space-y-1">
-                        <label class="text-sm font-medium text-gray-600">Available for Rent</label>
-                        <input type="number" name="available_rent" required value="{{ book.available_copies|default:'0' }}"
-                            class="w-full px-4 py-3 rounded-xl border border-gray-300 
-                            focus:ring-2 focus:ring-blue-500 transition"
-                            placeholder="Rent copies">
-                    </div>
-
-                    <div class="space-y-1">
-                        <label class="text-sm font-medium text-gray-600">Available for Sale</label>
-                        <input type="number" name="available_sale" required value="{{ book.available_sales|default:'0' }}"
-                            class="w-full px-4 py-3 rounded-xl border border-gray-300 
-                            focus:ring-2 focus:ring-blue-500 transition"
-                            placeholder="Sale copies">
-                    </div>
+            
+            <!-- Inventory Details -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Total Copies *</label>
+                    <input type="number" name="total_copies" value="{{ book.total_copies }}" required
+                           class="w-full px-4 py-3 rounded-xl border border-gray-300">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Available for Rent *</label>
+                    <input type="number" name="available_rent" value="{{ book.available_copies }}" required
+                           class="w-full px-4 py-3 rounded-xl border border-gray-300">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Available for Sale *</label>
+                    <input type="number" name="available_sale" value="{{ book.available_sales }}" required
+                           class="w-full px-4 py-3 rounded-xl border border-gray-300">
                 </div>
             </div>
-
-            <!-- PRICING -->
-            <div class=" rounded-2xl shadow-lg border border-gray-200 p-8 space-y-6">
-                <h2 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
-                    💰 Pricing
-                </h2>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-1">
-                        <label class="text-sm font-medium text-gray-600">Rental Price ($)</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-3 text-gray-400">$</span>
-                            <input type="number" name="rental_price" required step="0.01" value="{{ book.rental_price|default:'0' }}"
-                                class="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-300 
-                                focus:ring-2 focus:ring-blue-500 transition"
-                                placeholder="Rental price">
-                        </div>
-                    </div>
-
-                    <div class="space-y-1">
-                        <label class="text-sm font-medium text-gray-600">Sale Price ($)</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-3 text-gray-400">$</span>
-                            <input type="number" name="sale_price" required step="0.01" value="{{ book.sale_price|default:'0' }}"
-                                class="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-300 
-                                focus:ring-2 focus:ring-blue-500 transition"
-                                placeholder="Sale price">
-                        </div>
-                    </div>
+            
+            <!-- Pricing -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Rental Price ($) *</label>
+                    <input type="number" name="rental_price" value="{{ book.rental_price }}" required step="0.01"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-300">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sale Price ($) *</label>
+                    <input type="number" name="sale_price" value="{{ book.sale_price }}" required step="0.01"
+                           class="w-full px-4 py-3 rounded-xl border border-gray-300">
                 </div>
             </div>
-
-            <!-- ACTION BUTTONS -->
-            <div class="sticky bottom-0  border-t border-gray-200 p-6 flex justify-end gap-4 rounded-b-2xl shadow-lg">
-                <a href="{% url 'view_inventory' %}" 
-                   class="px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-100 transition text-gray-700 btn btn-danger">
+            
+            <!-- Form Actions -->
+            <div class="flex justify-end gap-4 mt-8 pt-6 border-t">
+                <button type="button" onclick="window.history.back()" 
+                        class="px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-100 transition">
                     Cancel
-                </a>
-
-                <button type="submit"
-                    class="px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-md transition btn btn-primary">
+                </button>
+                <button type="submit" 
+                        class="px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-md transition">
                     Update Book
                 </button>
             </div>
@@ -147,25 +123,21 @@
     </div>
 </div>
 
-<!-- ALERT MESSAGES -->
-{% if messages %}
-<div class="fixed top-4 right-4 z-50 space-y-2">
-    {% for message in messages %}
-    <div class="bg-{% if message.tags == 'success' %}green{% else %}red{% endif %}-500 text-white px-6 py-3 rounded-lg shadow-lg">
-        {{ message }}
-    </div>
-    {% endfor %}
-</div>
-
 <script>
-    // Auto-hide messages after 5 seconds
-    setTimeout(function() {
-        const messages = document.querySelector('.fixed.top-4.right-4');
-        if (messages) {
-            messages.style.display = 'none';
+function previewNewImage(input) {
+    const previewContainer = document.getElementById('new_image_preview');
+    const preview = document.getElementById('new_image_preview_img');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            previewContainer.classList.remove('hidden');
         }
-    }, 5000);
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
 </script>
-{% endif %}
-
 {% endblock %}

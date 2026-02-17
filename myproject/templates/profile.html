@@ -758,6 +758,13 @@
 
     <!-- Right side with profile update forms -->
     <div class="profile-right">
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px;">
+            {% if account_type == 'store_owner' %}
+                <a href="{% url 'store_dashboard' %}" class="btn btn-outline-primary">Home</a>
+            {% else %}
+                <a href="{% url 'customer_dashboard' %}" class="btn btn-outline-primary">Home</a>
+            {% endif %}
+        </div>
         <div class="logo">
             <h1><i class="fas fa-user-edit"></i> YourApp</h1>
         </div>

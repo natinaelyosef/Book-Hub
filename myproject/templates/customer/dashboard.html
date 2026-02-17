@@ -129,7 +129,12 @@
             {% if book.store %}
             <div class="store-badge">{{ book.store.store_name|default:"Book Store" }}</div>
             {% endif %}
-            <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="{{ book.title }}">
+            {% if book.cover_image %}
+            <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" class="book-cover-img" style="width: 100%; height: 200px; object-fit: cover;">
+            {% else %}
+            <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
+                 alt="{{ book.title }}" class="book-cover-img" style="width: 100%; height: 200px; object-fit: cover;">
+            {% endif %}
         </div>
         <div class="book-info">
             <h3 class="book-title">{{ book.title }}</h3>
@@ -269,6 +274,27 @@
 <style>
 .clear-search-btn:hover {
     background-color: #7f8c8d !important;
+}
+</style>
+
+<!-- Book image styling -->
+<style>
+.book-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 8px 8px 0 0;
+}
+
+.book-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.book-card:hover .book-cover-img {
+    transform: scale(1.05);
 }
 </style>
 

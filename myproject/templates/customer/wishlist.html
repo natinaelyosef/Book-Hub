@@ -24,7 +24,11 @@
                     {% if book.store %}
                     <div class="store-badge">{{ book.store.store_name }}</div>
                     {% endif %}
-                    <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="{{ book.title }}">
+                    {% if book.cover_image %}
+                        <img src="{{ book.cover_image.url }}" alt="{{ book.title }}">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="{{ book.title }}">
+                    {% endif %}
                 </div>
                 <div class="book-info">
                     <h3 class="book-title">{{ book.title }}</h3>
@@ -130,7 +134,7 @@
                 </a>
                 <a href="#" class="btn" 
                    style="background: #e74c3c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 0.9rem;"
-                   onclick="if(confirm('Clear all items from wishlist?')) { window.location='{% url "wishlist_clear_all" %}'; }">
+                   onclick="if(confirm('Clear all items from wishlist?')) { window.location='{% url 'wishlist_clear_all' %}'; }">
                     <i class="fas fa-trash"></i> Clear All
                 </a>
             </div>

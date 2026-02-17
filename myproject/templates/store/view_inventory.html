@@ -8,6 +8,7 @@
         <thead class="table-dark text-center">
             <tr>
                 <th>ID</th>
+                <th>Image</th>
                 <th>Title</th>
                 <th>Author</th>
                 <th>Genre</th>
@@ -30,6 +31,13 @@
             {% for book in books %}
             <tr>
                 <td class="fw-semibold">{{ book.id }}</td>
+                <td>
+                    {% if book.cover_image %}
+                        <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" style="height: 40px; border-radius: 2px;">
+                    {% else %}
+                        <i class="fas fa-book text-muted"></i>
+                    {% endif %}
+                </td>
                 <td>{{ book.title }}</td>
                 <td>{{ book.author }}</td>
                 <td>{{ book.genre }}</td>

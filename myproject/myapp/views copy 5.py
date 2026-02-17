@@ -2982,7 +2982,7 @@ def update_profile_store_owner(request):
     except Exception as e:
         messages.error(request, f'Error updating profile: {str(e)}')
     
-    return redirect('store/profile_store_owner.html')
+    return redirect('store/profile_store_owner.html') ,
 
 @login_required
 @require_POST

@@ -66,7 +66,19 @@ class Store(models.Model):
     in_stock = models.BooleanField(default=True)
 
 
-# Book model with image field
+
+
+
+
+
+
+
+
+
+
+
+
+# models.py
 class Book(models.Model):
     title = models.CharField(max_length=200)
     author = models.CharField(max_length=200)
@@ -78,8 +90,6 @@ class Book(models.Model):
     available_sales = models.IntegerField(default=0)
     rental_price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     sale_price = models.DecimalField(max_digits=6, decimal_places=2, default=0)
-    # Add this line for book cover image
-    cover_image = models.ImageField(upload_to='book_covers/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -87,25 +97,42 @@ class Book(models.Model):
         return f"{self.title} by {self.author}"
 
 
+
+
 class add_book_registration(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=200)
     author = models.CharField(max_length=100)
+
     genre = models.CharField(max_length=50)
     publication_year = models.IntegerField(null=True, blank=True)
     total_copies = models.IntegerField(null=True, blank=True, default=0)
     available_copies = models.IntegerField(null=True, blank=True, default=0)
     available_sales = models.IntegerField(null=True, blank=True, default=0)
+
     rental_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
-    # Add this line for book cover image
-    cover_image = models.ImageField(upload_to='book_covers/', null=True, blank=True)
+
+    # cover_image = models.ImageField(upload_to='book_covers/', null=True, blank=True)
 
     def __str__(self):
         return self.title
 
+# Provide a backwards-compatible alias so views referencing `Book`
+# (existing code) continue to work without renaming the model class.
 
-# Order models
+
+
+
+
+
+
+
+
+
+
+# Add these models to your existing models.py
+
 class Order(models.Model):
     ORDER_STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -247,3 +274,4 @@ class Wishlist(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.book.title}"
+

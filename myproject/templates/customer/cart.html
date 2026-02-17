@@ -367,7 +367,11 @@
                     {% for item in cart_items %}
                     <div class="cart-item">
                         <div class="item-image">
-                            <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="{{ item.book.title }}">
+                            {% if item.book.cover_image %}
+                                <img src="{{ item.book.cover_image.url }}" alt="{{ item.book.title }}">
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="{{ item.book.title }}">
+                            {% endif %}
                         </div>
                         <div class="item-details">
                             <h3 class="item-title">{{ item.book.title }}</h3>
