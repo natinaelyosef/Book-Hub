@@ -1,43 +1,81 @@
 Folder PATH listing
-Volume serial number is 4457-7AF3
-C:.
-|   project_tree.txt
-|   README.md
-|   tmp_search_response.html
-|   
-+---myproject
-|   |   db.sqlite3
-|   |   fix_books.py
-|   |   info.txt
-|   |   manage.py
-|   |   
-|   +---myapp
-|   |   |   admin.py
-|   |   |   apps.py
-|   |   |   context_processors.py
-|   |   | 
-|   |   |   models.py
-|   |   |   tests.py
-|   |   |  
-|   |   |   urls.py
-|   |   |   
-|   |   |   views.py
-|   |   |   __init__.py
-|   |   |   
-|   |   +---migrations
-|   |   |   |   0001_initial.py
-|   |   |   |   0002_features_is_truee_alter_features_details.py
-|   |   |   |   0003_store.py
-|   |   |   |   0004_store_agree_terms_store_close_time_friday_and_more.py
-|   |   |   |   0005_add_book_registration.py
-|   |   |   |   0006_alter_add_book_registration_available_copies_and_more.py
-|   |   |   |   0007_alter_add_book_registration_store.py
-|   |   |   |   0008_book.py
-|   |   |   |   0009_book_store.py
-|   |   |   |   0010_order_delivery_customerreview_orderitem.py
-|   |   |   |   0011_wishlist.py
-|   |   |   |   __init__.py
-|   |   |   |   
+Project Directory Structure (as of February 16, 2026):
+
+Book-Hub/
+├── myproject/
+│   ├── db.sqlite3
+│   ├── fix_books.py
+│   ├── fix_order_numbers.py
+│   ├── info.txt
+│   ├── manage.py
+│   ├── myapp/
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── context_processors.py
+│   │   ├── models.py
+│   │   ├── tests.py
+│   │   ├── urls.py
+│   │   ├── views.py
+│   │   ├── management/
+│   │   │   └── commands/
+│   │   ├── migrations/
+│   │   │   ├── __init__.py
+│   │   │   ├── 0001_initial.py
+│   │   │   ├── ...
+│   │   └── __pycache__/
+│   ├── myproject/
+│   │   ├── __init__.py
+│   │   ├── asgi.py
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   ├── wsgi.py
+│   │   └── __pycache__/
+│   │   └── j/
+│   │       ├── __init__ copy.py
+│   │       ├── asgi copy.py
+│   │       ├── settings copy.py
+│   │       ├── urls copy.py
+│   │       ├── wsgi copy.py
+│   │       └── __pycache__/
+│   ├── OnePage/
+│   │   ├── portfolio-details.html
+│   │   ├── ...
+│   │   └── forms/
+│   │       ├── contact.php
+│   │       └── Readme.txt
+│   ├── scripts/
+│   │   ├── assign_stores_to_books.py
+│   │   ├── check_books.py
+│   │   ├── revert_store_assignment.py
+│   │   ├── test_order_flow.py
+│   │   └── __pycache__/
+│   ├── static/
+│   │   ├── style.css
+│   │   └── assets/
+│   │       ├── css/
+│   │       ├── img/
+│   │       ├── js/
+│   │       ├── scss/
+│   │       └── vendor/
+│   └── templates/
+│       ├── base.html
+│       ├── contact.html
+│       ├── ...
+│       ├── customer/
+│       │   ├── base.html
+│       │   ├── book_detail.html
+│       │   ├── ...
+│       └── store/
+│           └── ...
+├── templates/
+│   ├── faq.html
+│   ├── privacy_policy.html
+│   └── terms_of_service.html
+├── README.md
+└── project_tree.txt
+
+(Note: Some folders/files are abbreviated with '...')
 |   |   |   \---__pycache__
 |   |   |           0001_initial.cpython-314.pyc
 |   |   |           0002_features_is_truee_alter_features_details.cpython-314.pyc

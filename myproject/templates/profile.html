@@ -1,0 +1,1377 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile | Your Application{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .profile-container {
+        display: flex;
+        width: 100%;
+        max-width: 1200px;
+        background-color: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+    }
+
+    .profile-left {
+        flex: 0.8;
+        background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+        color: white;
+        padding: 40px 30px;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-left::before {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        top: -100px;
+        right: -100px;
+    }
+
+    .profile-left::after {
+        content: '';
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        bottom: -50px;
+        left: -50px;
+    }
+
+    .profile-header {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        border: 4px solid white;
+        margin: 0 auto 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .profile-avatar i {
+        font-size: 4rem;
+        color: white;
+    }
+
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 8px;
+        text-align: center;
+        transform: translateY(100%);
+        transition: transform 0.3s;
+    }
+
+    .profile-avatar:hover .avatar-overlay {
+        transform: translateY(0);
+    }
+
+    .avatar-overlay i {
+        font-size: 1rem;
+    }
+
+    .profile-name {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .profile-email {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin-bottom: 10px;
+    }
+
+    .profile-type {
+        display: inline-block;
+        padding: 8px 16px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+    }
+
+    .profile-stats {
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-item {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .stat-grid .stat-item {
+        margin-bottom: 0;
+        padding: 10px;
+    }
+
+    .stat-grid .stat-value {
+        font-size: 1.3rem;
+    }
+
+    .profile-right {
+        flex: 1.2;
+        padding: 40px;
+    }
+
+    .logo {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .logo h1 {
+        color: #2575fc;
+        font-size: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .logo i {
+        margin-right: 10px;
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .form-header h2 {
+        color: #333;
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+    }
+
+    .form-header p {
+        color: #666;
+    }
+
+    .profile-tabs {
+        display: flex;
+        border-bottom: 2px solid #e1e5ee;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .tab {
+        flex: 1;
+        padding: 15px;
+        text-align: center;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #666;
+        position: relative;
+        transition: all 0.3s;
+        min-width: 120px;
+    }
+
+    .tab i {
+        margin-right: 8px;
+    }
+
+    .tab.active {
+        color: #2575fc;
+    }
+
+    .tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+        position: relative;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #555;
+        font-weight: 500;
+    }
+
+    .input-with-icon {
+        position: relative;
+    }
+
+    .input-with-icon i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #777;
+    }
+
+    .input-with-icon input,
+    .input-with-icon select,
+    .input-with-icon textarea {
+        width: 100%;
+        padding: 15px 15px 15px 45px;
+        border: 2px solid #e1e5ee;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+
+    .input-with-icon textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .input-with-icon input:focus,
+    .input-with-icon select:focus,
+    .input-with-icon textarea:focus {
+        border-color: #2575fc;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.1);
+    }
+
+    .input-with-icon input.valid {
+        border-color: #28a745;
+    }
+
+    .input-with-icon input.invalid {
+        border-color: #dc3545;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #777;
+        cursor: pointer;
+        font-size: 1rem;
+        padding: 5px;
+        z-index: 10;
+    }
+
+    .password-toggle:hover {
+        color: #2575fc;
+    }
+
+    .password-strength {
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    .strength-bar {
+        flex: 1;
+        height: 6px;
+        background-color: #e1e5ee;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-right: 10px;
+    }
+
+    .strength-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 3px;
+        transition: width 0.3s, background-color 0.3s;
+    }
+
+    .strength-text {
+        font-size: 0.85rem;
+        font-weight: 500;
+        min-width: 70px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .save-btn {
+        flex: 1;
+        padding: 16px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .save-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .cancel-btn {
+        flex: 1;
+        padding: 16px;
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+    }
+
+    .cancel-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+    }
+
+    .save-btn i, .cancel-btn i {
+        margin-right: 10px;
+    }
+
+    .messages {
+        margin-bottom: 25px;
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert i {
+        margin-right: 10px;
+        font-size: 1.2rem;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .alert-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
+    .alert-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+
+    .input-error {
+        color: #dc3545;
+        font-size: 0.85rem;
+        margin-top: 5px;
+        display: none;
+    }
+
+    .verification-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-left: 10px;
+    }
+
+    .verified {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .not-verified {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .stores-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #e1e5ee;
+        border-radius: 10px;
+        padding: 15px;
+    }
+
+    .store-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #e1e5ee;
+        transition: background-color 0.3s;
+    }
+
+    .store-item:last-child {
+        border-bottom: none;
+    }
+
+    .store-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .store-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+    }
+
+    .store-icon i {
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .store-info {
+        flex: 1;
+    }
+
+    .store-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .store-details {
+        font-size: 0.85rem;
+        color: #666;
+    }
+
+    .store-status {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .status-active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-inactive {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .action-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.3s;
+        text-decoration: none;
+        color: #333;
+    }
+
+    .action-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .action-card i {
+        font-size: 2rem;
+        color: #2575fc;
+        margin-bottom: 10px;
+    }
+
+    .action-card h4 {
+        font-size: 1rem;
+        margin-bottom: 5px;
+    }
+
+    .action-card p {
+        font-size: 0.8rem;
+        color: #666;
+    }
+
+    .delete-section {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #e1e5ee;
+        text-align: center;
+    }
+
+    .delete-btn {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+
+    .delete-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+    }
+
+    /* Responsive design */
+    @media (max-width: 900px) {
+        .profile-container {
+            flex-direction: column;
+            max-width: 600px;
+        }
+        
+        .profile-left {
+            padding: 30px;
+        }
+        
+        .profile-right {
+            padding: 30px;
+        }
+        
+        .stat-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .profile-left, .profile-right {
+            padding: 20px;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+        }
+        
+        .profile-name {
+            font-size: 1.5rem;
+        }
+        
+        .form-header h2 {
+            font-size: 1.5rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .stat-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .profile-tabs {
+            flex-direction: column;
+        }
+        
+        .tab {
+            width: 100%;
+        }
+        
+        .tab.active::after {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Left side with profile summary -->
+    <div class="profile-left">
+        <div class="profile-header">
+            <div class="profile-avatar" onclick="document.getElementById('avatar-upload').click()">
+                <i class="fas fa-user-circle"></i>
+                <!-- <img src="{% if user.profile.avatar %}{{ user.profile.avatar.url }}{% endif %}" alt="Profile Picture"> -->
+                <div class="avatar-overlay">
+                    <i class="fas fa-camera"></i> Change
+                </div>
+            </div>
+            <form id="avatar-form" method="post" action="{% url 'update_avatar' %}" enctype="multipart/form-data" style="display: none;">
+                {% csrf_token %}
+                <input type="file" id="avatar-upload" name="avatar" accept="image/*" onchange="uploadAvatar(this)">
+            </form>
+            
+            <div class="profile-name">{{ user.get_full_name|default:user.username }}</div>
+            <div class="profile-email">{{ user.email }}</div>
+            <div class="profile-type">
+                <i class="fas fa-{% if account_type == 'store_owner' %}store{% else %}user{% endif %}"></i>
+                {{ account_type|title }}
+            </div>
+        </div>
+
+        <div class="profile-stats">
+            <div class="stat-item">
+                <div class="stat-value">{{ total_orders|default:0 }}</div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+            
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="stat-value">{{ active_orders|default:0 }}</div>
+                    <div class="stat-label">Active</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ completed_orders|default:0 }}</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+            </div>
+            
+            {% if account_type == 'store_owner' and stores %}
+            <div style="margin-top: 20px;">
+                <h4 style="color: white; margin-bottom: 15px;">Your Stores</h4>
+                <div class="stores-list" style="background: rgba(255,255,255,0.1);">
+                    {% for store in stores %}
+                    <div class="store-item" style="border-bottom-color: rgba(255,255,255,0.2);">
+                        <div class="store-icon" style="background: rgba(255,255,255,0.2);">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <div class="store-info">
+                            <div class="store-name" style="color: white;">{{ store.store_name }}</div>
+                            <div class="store-details" style="color: rgba(255,255,255,0.7);">
+                                {{ store.city }} • {{ store.get_store_type_display }}
+                            </div>
+                        </div>
+                        <span class="store-status status-active">Active</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right side with profile update forms -->
+    <div class="profile-right">
+        <div class="logo">
+            <h1><i class="fas fa-user-edit"></i> YourApp</h1>
+        </div>
+        
+        <div class="form-header">
+            <h2>Edit Profile</h2>
+            <p>Update your information and fix any registration mistakes</p>
+        </div>
+
+        <!-- Django messages -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }}">
+                {% if message.tags == 'success' %}
+                <i class="fas fa-check-circle"></i>
+                {% elif message.tags == 'error' %}
+                <i class="fas fa-exclamation-circle"></i>
+                {% elif message.tags == 'warning' %}
+                <i class="fas fa-exclamation-triangle"></i>
+                {% else %}
+                <i class="fas fa-info-circle"></i>
+                {% endif %}
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Profile tabs -->
+        <div class="profile-tabs">
+            <button class="tab active" onclick="showTab('personal')">
+                <i class="fas fa-user"></i> Personal Info
+            </button>
+            <button class="tab" onclick="showTab('account')">
+                <i class="fas fa-lock"></i> Account Settings
+            </button>
+            {% if account_type == 'store_owner' %}
+            <button class="tab" onclick="showTab('stores')">
+                <i class="fas fa-store"></i> My Stores
+            </button>
+            {% endif %}
+            <button class="tab" onclick="showTab('preferences')">
+                <i class="fas fa-cog"></i> Preferences
+            </button>
+        </div>
+
+        <!-- Personal Information Tab -->
+        <div id="personal-tab" class="tab-content active">
+            <form action="{% url 'update_profile' %}" method="post" id="personalInfoForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="username">Username *</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="username" name="username" value="{{ user.username }}" placeholder="Choose a username" required>
+                    </div>
+                    <div class="input-error" id="username-error">Username must be 3-20 characters and can contain letters, numbers, and underscores</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="first_name">First Name</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" id="first_name" name="first_name" value="{{ user.first_name }}" placeholder="Enter your first name">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" id="last_name" name="last_name" value="{{ user.last_name }}" placeholder="Enter your last name">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" name="email" value="{{ user.email }}" placeholder="Enter your email" required>
+                    </div>
+                    <div class="input-error" id="email-error">Please enter a valid email address</div>
+                    <small class="form-text text-muted">
+                        <span class="verification-badge {% if user.email %}verified{% else %}not-verified{% endif %}">
+                            {% if user.email %}✓ Verified{% else %}! Not Verified{% endif %}
+                        </span>
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" id="phone" name="phone" value="{{ user.profile.phone|default:'' }}" placeholder="Enter your phone number">
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="save-btn">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <a href="{% url 'customer_dashboard' %}" class="cancel-btn">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Account Settings Tab -->
+        <div id="account-tab" class="tab-content">
+            <form action="{% url 'update_account' %}" method="post" id="accountSettingsForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="account_type">Account Type *</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user-tag"></i>
+                        <select id="account_type" name="account_type" required>
+                            <option value="customer" {% if account_type == 'customer' %}selected{% endif %}>Customer</option>
+                            <option value="store_owner" {% if account_type == 'store_owner' %}selected{% endif %}>Store Owner</option>
+                        </select>
+                    </div>
+                    <small class="form-text text-muted">Changing account type may affect your permissions</small>
+                </div>
+
+                <h3 style="margin: 30px 0 20px; color: #333;">Change Password</h3>
+
+                <div class="form-group">
+                    <label for="current_password">Current Password</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="current_password" name="current_password" placeholder="Enter current password">
+                        <button type="button" class="password-toggle" onclick="togglePassword('current_password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="new_password">New Password</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-key"></i>
+                        <input type="password" id="new_password" name="new_password" placeholder="Leave blank to keep current">
+                        <button type="button" class="password-toggle" onclick="togglePassword('new_password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="password-strength">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthFill"></div>
+                        </div>
+                        <div class="strength-text" id="strengthText"></div>
+                    </div>
+                    <div class="input-error" id="new-password-error">Password must be at least 8 characters with uppercase, lowercase, and number</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_new_password">Confirm New Password</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="confirm_new_password" name="confirm_new_password" placeholder="Confirm new password">
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirm_new_password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="input-error" id="confirm-password-error">Passwords do not match</div>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="save-btn">
+                        <i class="fas fa-save"></i> Update Account
+                    </button>
+                    <a href="{% url 'customer_dashboard' %}" class="cancel-btn">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Stores Tab (for store owners) -->
+        {% if account_type == 'store_owner' %}
+        <div id="stores-tab" class="tab-content">
+            <div style="margin-bottom: 30px;">
+                <h3 style="margin-bottom: 15px;">Your Stores</h3>
+                <p style="color: #666; margin-bottom: 20px;">Manage your stores and fix any registration mistakes</p>
+                
+                {% if stores %}
+                    <div class="stores-list">
+                        {% for store in stores %}
+                        <div class="store-item">
+                            <div class="store-icon">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <div class="store-info">
+                                <div class="store-name">{{ store.store_name }}</div>
+                                <div class="store-details">
+                                    <i class="fas fa-map-marker-alt"></i> {{ store.city }} • 
+                                    <i class="fas fa-phone"></i> {{ store.phone|default:'No phone' }} • 
+                                    <i class="fas fa-tag"></i> {{ store.get_store_type_display }}
+                                </div>
+                                {% if store.store_description %}
+                                <div class="store-details" style="margin-top: 5px;">
+                                    <i class="fas fa-align-left"></i> {{ store.store_description|truncatechars:100 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <a href="{% url 'edit_store' store.id %}" class="save-btn" style="padding: 8px 15px; font-size: 0.9rem;">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <button onclick="confirmDeleteStore({{ store.id }})" class="cancel-btn" style="padding: 8px 15px; font-size: 0.9rem;">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div style="margin-top: 30px;">
+                        <a href="{% url 'store_registration' %}" class="save-btn" style="display: inline-block; width: auto; padding: 12px 25px;">
+                            <i class="fas fa-plus-circle"></i> Register New Store
+                        </a>
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 10px;">
+                        <i class="fas fa-store" style="font-size: 3rem; color: #ccc; margin-bottom: 15px;"></i>
+                        <h4 style="margin-bottom: 10px;">No Stores Yet</h4>
+                        <p style="color: #666; margin-bottom: 20px;">You haven't registered any stores yet.</p>
+                        <a href="{% url 'store_registration' %}" class="save-btn" style="display: inline-block; width: auto; padding: 12px 25px;">
+                            <i class="fas fa-plus-circle"></i> Register Your First Store
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Preferences Tab -->
+        <div id="preferences-tab" class="tab-content">
+            <form action="{% url 'update_preferences' %}" method="post" id="preferencesForm">
+                {% csrf_token %}
+                
+                <h3 style="margin-bottom: 20px; color: #333;">Notification Preferences</h3>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="email_notifications" name="email_notifications" {% if preferences.email_notifications %}checked{% endif %}>
+                    <label for="email_notifications" style="margin-bottom: 0;">Receive email notifications</label>
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="order_updates" name="order_updates" {% if preferences.order_updates %}checked{% endif %}>
+                    <label for="order_updates" style="margin-bottom: 0;">Receive order status updates</label>
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="promotional_emails" name="promotional_emails" {% if preferences.promotional_emails %}checked{% endif %}>
+                    <label for="promotional_emails" style="margin-bottom: 0;">Receive promotional emails</label>
+                </div>
+
+                <h3 style="margin: 30px 0 20px; color: #333;">Privacy Settings</h3>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="profile_public" name="profile_public" {% if preferences.profile_public %}checked{% endif %}>
+                    <label for="profile_public" style="margin-bottom: 0;">Make my profile public</label>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="save-btn">
+                        <i class="fas fa-save"></i> Save Preferences
+                    </button>
+                    <a href="{% url 'customer_dashboard' %}" class="cancel-btn">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="{% url 'order_history' %}" class="action-card">
+                <i class="fas fa-shopping-bag"></i>
+                <h4>My Orders</h4>
+                <p>View order history</p>
+            </a>
+            
+            <a href="{% url 'wishlist' %}" class="action-card">
+                <i class="fas fa-heart"></i>
+                <h4>Wishlist</h4>
+                <p>{{ wishlist_count|default:0 }} items saved</p>
+            </a>
+            
+            {% if account_type == 'store_owner' %}
+            <a href="{% url 'store_dashboard' %}" class="action-card">
+                <i class="fas fa-chart-line"></i>
+                <h4>Store Dashboard</h4>
+                <p>Manage your store</p>
+            </a>
+            {% endif %}
+            
+            <a href="{% url 'customer_dashboard' %}" class="action-card">
+                <i class="fas fa-home"></i>
+                <h4>Browse Books</h4>
+                <p>Discover new books</p>
+            </a>
+        </div>
+
+        <!-- Delete Account Section -->
+        <div class="delete-section">
+            <form action="{% url 'delete_account' %}" method="post" onsubmit="return confirmDeleteAccount()">
+                {% csrf_token %}
+                <button type="submit" class="delete-btn">
+                    <i class="fas fa-trash-alt"></i> Delete Account
+                </button>
+                <p style="color: #999; font-size: 0.85rem; margin-top: 10px;">
+                    This action cannot be undone. All your data will be permanently removed.
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Tab switching functionality
+    function showTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // Deactivate all tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Show selected tab content
+        document.getElementById(tabName + '-tab').classList.add('active');
+        
+        // Activate clicked tab
+        event.target.classList.add('active');
+    }
+
+    // Password visibility toggle
+    function togglePassword(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    // Password strength meter
+    const newPassword = document.getElementById('new_password');
+    if (newPassword) {
+        newPassword.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+            
+            // Length check
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
+            
+            // Character type checks
+            if (/[a-z]/.test(password)) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+            
+            // Update strength meter
+            const percentage = Math.min((strength / 6) * 100, 100);
+            const strengthFill = document.getElementById('strengthFill');
+            const strengthText = document.getElementById('strengthText');
+            
+            if (strengthFill && strengthText) {
+                strengthFill.style.width = `${percentage}%`;
+                
+                if (password.length === 0) {
+                    strengthText.textContent = '';
+                    strengthFill.style.backgroundColor = '#e1e5ee';
+                } else if (strength <= 2) {
+                    strengthText.textContent = 'Weak';
+                    strengthFill.style.backgroundColor = '#dc3545';
+                } else if (strength <= 4) {
+                    strengthText.textContent = 'Fair';
+                    strengthFill.style.backgroundColor = '#ffc107';
+                } else {
+                    strengthText.textContent = 'Strong';
+                    strengthFill.style.backgroundColor = '#28a745';
+                }
+            }
+        });
+    }
+
+    // Form validation for personal info
+    const personalForm = document.getElementById('personalInfoForm');
+    if (personalForm) {
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        
+        const usernameError = document.getElementById('username-error');
+        const emailError = document.getElementById('email-error');
+
+        function validateUsername() {
+            const username = usernameInput.value.trim();
+            const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+            
+            if (!usernameRegex.test(username)) {
+                usernameError.style.display = 'block';
+                usernameInput.classList.add('invalid');
+                usernameInput.classList.remove('valid');
+                return false;
+            } else {
+                usernameError.style.display = 'none';
+                usernameInput.classList.remove('invalid');
+                usernameInput.classList.add('valid');
+                return true;
+            }
+        }
+
+        function validateEmail() {
+            const email = emailInput.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!emailRegex.test(email)) {
+                emailError.style.display = 'block';
+                emailInput.classList.add('invalid');
+                emailInput.classList.remove('valid');
+                return false;
+            } else {
+                emailError.style.display = 'none';
+                emailInput.classList.remove('invalid');
+                emailInput.classList.add('valid');
+                return true;
+            }
+        }
+
+        usernameInput.addEventListener('input', validateUsername);
+        emailInput.addEventListener('input', validateEmail);
+
+        personalForm.addEventListener('submit', function(e) {
+            const isUsernameValid = validateUsername();
+            const isEmailValid = validateEmail();
+            
+            if (!isUsernameValid || !isEmailValid) {
+                e.preventDefault();
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = this.querySelector('.save-btn');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitBtn.disabled = true;
+        });
+    }
+
+    // Account settings form validation
+    const accountForm = document.getElementById('accountSettingsForm');
+    if (accountForm) {
+        const newPassword = document.getElementById('new_password');
+        const confirmPassword = document.getElementById('confirm_new_password');
+        
+        if (newPassword && confirmPassword) {
+            function validatePassword() {
+                const password = newPassword.value;
+                if (password.length > 0) {
+                    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+                    if (!passwordRegex.test(password)) {
+                        document.getElementById('new-password-error').style.display = 'block';
+                        newPassword.classList.add('invalid');
+                        return false;
+                    } else {
+                        document.getElementById('new-password-error').style.display = 'none';
+                        newPassword.classList.remove('invalid');
+                        newPassword.classList.add('valid');
+                        return true;
+                    }
+                }
+                return true; // Password is optional for update
+            }
+
+            function validatePasswordMatch() {
+                if (newPassword.value.length > 0 || confirmPassword.value.length > 0) {
+                    if (newPassword.value !== confirmPassword.value) {
+                        document.getElementById('confirm-password-error').style.display = 'block';
+                        confirmPassword.classList.add('invalid');
+                        return false;
+                    } else {
+                        document.getElementById('confirm-password-error').style.display = 'none';
+                        confirmPassword.classList.remove('invalid');
+                        confirmPassword.classList.add('valid');
+                        return true;
+                    }
+                }
+                return true;
+            }
+
+            newPassword.addEventListener('input', function() {
+                validatePassword();
+                validatePasswordMatch();
+            });
+            
+            confirmPassword.addEventListener('input', validatePasswordMatch);
+        }
+
+        accountForm.addEventListener('submit', function(e) {
+            const currentPassword = document.getElementById('current_password');
+            
+            if (newPassword && newPassword.value.length > 0 && !currentPassword.value.trim()) {
+                e.preventDefault();
+                alert('Please enter your current password to change your password');
+                return;
+            }
+            
+            if (newPassword && newPassword.value.length > 0) {
+                const isPasswordValid = validatePassword();
+                const isMatchValid = validatePasswordMatch();
+                
+                if (!isPasswordValid || !isMatchValid) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+            
+            // Show loading state
+            const submitBtn = this.querySelector('.save-btn');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+            submitBtn.disabled = true;
+        });
+    }
+
+    // Auto-hide messages after 5 seconds
+    setTimeout(function() {
+        const messages = document.querySelectorAll('.alert');
+        messages.forEach(message => {
+            message.style.opacity = '0';
+            message.style.transition = 'opacity 0.5s';
+            setTimeout(() => message.remove(), 500);
+        });
+    }, 5000);
+
+    // Avatar upload
+    function uploadAvatar(input) {
+        if (input.files && input.files[0]) {
+            const formData = new FormData();
+            formData.append('avatar', input.files[0]);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            
+            fetch('{% url "update_avatar" %}', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update avatar preview
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const avatarDiv = document.querySelector('.profile-avatar');
+                        avatarDiv.innerHTML = `<img src="${e.target.result}" alt="Profile Picture"><div class="avatar-overlay"><i class="fas fa-camera"></i> Change</div>`;
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                    
+                    // Show success message
+                    const messagesDiv = document.querySelector('.messages');
+                    if (messagesDiv) {
+                        messagesDiv.innerHTML = `
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i> Profile picture updated successfully!
+                            </div>
+                        `;
+                    }
+                } else {
+                    alert('Error uploading avatar: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error uploading avatar');
+            });
+        }
+    }
+
+    // Confirm store deletion
+    function confirmDeleteStore(storeId) {
+        if (confirm('Are you sure you want to delete this store? This action cannot be undone.')) {
+            // Create a form and submit it
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/store/delete/${storeId}/`;
+            
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = '{{ csrf_token }}';
+            
+            form.appendChild(csrfInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    // Confirm account deletion
+    function confirmDeleteAccount() {
+        return confirm('Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.');
+    }
+</script>
+{% endblock %}

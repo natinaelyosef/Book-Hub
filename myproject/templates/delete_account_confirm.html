@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Account | Your Application{% endblock %}
+
+{% block content %}
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); padding: 20px;">
+    <div style="background: white; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); padding: 40px; max-width: 500px; width: 100%;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: #dc3545; margin-bottom: 20px;"></i>
+            <h2 style="color: #333; margin-bottom: 10px;">Delete Account</h2>
+            <p style="color: #666;">This action cannot be undone</p>
+        </div>
+
+        <div style="background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 10px; padding: 20px; margin-bottom: 30px;">
+            <h4 style="color: #721c24; margin-bottom: 10px;">⚠️ Warning</h4>
+            <p style="color: #721c24; margin-bottom: 0;">
+                Deleting your account will permanently remove:
+            </p>
+            <ul style="color: #721c24; margin-top: 10px; margin-left: 20px;">
+                <li>Your profile information</li>
+                <li>Order history</li>
+                <li>Wishlist items</li>
+                <li>Store information (if you're a store owner)</li>
+                <li>All associated data</li>
+            </ul>
+        </div>
+
+        <form method="post" action="{% url 'delete_account' %}">
+            {% csrf_token %}
+            <div style="display: flex; gap: 15px;">
+                <a href="{% url 'profile' %}" class="save-btn" style="flex: 1; background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%); text-align: center; text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Cancel
+                </a>
+                <button type="submit" class="save-btn" style="flex: 1; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                    <i class="fas fa-trash-alt"></i> Delete Permanently
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .save-btn {
+        padding: 16px;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .save-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    .save-btn i {
+        margin-right: 10px;
+    }
+</style>
+{% endblock %}

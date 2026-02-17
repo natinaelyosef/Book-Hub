@@ -269,7 +269,7 @@
                 <i class="bi bi-shop me-2"></i>
                 <span>My Book Store</span>
             </a>
-
+<!--
             <div class="d-none d-lg-flex align-items-center ms-4">
                 <a href="{% url 'store_dashboard' %}" class="header-nav-item {% if request.resolver_match.url_name == 'store_dashboard' %}active{% endif %}">
                     <span>Analytics</span>
@@ -283,7 +283,7 @@
                 <a href="{% url 'customer_profile' %}" class="header-nav-item {% if request.resolver_match.url_name == 'customer_profile' %}active{% endif %}">
                     <span>Account</span>
                 </a>
-            </div>
+            </div>-->
 
             <div class="d-flex align-items-center ms-auto">
                 <div class="me-4 d-none d-md-block">
@@ -322,17 +322,56 @@
                     </ul>
                 </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 <div class="dropdown">
                     <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
                         <img src="https://ui-avatars.com/api/?name={{ account_owner|default:request.user.username|urlencode }}&background=4361ee&color=fff&size=128" alt="User" class="nav-user-img me-2">
                         <span class="d-none d-md-inline">{{ account_owner|default:request.user.username }}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="{% url 'customer_profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                     </ul>
                 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             </div>
         </div>
     </nav>

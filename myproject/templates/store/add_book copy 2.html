@@ -1,0 +1,189 @@
+{% extends "store/dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8"></div>
+<div class="container mx-auto px-4 py-8">
+
+<div class="min-h-screen bg-gray-100 py-10">
+<div class="max-w-6xl mx-auto px-6">
+
+    <!-- HEADER -->
+    <div class="mb-10">
+        <h1 class="text-4xl font-bold text-gray-800 tracking-tight">
+            Add Book to Inventory
+        </h1>
+        <p class="text-gray-500 mt-2">Manage your bookstore catalog professionally</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-10"  action="{% url 'add_book_registration' %}">
+        {% csrf_token %}
+
+        <!-- SECTION CARD STYLE -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-8 space-y-6">
+            <h2 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
+                📘 Book Information
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-1">
+                    <label class="text-sm font-medium text-gray-600">Title *</label>
+                    <input type="text" name="title" required
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 
+                        focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition form-control" placeholder="enter name of title">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-sm font-medium text-gray-600">Author *</label>
+                    <input type="text" name="author" required
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 
+                        focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition form-control" placeholder="enter author name">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-sm font-medium text-gray-600">Genre *</label>
+                    <select name="genre" required
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 
+                        focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        <option value="">Select Genre</option>
+                        <option value="fiction">Fiction</option>
+                        <option value="non-fiction">Non-Fiction</option>
+                        <option value="sci-fi">Science Fiction</option>
+                        <option value="fantasy">Fantasy</option>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-sm font-medium text-gray-600">Publication Year</label>
+                    <input type="number" name="publication_year"
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 
+                        focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                </div>
+            </div>
+        </div>
+
+        <!-- INVENTORY -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-8 space-y-6">
+            <h2 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
+                📦 Inventory Details
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <input type="number" name="total_copies" required placeholder="Total Copies"
+                    class="px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 transition">
+
+                <input type="number" name="available_rent" required placeholder="Available for Rent"
+                    class="px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 transition">
+
+                <input type="number" name="available_sale" required placeholder="Available for Sale"
+                    class="px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 transition">
+            </div>
+        </div>
+
+        <!-- PRICING -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-8 space-y-6">
+            <h2 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
+                💰 Pricing
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="relative">
+                    <span class="absolute left-4 top-3 text-gray-400">$</span>
+                    <input type="number" name="rental_price" required step="0.01"
+                        class="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-300 form-control
+                        focus:ring-2 focus:ring-blue-500 transition"
+                        placeholder="Rental Price">
+                </div>
+
+                <div class="relative">
+                    <span class="absolute left-4 top-3 text-gray-400">$</span>
+                    <input type="number" name="sale_price" required step="0.01"
+                        class="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-300 
+                        focus:ring-2 focus:ring-blue-500 transition"
+                        placeholder="Sale Price">
+                </div>
+            </div>
+        </div>
+
+        <!-- STICKY ACTION BAR -->
+        <div class="sticky bottom-0  border-t border-gray-200 p-6 flex justify-end gap-4 rounded-b-2xl shadow-lg">
+            <button type="button"
+                onclick="window.history.back()"
+                class="px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-100 transition btn btn-danger">
+                Cancel
+            </button>
+
+            <button type="submit" name="save_and_add"
+                class="px-6 py-3 rounded-xl bg-green-600 text-white hover:bg-green-700 shadow-md transition btn btn-warning">
+                Save & Add Another
+            </button>
+
+            <button type="submit" name="save_and_close"
+                class="px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-md transition btn btn-primary">
+                Save & Close
+            </button>
+        </div>
+
+    </form>
+</div>
+</div>
+
+</div>
+
+<!-- EXISTING SCRIPT -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tagInput = document.getElementById('tagInput');
+        const tagsHidden = document.getElementById('tagsHidden');
+        let tags = [];
+        
+        tagInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const tag = tagInput.value.trim();
+                if (tag && !tags.includes(tag)) {
+                    tags.push(tag);
+                    updateTagsDisplay();
+                    updateHiddenInput();
+                    tagInput.value = '';
+                }
+            }
+        });
+        
+        function updateTagsDisplay() {
+            const container = document.querySelector('.flex-wrap');
+            container.innerHTML = tags.map(tag => 
+                `<span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm cursor-pointer remove-tag" data-tag="${tag}">${tag} ×</span>`
+            ).join('');
+            
+            document.querySelectorAll('.remove-tag').forEach(span => {
+                span.addEventListener('click', function() {
+                    const tagToRemove = this.getAttribute('data-tag');
+                    tags = tags.filter(t => t !== tagToRemove);
+                    updateTagsDisplay();
+                    updateHiddenInput();
+                });
+            });
+        }
+        
+        function updateHiddenInput() {
+            tagsHidden.value = tags.join(',');
+        }
+    });
+</script>
+
+<style>
+    .border-2 { border-width: 2px; }
+    .border-dashed { border-style: dashed; }
+</style>
+
+<!-- ✅ ADDED ALERT MESSAGE BLOCK -->
+{% if messages %}
+<script>
+    {% for message in messages %}
+        alert("{{ message }}");
+    {% endfor %}
+</script>
+{% endif %}
+
+{% endblock %}
