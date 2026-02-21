@@ -4,7 +4,7 @@ from django.http import HttpResponse, JsonResponse
 import json
 from decimal import Decimal
 from django.contrib.auth.models import User, Group
-from .models import Features, Store, Book, Order, OrderItem, Delivery, CustomerReview, Wishlist
+from .models import Features, Store, Book, Order, OrderItem, Delivery, CustomerReview, Wishlist, Conversation, Message
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
@@ -55,7 +55,7 @@ def can_manage_order(user, order):
         return False
     if user.is_superuser:
         return True
-    return get_managed_stores(user).filter(id=order.store_id).exists()
+    return get_managed_stores(user).filter(id=order.id).exists()
 
 
 STORE_OWNER_GROUP = "store_owner"
@@ -2347,3 +2347,383 @@ def quick_search(request):
         results = []
     
     return JsonResponse({'results': results})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from django.utils import timezone
+from django.db.models import Q, Count
+from django.db import IntegrityError
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+import json
+
+# Chat Views
+@login_required
+def start_or_get_conversation(request, store_id, book_id=None):
+    """Start a new conversation or get existing one"""
+    store = get_object_or_404(Store, id=store_id)
+    book = None
+    if book_id:
+        book = get_object_or_404(Book, id=book_id, store=store)
+    
+    # Try to get existing conversation
+    conversation = Conversation.objects.filter(
+        customer=request.user,
+        store=store,
+        book=book
+    ).first()
+    
+    # Create new if doesn't exist
+    if not conversation:
+        conversation = Conversation.objects.create(
+            customer=request.user,
+            store=store,
+            book=book
+        )
+    
+    return redirect('chat_room', conversation_id=conversation.id)
+
+
+@login_required
+def chat_room(request, conversation_id):
+    """Display chat room for a conversation"""
+    conversation = get_object_or_404(
+        Conversation.objects.select_related('customer', 'store', 'book'),
+        id=conversation_id
+    )
+    
+    # Check if user is part of this conversation
+    is_customer = conversation.customer == request.user
+    is_store_owner = can_manage_order(request.user, conversation.store)
+    
+    if not (is_customer or is_store_owner):
+        messages.error(request, "You don't have permission to view this chat.")
+        if get_account_type(request.user) == STORE_OWNER_GROUP:
+            return redirect('store_chat_list')
+        return redirect('customer_dashboard')
+    
+    # Mark messages as read
+    if is_customer:
+        conversation.messages.exclude(sender=request.user).update(is_read=True)
+    elif is_store_owner:
+        conversation.messages.exclude(sender=request.user).update(is_read=True)
+    
+    # Get messages
+    messages_list = conversation.messages.all()
+    
+    # Get other conversations for sidebar (for store owners)
+    other_conversations = []
+    if is_store_owner:
+        other_conversations = Conversation.objects.filter(
+            store=conversation.store
+        ).exclude(id=conversation_id).select_related('customer', 'book')[:10]
+    
+    # Get unread counts
+    unread_counts = {}
+    if is_store_owner:
+        for conv in other_conversations:
+            unread_counts[conv.id] = conv.messages.filter(is_read=False).exclude(sender=request.user).count()
+    
+    context = {
+        'conversation': conversation,
+        'messages': messages_list,
+        'other_conversations': other_conversations,
+        'unread_counts': unread_counts,
+        'is_customer': is_customer,
+        'is_store_owner': is_store_owner,
+        'store': conversation.store,
+        'book': conversation.book,
+    }
+    
+    template_name = 'customer/chat_room.html' if is_customer else 'store/chat_detail.html'
+    return render(request, template_name, context)
+
+
+@login_required
+@require_POST
+def send_message(request, conversation_id):
+    """Send a message (AJAX)"""
+    conversation = get_object_or_404(Conversation, id=conversation_id)
+    
+    # Check permission
+    is_customer = conversation.customer == request.user
+    is_store_owner = can_manage_order(request.user, conversation.store)
+    
+    if not (is_customer or is_store_owner):
+        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        content = data.get('content', '').strip()
+        
+        if not content:
+            return JsonResponse({'success': False, 'error': 'Message cannot be empty'})
+        
+        message = Message.objects.create(
+            conversation=conversation,
+            sender=request.user,
+            content=content
+        )
+        
+        # Update conversation timestamp
+        conversation.save()  # This will update auto_now field
+        
+        return JsonResponse({
+            'success': True,
+            'message': {
+                'id': message.id,
+                'content': message.content,
+                'timestamp': message.timestamp.isoformat(),
+                'formatted_time': message.formatted_time(),
+                'sender': message.sender.username,
+                'is_me': True
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@login_required
+@require_POST
+def mark_messages_read(request, conversation_id):
+    """Mark all messages in conversation as read"""
+    conversation = get_object_or_404(Conversation, id=conversation_id)
+    
+    # Check permission
+    is_customer = conversation.customer == request.user
+    is_store_owner = can_manage_order(request.user, conversation.store)
+    
+    if not (is_customer or is_store_owner):
+        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+    
+    conversation.messages.exclude(sender=request.user).update(is_read=True)
+    
+    return JsonResponse({'success': True})
+
+
+@login_required
+def get_unread_count(request):
+    """Get total unread messages count for current user"""
+    if get_account_type(request.user) == STORE_OWNER_GROUP:
+        # Store owner: count unread messages from all conversations
+        stores = get_managed_stores(request.user)
+        conversations = Conversation.objects.filter(store__in=stores)
+        unread_count = Message.objects.filter(
+            conversation__in=conversations,
+            is_read=False
+        ).exclude(sender=request.user).count()
+    else:
+        # Customer: count unread messages from all conversations
+        conversations = Conversation.objects.filter(customer=request.user)
+        unread_count = Message.objects.filter(
+            conversation__in=conversations,
+            is_read=False
+        ).exclude(sender=request.user).count()
+    
+    return JsonResponse({'unread_count': unread_count})
+
+
+@login_required
+def delete_conversation(request, conversation_id):
+    """Delete a conversation"""
+    conversation = get_object_or_404(Conversation, id=conversation_id)
+    
+    # Check permission
+    is_customer = conversation.customer == request.user
+    is_store_owner = can_manage_order(request.user, conversation.store)
+    
+    if not (is_customer or is_store_owner):
+        messages.error(request, "You don't have permission to delete this conversation.")
+        return redirect('customer_dashboard')
+    
+    if request.method == 'POST':
+        conversation.delete()
+        messages.success(request, "Conversation deleted successfully.")
+        
+        if is_store_owner:
+            return redirect('store_chat_list')
+        return redirect('customer_dashboard')
+    
+    return render(request, 'chat/delete_confirm.html', {'conversation': conversation})
+
+
+# Store Owner Chat Management
+@login_required
+def store_chat_list(request):
+    """Display list of all conversations for a store owner"""
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
+    
+    stores = get_managed_stores(request.user)
+    if not stores.exists():
+        messages.info(request, "You don't have any stores yet.")
+        return redirect('store_dashboard')
+    
+    # Get all conversations for these stores
+    conversations = Conversation.objects.filter(
+        store__in=stores
+    ).select_related('customer', 'book', 'store').order_by('-updated_at')
+    
+    # Search by customer name or book title
+    search_query = request.GET.get('search', '')
+    if search_query:
+        conversations = conversations.filter(
+            Q(customer__username__icontains=search_query) |
+            Q(customer__first_name__icontains=search_query) |
+            Q(customer__last_name__icontains=search_query) |
+            Q(book__title__icontains=search_query)
+        )
+    
+    # Filter by store
+    store_filter = request.GET.get('store', '')
+    if store_filter:
+        conversations = conversations.filter(store_id=store_filter)
+    
+    # Get unread counts for each conversation
+    conversation_data = []
+    for conv in conversations:
+        last_msg = conv.last_message()
+        unread_count = conv.messages.filter(is_read=False).exclude(sender=request.user).count()
+        conversation_data.append({
+            'conversation': conv,
+            'last_message': last_msg,
+            'unread_count': unread_count,
+        })
+    
+    # Get unread count for sidebar badge
+    total_unread = Message.objects.filter(
+        conversation__in=conversations,
+        is_read=False
+    ).exclude(sender=request.user).count()
+    
+    context = {
+        'conversation_data': conversation_data,
+        'stores': stores,
+        'search_query': search_query,
+        'selected_store': store_filter,
+        'total_unread': total_unread,
+    }
+    
+    return render(request, 'store/chats.html', context)
+
+
+@login_required
+def store_chat_detail(request, conversation_id):
+    """Display a single conversation for a store owner"""
+    guard = ensure_store_owner(request)
+    if guard:
+        return guard
+
+    conversation = get_object_or_404(
+        Conversation.objects.select_related('customer', 'store', 'book'),
+        id=conversation_id
+    )
+
+    # Ensure this conversation belongs to one of the owner's managed stores
+    stores = get_managed_stores(request.user)
+    if conversation.store not in stores:
+        messages.error(request, "You don't have permission to view this chat.")
+        return redirect('store_chat_list')
+
+    # Mark messages as read
+    conversation.messages.exclude(sender=request.user).update(is_read=True)
+
+    # Get messages
+    messages_list = conversation.messages.all()
+
+    # Get other conversations for sidebar
+    other_conversations = Conversation.objects.filter(
+        store=conversation.store
+    ).exclude(id=conversation_id).select_related('customer', 'book')[:10]
+
+    # Get unread counts for sidebar
+    unread_counts = {conv.id: conv.messages.filter(is_read=False).exclude(sender=request.user).count() for conv in other_conversations}
+
+    context = {
+        'conversation': conversation,
+        'messages': messages_list,
+        'other_conversations': other_conversations,
+        'unread_counts': unread_counts,
+        'is_store_owner': True,
+        'store': conversation.store,
+        'book': conversation.book,
+    }
+
+    return render(request, 'store/chat_detail.html', context)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@login_required
+def customer_chat_list(request):
+    """Display all conversations for a customer (WhatsApp style)"""
+    # Get all conversations for this customer
+    conversations = Conversation.objects.filter(
+        customer=request.user
+    ).select_related('store', 'book').order_by('-updated_at')
+    
+    # Search
+    search_query = request.GET.get('search', '')
+    if search_query:
+        conversations = conversations.filter(
+            Q(store__store_name__icontains=search_query) |
+            Q(book__title__icontains=search_query) |
+            Q(messages__content__icontains=search_query)
+        ).distinct()
+    
+    # Get unread counts and last messages
+    conversation_data = []
+    for conv in conversations:
+        last_msg = conv.last_message()
+        unread_count = conv.messages.filter(is_read=False).exclude(sender=request.user).count()
+        conversation_data.append({
+            'conversation': conv,
+            'last_message': last_msg,
+            'unread_count': unread_count,
+        })
+    
+    # Get total unread count for badge
+    total_unread = Message.objects.filter(
+        conversation__in=conversations,
+        is_read=False
+    ).exclude(sender=request.user).count()
+    
+    context = {
+        'conversation_data': conversation_data,
+        'search_query': search_query,
+        'total_unread': total_unread,
+    }
+    
+    return render(request, 'customer/chat_list.html', context)

@@ -100,8 +100,24 @@ urlpatterns = [
     path('update-preferences_store_owner/', views.update_preferences_store_owner, name='update_preferences_store_owner'),
     path('update-avatar_store_owner/', views.update_avatar_store_owner, name='update_avatar_store_owner'),
     path('delete-account_store_owner/', views.delete_account_store_owner, name='delete_account_store_owner'),
+    # Chat URLs
+    path('chat/with-store/<int:store_id>/', views.start_or_get_conversation, name='start_conversation'),
+    path('chat/with-store/<int:store_id>/book/<int:book_id>/', views.start_or_get_conversation, name='start_conversation_with_book'),
+    path('chat/<int:conversation_id>/', views.chat_room, name='chat_room'),
+    path('chat/<int:conversation_id>/send/', views.send_message, name='send_message'),
+    path('chat/<int:conversation_id>/mark-read/', views.mark_messages_read, name='mark_messages_read'),
+    path('chat/<int:conversation_id>/delete/', views.delete_conversation, name='delete_conversation'),
+    path('chat/unread-count/', views.get_unread_count, name='unread_count'),
+
+    # Store Owner Chat Management
+    path('store/chats/', views.store_chat_list, name='store_chat_list'),
+    path('store/chats/<int:conversation_id>/', views.store_chat_detail, name='store_chat_detail'),
+    path('customer/chats/', views.customer_chat_list, name='customer_chat_list'),
 ]
 
 # Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+

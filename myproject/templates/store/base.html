@@ -395,6 +395,20 @@
             <span class="badge bg-warning ms-auto">{{ wishlist_count|default:"0" }}</span>
         </a>
 
+
+         <div class="sidebar-heading">Messages Management</div>
+    <!-- In store/dashboard.html, add this to your sidebar navigation -->
+<li class="nav-item">
+    <a class=" sidebar-item active nav-link {% if request.resolver_match.url_name == 'store_chat_list' %}active{% endif %}" 
+       href="{% url 'store_chat_list' %}">
+        <i class="bi bi-chat-dots me-2"></i>
+        Messages
+        {% if total_unread %}
+        <span class="badge bg-danger ms-auto">{{ total_unread }}</span>
+        {% endif %}
+    </a>
+</li>
+
         <div class="sidebar-heading">Store Management</div>
         <a href="{% url 'store_registration' %}" class="sidebar-item {% if request.resolver_match.url_name == 'store_registration' %}active{% endif %}">
             <i class="bi bi-shop"></i>

@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your models here.
 class Features(models.Model):
@@ -247,3 +249,65 @@ class Wishlist(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.book.title}"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Add to your existing models.py
+
+class Conversation(models.Model):
+    """Represents a conversation between a customer and a store"""
+    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='customer_conversations')
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='store_conversations')
+    book = models.ForeignKey(Book, on_delete=models.SET_NULL, null=True, blank=True, related_name='conversations')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('customer', 'store', 'book')  # One conversation per customer-store-book
+        ordering = ['-updated_at']
+    
+    def __str__(self):
+        return f"{self.customer.username} - {self.store.store_name} - {self.book.title if self.book else 'General'}"
+    
+    def last_message(self):
+        return self.messages.order_by('-timestamp').first()
+    
+    def unread_count(self, user):
+        return self.messages.filter(is_read=False).exclude(sender=user).count()
+
+
+class Message(models.Model):
+    """Individual messages within a conversation"""
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_messages')
+    content = models.TextField()
+    is_read = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['timestamp']
+    
+    def __str__(self):
+        return f"{self.sender.username}: {self.content[:50]}"
+    
+    from django.utils import timezone
+    from datetime import timedelta
+    def formatted_time(self):
+        now = timezone.now()
+        if self.timestamp.date() == now.date():
+            return self.timestamp.strftime('%I:%M %p')
+        elif self.timestamp.date() == (now.date() - timedelta(days=1)):
+            return 'Yesterday'
+        else:
+            return self.timestamp.strftime('%b %d, %Y')
