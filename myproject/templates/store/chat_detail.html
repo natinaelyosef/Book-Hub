@@ -1,0 +1,541 @@
+{% extends 'store/base.html' %}
+{% load chat_extras %}
+
+{% block title %}Chat with {{ conversation.customer.username }} - Store Dashboard{% endblock %}
+
+{% block content %}
+<div class="wa-layout">
+    <aside class="wa-sidebar">
+        <div class="wa-sidebar-header">
+            <div>
+                <h5 class="mb-0">Chats</h5>
+                <small>Store Inbox</small>
+            </div>
+            <a href="{% url 'store_chat_list' %}" class="wa-icon-btn" title="Back to all chats">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+        </div>
+
+        <div class="wa-chat-list">
+            <a href="{% url 'store_chat_detail' conversation.id %}" class="wa-chat-item active">
+                <div class="wa-avatar">
+                    {{ conversation.customer.username|first|upper }}
+                </div>
+                <div class="wa-chat-meta">
+                    <div class="wa-chat-top">
+                        <span class="wa-chat-name">{{ conversation.customer.username }}</span>
+                        <span class="wa-chat-time">{{ conversation.updated_at|date:"H:i" }}</span>
+                    </div>
+                    <div class="wa-chat-preview">
+                        {% if book %}
+                        {{ book.title|truncatechars:30 }}
+                        {% else %}
+                        General conversation
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+
+            {% for conv in other_conversations %}
+            <a href="{% url 'store_chat_detail' conv.id %}" class="wa-chat-item">
+                <div class="wa-avatar">
+                    {{ conv.customer.username|first|upper }}
+                </div>
+                <div class="wa-chat-meta">
+                    <div class="wa-chat-top">
+                        <span class="wa-chat-name">{{ conv.customer.username }}</span>
+                        <span class="wa-chat-time">{{ conv.updated_at|date:"H:i" }}</span>
+                    </div>
+                    <div class="wa-chat-preview">
+                        {% if conv.book %}
+                        {{ conv.book.title|truncatechars:30 }}
+                        {% else %}
+                        General conversation
+                        {% endif %}
+                        {% if unread_counts|get_item:conv.id %}
+                        <span class="wa-unread">{{ unread_counts|get_item:conv.id }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <div class="wa-empty-list">No other conversations</div>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <section class="wa-room">
+        <header class="wa-room-header">
+            <div class="wa-room-user">
+                <div class="wa-avatar lg">{{ conversation.customer.username|first|upper }}</div>
+                <div>
+                    <h6 class="mb-0">{{ conversation.customer.username }}</h6>
+                    <small>
+                        {% if conversation.customer.first_name %}
+                        {{ conversation.customer.first_name }} {{ conversation.customer.last_name }}
+                        {% else %}
+                        Customer
+                        {% endif %}
+                        {% if book %} | {{ book.title|truncatechars:50 }}{% endif %}
+                    </small>
+                </div>
+            </div>
+            <div class="wa-room-actions">
+                <a href="{% url 'store_detail' conversation.store.id %}" class="wa-action-link" title="View store">
+                    <i class="bi bi-shop"></i>
+                </a>
+                <a href="{% url 'delete_conversation' conversation.id %}" class="wa-action-link danger" title="Delete conversation" onclick="return confirm('Delete this conversation?')">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+        </header>
+
+        <div class="wa-messages" id="message-area">
+            {% for message in messages %}
+            <div class="wa-message {% if message.sender == request.user %}out{% else %}in{% endif %}">
+                <div class="wa-bubble">
+                    <div class="wa-text">{{ message.content|linebreaksbr }}</div>
+                    <div class="wa-time">
+                        {{ message.timestamp|date:"H:i" }}
+                        {% if message.sender == request.user and message.is_read %}
+                        <i class="bi bi-check2-all read"></i>
+                        {% elif message.sender == request.user %}
+                        <i class="bi bi-check2"></i>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="wa-empty-room">
+                <i class="bi bi-chat-dots"></i>
+                <p>No messages yet. Send the first message.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="wa-input-bar">
+            <form id="message-form" class="wa-form">
+                {% csrf_token %}
+                <input type="text" id="message-input" placeholder="Type a message" autocomplete="off">
+                <button type="submit" id="send-btn">
+                    <i class="bi bi-send"></i>
+                </button>
+            </form>
+        </div>
+    </section>
+</div>
+
+<style>
+.wa-layout {
+    display: flex;
+    height: calc(100vh - 95px);
+    margin: 1rem;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #d1d7db;
+    background: #fff;
+}
+
+.wa-sidebar {
+    width: 360px;
+    border-right: 1px solid #d1d7db;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+.wa-sidebar-header {
+    background: #075e54;
+    color: #fff;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.wa-sidebar-header small {
+    opacity: 0.85;
+}
+
+.wa-icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    text-decoration: none;
+}
+
+.wa-chat-list {
+    overflow-y: auto;
+    flex: 1;
+    background: #fff;
+}
+
+.wa-chat-item {
+    display: flex;
+    gap: 12px;
+    text-decoration: none;
+    color: #111b21;
+    padding: 12px 14px;
+    border-bottom: 1px solid #edf0f2;
+    transition: background 0.2s ease;
+}
+
+.wa-chat-item:hover {
+    background: #f0f2f5;
+}
+
+.wa-chat-item.active {
+    background: #e9f5f3;
+}
+
+.wa-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #128c7e;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.wa-avatar.lg {
+    width: 46px;
+    height: 46px;
+}
+
+.wa-chat-meta {
+    min-width: 0;
+    flex: 1;
+}
+
+.wa-chat-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.wa-chat-name {
+    font-weight: 600;
+}
+
+.wa-chat-time {
+    font-size: 12px;
+    color: #667781;
+}
+
+.wa-chat-preview {
+    font-size: 13px;
+    color: #667781;
+    margin-top: 3px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.wa-unread {
+    min-width: 20px;
+    height: 20px;
+    border-radius: 20px;
+    background: #25d366;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 0 6px;
+}
+
+.wa-empty-list {
+    padding: 20px 16px;
+    color: #667781;
+    font-size: 14px;
+}
+
+.wa-room {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #efeae2;
+}
+
+.wa-room-header {
+    background: #f0f2f5;
+    border-bottom: 1px solid #d1d7db;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.wa-room-user {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.wa-room-user small {
+    color: #667781;
+}
+
+.wa-room-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.wa-action-link {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    text-decoration: none;
+    color: #54656f;
+    background: #fff;
+    border: 1px solid #dde2e6;
+}
+
+.wa-action-link.danger {
+    color: #c53030;
+}
+
+.wa-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 22px;
+    background-image: url('https://web.whatsapp.com/img/bg-chat-tile-light_04fc847e12db0da419e9a7c06a482dc6.png');
+}
+
+.wa-message {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.wa-message.in {
+    justify-content: flex-start;
+}
+
+.wa-message.out {
+    justify-content: flex-end;
+}
+
+.wa-bubble {
+    max-width: min(72%, 620px);
+    border-radius: 8px;
+    padding: 7px 10px 5px;
+    box-shadow: 0 1px 1px rgba(11, 20, 26, 0.14);
+}
+
+.wa-message.in .wa-bubble {
+    background: #fff;
+}
+
+.wa-message.out .wa-bubble {
+    background: #d9fdd3;
+}
+
+.wa-text {
+    color: #111b21;
+    font-size: 14px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+}
+
+.wa-time {
+    margin-top: 2px;
+    color: #667781;
+    font-size: 11px;
+    text-align: right;
+}
+
+.wa-time .read {
+    color: #53bdeb;
+}
+
+.wa-empty-room {
+    height: 100%;
+    display: grid;
+    place-content: center;
+    text-align: center;
+    color: #667781;
+    gap: 8px;
+}
+
+.wa-empty-room i {
+    font-size: 2.2rem;
+}
+
+.wa-input-bar {
+    background: #f0f2f5;
+    border-top: 1px solid #d1d7db;
+    padding: 10px 14px;
+}
+
+.wa-form {
+    display: flex;
+    gap: 8px;
+}
+
+.wa-form input {
+    flex: 1;
+    border: 1px solid #d1d7db;
+    border-radius: 8px;
+    padding: 10px 12px;
+    outline: none;
+    font-size: 14px;
+}
+
+.wa-form button {
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    color: #fff;
+    background: #075e54;
+}
+
+.wa-form button:disabled {
+    background: #a1a8ad;
+}
+
+@media (max-width: 991px) {
+    .wa-layout {
+        margin: 0.75rem;
+        height: calc(100vh - 88px);
+    }
+
+    .wa-sidebar {
+        display: none;
+    }
+
+    .wa-bubble {
+        max-width: 86%;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageArea = document.getElementById('message-area');
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-btn');
+    const csrfTokenInput = messageForm.querySelector('[name=csrfmiddlewaretoken]');
+    const conversationId = {{ conversation.id }};
+
+    function scrollToBottom() {
+        messageArea.scrollTop = messageArea.scrollHeight;
+    }
+
+    function escapeHtml(value) {
+        return value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function messageTimeLabel(message) {
+        if (message.formatted_time) {
+            return message.formatted_time;
+        }
+        const timestamp = message.timestamp ? new Date(message.timestamp) : new Date();
+        return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function createMessageElement(message) {
+        const safeContent = escapeHtml(message.content || '').replace(/\n/g, '<br>');
+        return `
+            <div class="wa-message out">
+                <div class="wa-bubble">
+                    <div class="wa-text">${safeContent}</div>
+                    <div class="wa-time">
+                        ${messageTimeLabel(message)}
+                        <i class="bi bi-check2"></i>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function setSendState(isSending) {
+        const isEmpty = !messageInput.value.trim();
+        messageInput.disabled = isSending;
+        sendButton.disabled = isSending || isEmpty;
+    }
+
+    async function sendMessage(content) {
+        const response = await fetch(`/chat/${conversationId}/send/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfTokenInput.value
+            },
+            body: JSON.stringify({ content: content })
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.success) {
+            const errorText = data.error || `Request failed (${response.status})`;
+            throw new Error(errorText);
+        }
+
+        return data.message;
+    }
+
+    async function markMessagesRead() {
+        try {
+            await fetch(`/chat/${conversationId}/mark-read/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfTokenInput.value
+                }
+            });
+        } catch (error) {
+            console.error('Failed to mark messages as read', error);
+        }
+    }
+
+    messageInput.addEventListener('input', function() {
+        setSendState(false);
+    });
+
+    messageInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            messageForm.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    messageForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const content = messageInput.value.trim();
+        if (!content) {
+            return;
+        }
+
+        setSendState(true);
+        try {
+            await sendMessage(content);
+            window.location.href = window.location.pathname + window.location.search;
+            return;
+        } catch (error) {
+            alert('Error sending message: ' + error.message);
+        } finally {
+            setSendState(false);
+            messageInput.focus();
+        }
+    });
+
+    scrollToBottom();
+    setSendState(false);
+    markMessagesRead();
+});
+</script>
+{% endblock %}

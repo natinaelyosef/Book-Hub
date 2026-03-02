@@ -1,0 +1,209 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 style="color: #2c3e50; margin-bottom: 30px;">
+        <i class="fas fa-boxes"></i> All Orders ({{ orders.count }})
+    </h1>
+    
+    <!-- Filters -->
+    <div class="filters" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 30px;">
+        <form method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Status:</label>
+                <select name="status" onchange="this.form.submit()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>⏳ Pending</option>
+                    <option value="contacted" {% if status_filter == 'contacted' %}selected{% endif %}>📞 Contacted</option>
+                    <option value="preparing" {% if status_filter == 'preparing' %}selected{% endif %}>📦 Preparing</option>
+                    <option value="ready" {% if status_filter == 'ready' %}selected{% endif %}>📦 Ready</option>
+                    <option value="out_for_delivery" {% if status_filter == 'out_for_delivery' %}selected{% endif %}>🚚 Delivery</option>
+                    <option value="delivered" {% if status_filter == 'delivered' %}selected{% endif %}>✅ Delivered</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>✅ Completed</option>
+                    <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>❌ Cancelled</option>
+                </select>
+            </div>
+            
+            <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Date:</label>
+                <select name="date" onchange="this.form.submit()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    <option value="all" {% if date_filter == 'all' %}selected{% endif %}>All Time</option>
+                    <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                    <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
+                </select>
+            </div>
+            
+            <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Type:</label>
+                <select name="type" onchange="this.form.submit()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    <option value="all" {% if order_type_filter == 'all' %}selected{% endif %}>All Types</option>
+                    <option value="rent" {% if order_type_filter == 'rent' %}selected{% endif %}>○ Rent</option>
+                    <option value="buy" {% if order_type_filter == 'buy' %}selected{% endif %}>○ Buy</option>
+                </select>
+            </div>
+            
+            {% if stores.count > 1 %}
+            <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Store:</label>
+                <select name="store" onchange="this.form.submit()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    <option value="all">All Stores</option>
+                    {% for store in stores %}
+                    <option value="{{ store.id }}" {% if selected_store == store.id|stringformat:'s' %}selected{% endif %}>
+                        {{ store.store_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+    
+    <!-- Orders Table -->
+    <div class="orders-table" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: #2c3e50; color: white;">
+                    <tr>
+                        <th style="padding: 15px; text-align: left;">ID</th>
+                        <th style="padding: 15px; text-align: left;">Customer</th>
+                        <th style="padding: 15px; text-align: left;">Items</th>
+                        <th style="padding: 15px; text-align: left;">Type</th>
+                        <th style="padding: 15px; text-align: left;">Status</th>
+                        <th style="padding: 15px; text-align: left;">Total</th>
+                        <th style="padding: 15px; text-align: left;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr style="border-bottom: 1px solid #ecf0f1;">
+                        <td style="padding: 15px; font-weight: 600; color: #2c3e50;">
+                            {{ order.order_number }}
+                        </td>
+                        <td style="padding: 15px;">
+                            {{ order.customer.username|title }}<br>
+                            <small style="color: #7f8c8d;">{{ order.created_at|date:"M j, g:i A" }}</small>
+                        </td>
+                        <td style="padding: 15px;">
+                            {% for item in order.items.all|slice:":2" %}
+                            {{ item.book.title }}<br>
+                            {% endfor %}
+                            {% if order.items.count > 2 %}
+                            <small style="color: #7f8c8d;">+{{ order.items.count|add:"-2" }} more</small>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 15px;">
+                            {% if order.order_type == 'rent' %}
+                            <span style="background: #e3f2fd; color: #1976d2; padding: 3px 10px; border-radius: 20px; font-size: 0.9rem;">
+                                ○ Rent
+                            </span>
+                            {% else %}
+                            <span style="background: #e8f5e9; color: #388e3c; padding: 3px 10px; border-radius: 20px; font-size: 0.9rem;">
+                                ○ Buy
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 15px;">
+                            <span class="status-badge" style="background: 
+                                {% if order.status == 'pending' %}#fff3cd
+                                {% elif order.status == 'contacted' %}#d1ecf1
+                                {% elif order.status in 'preparing,ready' %}#ffeaa7
+                                {% elif order.status == 'out_for_delivery' %}#cce5ff
+                                {% elif order.status == 'delivered' %}#d4edda
+                                {% elif order.status == 'completed' %}#d4edda
+                                {% else %}#f8d7da{% endif %};
+                                color: 
+                                {% if order.status == 'pending' %}#856404
+                                {% elif order.status == 'contacted' %}#0c5460
+                                {% elif order.status in 'preparing,ready' %}#856404
+                                {% elif order.status == 'out_for_delivery' %}#004085
+                                {% elif order.status == 'delivered' %}#155724
+                                {% elif order.status == 'completed' %}#155724
+                                {% else %}#721c24{% endif %};
+                                padding: 5px 10px; border-radius: 20px; font-weight: 600; font-size: 0.9rem;">
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>
+                        <td style="padding: 15px; font-weight: 600;">
+                            ${{ order.total_amount }}
+                        </td>
+                        <td style="padding: 15px;">
+                            <div style="display: flex; gap: 5px;">
+                                <a href="{% url 'process_order' order.id %}" class="btn-action" style="background: #3498db; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 0.9rem;">
+                                    <i class="fas fa-cog"></i>
+                                </a>
+                                <a href="tel:{{ order.store.phone }}" class="btn-action" style="background: #2ecc71; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 0.9rem;">
+                                    <i class="fas fa-phone"></i>
+                                </a>
+                                <a href="{% url 'process_order' order.id %}" class="btn-action" style="background: #f39c12; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 0.9rem;">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="padding: 50px; text-align: center; color: #7f8c8d;">
+                            <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                            <h3>No orders found</h3>
+                            <p>You don't have any orders matching your criteria.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Bulk Actions -->
+    {% if orders %}
+    <div style="margin-top: 30px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        <h3 style="color: #2c3e50; margin-bottom: 15px;">Bulk Actions</h3>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <button class="btn-bulk" style="background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                <i class="fas fa-envelope"></i> Email All
+            </button>
+            <button class="btn-bulk" style="background: #2ecc71; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                <i class="fas fa-sms"></i> SMS All
+            </button>
+            <button class="btn-bulk" style="background: #9b59b6; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                <i class="fas fa-file-export"></i> Export CSV
+            </button>
+            <button class="btn-bulk" style="background: #f39c12; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                <i class="fas fa-print"></i> Print List
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.btn-action:hover {
+    opacity: 0.8;
+    transform: scale(1.1);
+    transition: all 0.3s;
+}
+
+.btn-bulk:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    transition: all 0.3s;
+}
+
+tr:hover {
+    background-color: #f8f9fa;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Bulk actions
+    const bulkButtons = document.querySelectorAll('.btn-bulk');
+    bulkButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const action = this.textContent.trim();
+            alert(`Bulk action: ${action} (This would process all filtered orders)`);
+        });
+    });
+});
+</script>
+{% endblock %}

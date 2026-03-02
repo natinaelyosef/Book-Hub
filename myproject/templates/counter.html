@@ -1,0 +1,7 @@
+{% load static %}
+<link rel="Stylesheet" href="{% static 'style.css' %}"/>
+
+{% for post in posts %}
+    <p><a href="{% url "post" post %}">post </a></p>
+{% endfor %}
+

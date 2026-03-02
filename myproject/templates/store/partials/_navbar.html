@@ -1,0 +1,131 @@
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container-fluid px-4">
+        <!-- Sidebar Toggle Button -->
+        <button class="btn btn-link text-dark me-3 d-lg-none" id="sidebarToggle">
+            <i class="bi bi-list" style="font-size: 1.5rem;"></i>
+        </button>
+
+        <!-- Brand -->
+        <a class="navbar-brand" href="{% url 'dashboard' %}">
+            <i class="bi bi-shop me-2"></i>
+            <span>🏪 My Book Store</span>
+        </a>
+
+        <!-- Header Navigation -->
+        <div class="d-none d-lg-flex align-items-center ms-4">
+            <a href="#" class="header-nav-item">
+                <span>📊 Analytics</span>
+            </a>
+            <a href="{% url 'store_orders' %}" class="header-nav-item">
+                <span>📦 Orders</span>
+                <span class="badge bg-danger">{{ pending_orders_count|default:"0" }}</span>
+            </a>
+            <a href="#" class="header-nav-item">
+                <span>👥 Customers</span>
+            </a>
+        </div>
+
+        <!-- Navbar Items -->
+        <div class="d-flex align-items-center ms-auto">
+            <!-- Store Name Display -->
+            <div class="me-4 d-none d-md-block">
+                <span class="text-muted">Welcome,</span>
+                <span class="fw-bold ms-1">Admin!</span>
+            </div>
+
+            <!-- Dark Mode Toggle -->
+            <div class="form-check form-switch me-4">
+                <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                <label class="form-check-label" for="darkModeToggle">
+                    <i class="bi bi-moon-fill"></i>
+                </label>
+            </div>
+
+            <!-- Notifications -->
+            <div class="dropdown me-4">
+                <a href="#" class="text-dark position-relative" id="notificationDropdown" data-bs-toggle="dropdown">
+                    <i class="bi bi-bell" style="font-size: 1.3rem;"></i>
+                    <span
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge">
+                        3
+                    </span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end p-3" style="width: 300px;">
+                    <li>
+                        <h6 class="dropdown-header">Book Alerts</h6>
+                    </li>
+                    <li><a class="dropdown-item" href="#"><i
+                                class="bi bi-exclamation-triangle text-warning me-2"></i>Low stock: The Great Gatsby</a>
+                    </li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-clock text-info me-2"></i>5 rentals due
+                            tomorrow</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-cart-check text-success me-2"></i>New order
+                            received</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item text-center" href="#">View all alerts</a></li>
+                </ul>
+            </div>
+
+            <!-- User Dropdown -->
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
+                    id="userDropdown" data-bs-toggle="dropdown">
+                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=4361ee&color=fff&size=128"
+                        alt="User" class="nav-user-img me-2">
+                    <span class="d-none d-md-inline">Admin User</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .navbar {
+        background-color: white;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        padding: 0.75rem 0;
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 0;
+        z-index: 1030;
+        transition: all var(--transition-speed) ease;
+        height: 70px;
+    }
+
+    .navbar-brand {
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: var(--book-color);
+        display: flex;
+        align-items: center;
+    }
+
+    .nav-user-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e3e6f0;
+    }
+
+    body[data-bs-theme="dark"] .navbar {
+        background-color: #1a1d28;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.3);
+    }
+
+    body[data-bs-theme="dark"] .navbar-brand,
+    body[data-bs-theme="dark"] .text-dark {
+        color: #adb5bd !important;
+    }
+</style>

@@ -1,0 +1,82 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Super Admin - Issue Reports{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <h2 class="mb-0">Issue Reports (Admin Oversight)</h2>
+    <a class="btn btn-outline-secondary" href="{% url 'dashboard_super' %}">Back to Dashboard</a>
+  </div>
+
+  <form method="get" class="row g-2 mb-3">
+    <div class="col-md-4"><input name="search" value="{{ search_query }}" class="form-control" placeholder="Search reports"></div>
+    <div class="col-md-2">
+      <select name="status" class="form-select">
+        <option value="">All Statuses</option>
+        {% for value,label in report_status_choices %}
+        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Filter</button></div>
+  </form>
+
+  <div class="card" style="border:1px solid var(--border); background:var(--bg-surface); border-radius:14px;">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Reporter</th>
+            <th>Reported User</th>
+            <th>Status</th>
+            <th>Assigned Sub-Admin</th>
+            <th>Reassign</th>
+            <th>Update Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for report in reports %}
+          <tr>
+            <td>#{{ report.id }}</td>
+            <td>{{ report.reporter.username }} ({{ report.get_reporter_role_display }})</td>
+            <td>{{ report.reported_user.username }}</td>
+            <td>{{ report.get_status_display }}</td>
+            <td>{{ report.assigned_sub_admin.name|default:'Unassigned' }}</td>
+            <td style="min-width:240px;">
+              <form method="post" action="{% url 'super_admin_reassign_issue_report' report.id %}" class="d-flex gap-1">
+                {% csrf_token %}
+                <select name="sub_admin_id" class="form-select form-select-sm">
+                  <option value="">Unassigned</option>
+                  {% for admin in sub_admins %}
+                  <option value="{{ admin.id }}" {% if report.assigned_sub_admin and report.assigned_sub_admin.id == admin.id %}selected{% endif %}>{{ admin.name }} ({{ admin.get_status_display }})</option>
+                  {% endfor %}
+                </select>
+                <button class="btn btn-sm btn-outline-primary" type="submit">Save</button>
+              </form>
+            </td>
+            <td style="min-width:290px;">
+              <form method="post" action="{% url 'super_admin_update_issue_report' report.id %}">
+                {% csrf_token %}
+                <div class="mb-1">
+                  <select name="status" class="form-select form-select-sm" required>
+                    {% for value,label in report_status_choices %}
+                    <option value="{{ value }}" {% if report.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="mb-1"><input name="resolution_note" class="form-control form-control-sm" placeholder="Resolution note"></div>
+                <button class="btn btn-sm btn-primary" type="submit">Update</button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="text-center text-muted py-4">No reports found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

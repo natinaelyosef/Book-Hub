@@ -1,0 +1,92 @@
+{% extends 'admin/base_sub_admin.html' %}
+
+{% block title %}Sub-Admin Account Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <h2 class="mb-0">Customer & Store Owner Accounts</h2>
+    <a class="btn btn-outline-secondary" href="{% url 'dashboard_admin' %}">Back to Dashboard</a>
+  </div>
+
+  <form method="get" class="row g-2 mb-3">
+    <div class="col-md-3"><input name="search" value="{{ search_query }}" class="form-control" placeholder="Search user"></div>
+    <div class="col-md-2">
+      <select name="role" class="form-select">
+        <option value="">All Roles</option>
+        <option value="customer" {% if role_filter == 'customer' %}selected{% endif %}>Customer</option>
+        <option value="store_owner" {% if role_filter == 'store_owner' %}selected{% endif %}>Store Owner</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="status" class="form-select">
+        <option value="">All Statuses</option>
+        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+        <option value="suspended" {% if status_filter == 'suspended' %}selected{% endif %}>Suspended</option>
+        <option value="deleted" {% if status_filter == 'deleted' %}selected{% endif %}>Deleted</option>
+      </select>
+    </div>
+    <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Filter</button></div>
+  </form>
+
+  <div class="card" style="border:1px solid var(--border); background:var(--bg-surface); border-radius:14px;">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in user_rows %}
+          <tr>
+            <td>{{ row.user.username }}</td>
+            <td>{{ row.role|title }}</td>
+            <td>{{ row.user.email|default:'-' }}</td>
+            <td>
+              {% if row.restriction and row.restriction.is_deleted %}
+              <span class="badge text-bg-danger">Deleted</span>
+              {% elif row.restriction and row.restriction.is_suspended %}
+              <span class="badge text-bg-warning">Suspended</span>
+              {% else %}
+              <span class="badge text-bg-success">Active</span>
+              {% endif %}
+            </td>
+            <td style="min-width:360px;">
+              <form method="post" action="{% url 'sub_admin_account_action' row.user.id %}" class="row g-1">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <div class="col-md-4">
+                  <select name="action" class="form-select form-select-sm" required>
+                    <option value="">Action</option>
+                    <option value="suspend">Suspend</option>
+                    <option value="delete">Delete</option>
+                    <option value="restore">Restore</option>
+                  </select>
+                </div>
+                <div class="col-md-2"><input name="duration_days" class="form-control form-control-sm" type="number" min="1" value="7" title="Suspension days"></div>
+                <div class="col-md-4"><input name="reason" class="form-control form-control-sm" placeholder="Reason"></div>
+                <div class="col-md-2"><button class="btn btn-sm btn-primary w-100">Apply</button></div>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center text-muted py-4">No users found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if users_page.has_other_pages %}
+    <div class="p-3 d-flex gap-2">
+      {% if users_page.has_previous %}<a class="btn btn-sm btn-outline-secondary" href="?page={{ users_page.previous_page_number }}&search={{ search_query }}&role={{ role_filter }}&status={{ status_filter }}">Previous</a>{% endif %}
+      <span class="small text-muted align-self-center">Page {{ users_page.number }} of {{ users_page.paginator.num_pages }}</span>
+      {% if users_page.has_next %}<a class="btn btn-sm btn-outline-secondary" href="?page={{ users_page.next_page_number }}&search={{ search_query }}&role={{ role_filter }}&status={{ status_filter }}">Next</a>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

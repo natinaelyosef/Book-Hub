@@ -1,0 +1,135 @@
+{% extends 'admin/base_sub_admin.html' %}
+
+{% block title %}Sub-Admin Support Chat Detail{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="max-width:1000px;">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+      <h3 class="mb-1">{{ conversation.subject|default:'Support Chat' }}</h3>
+      <div class="small" style="color:var(--text-muted);">User: {{ conversation.user.username }} ({{ conversation.user_role|title }}){% if conversation.issue_report %} | Linked Report #{{ conversation.issue_report.id }}{% endif %}</div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'sub_admin_support_chat_list' %}" class="btn btn-outline-secondary btn-sm">Back</a>
+      <form method="post" action="{% url 'sub_admin_escalate_support_chat' conversation.id %}">
+        {% csrf_token %}
+        <button class="btn btn-warning btn-sm" type="submit">Escalate to Admin</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card" style="border:1px solid var(--border); background:var(--bg-surface); border-radius:12px; overflow:hidden;">
+    <div id="support-messages" style="height:460px; overflow:auto; padding:1rem; background:var(--bg-raised);">
+      {% for message in messages_list %}
+      <div data-message-id="{{ message.id }}" class="mb-2 d-flex {% if message.sender_sub_admin and admin_account and message.sender_sub_admin.id == admin_account.id %}justify-content-end{% else %}justify-content-start{% endif %}">
+        <div style="max-width:76%; background:{% if message.sender_sub_admin and admin_account and message.sender_sub_admin.id == admin_account.id %}#dcfce7{% else %}#ffffff{% endif %}; border:1px solid #e5e7eb; border-radius:10px; padding:.6rem .75rem;">
+          <div class="small fw-semibold mb-1">{{ message.sender_role|title }} - {{ message.sender_sub_admin.name|default:message.sender_user.username }}</div>
+          {% if message.content %}<div>{{ message.content|linebreaksbr }}</div>{% endif %}
+          {% if message.attachment %}
+          {% with attachment_url=message.attachment.url|lower %}
+          {% if ".jpg" in attachment_url or ".jpeg" in attachment_url or ".png" in attachment_url or ".gif" in attachment_url or ".webp" in attachment_url or ".bmp" in attachment_url or ".svg" in attachment_url %}
+          <div class="mt-2"><img src="{{ message.attachment.url }}" alt="attachment image" style="max-width:100%; max-height:260px; border-radius:8px; border:1px solid #e5e7eb;"></div>
+          <div class="mt-1"><a href="{{ message.attachment.url }}" target="_blank">Open image</a></div>
+          {% else %}
+          <div class="mt-1"><a href="{{ message.attachment.url }}" target="_blank">Open attached file</a></div>
+          {% endif %}
+          {% endwith %}
+          {% endif %}
+          <div class="small text-muted">{{ message.created_at|date:'Y-m-d H:i' }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="card-body border-top">
+      <form id="support-send-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-2"><textarea id="support-content" name="content" rows="3" class="form-control" placeholder="Reply to user"></textarea></div>
+        <div class="d-flex gap-2 flex-wrap">
+          <input type="file" name="attachment" class="form-control" style="max-width:250px;">
+          <button class="btn btn-primary" type="submit">Send</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  const box = document.getElementById('support-messages');
+  const form = document.getElementById('support-send-form');
+  const contentInput = document.getElementById('support-content');
+  if (!box || !form) return;
+
+  const sendUrl = "{% url 'support_chat_send_message' conversation.id %}";
+  const pollUrl = "{% url 'support_chat_poll_messages' conversation.id %}";
+
+  const escapeHtml = (value) => {
+    const div = document.createElement('div');
+    div.textContent = value || '';
+    return div.innerHTML;
+  };
+
+  const lastId = () => {
+    const nodes = box.querySelectorAll('[data-message-id]');
+    if (!nodes.length) return 0;
+    return Number(nodes[nodes.length - 1].dataset.messageId || 0);
+  };
+
+  const pushMessage = (msg) => {
+    if (box.querySelector(`[data-message-id="${msg.id}"]`)) return;
+    const row = document.createElement('div');
+    row.className = `mb-2 d-flex ${msg.is_me ? 'justify-content-end' : 'justify-content-start'}`;
+    row.dataset.messageId = msg.id;
+
+    const attachmentHtml = (() => {
+      if (!msg.attachment_url) return '';
+      if (msg.attachment_is_image) {
+        return `
+          <div class="mt-2"><img src="${msg.attachment_url}" alt="attachment image" style="max-width:100%; max-height:260px; border-radius:8px; border:1px solid #e5e7eb;"></div>
+          <div class="mt-1"><a href="${msg.attachment_url}" target="_blank">Open image</a></div>
+        `;
+      }
+      const fileName = escapeHtml(msg.attachment_name || 'Attached file');
+      return `<div class="mt-1"><a href="${msg.attachment_url}" target="_blank">${fileName}</a></div>`;
+    })();
+
+    row.innerHTML = `
+      <div style="max-width:76%; background:${msg.is_me ? '#dcfce7' : '#ffffff'}; border:1px solid #e5e7eb; border-radius:10px; padding:.6rem .75rem;">
+        <div class="small fw-semibold mb-1">${escapeHtml(msg.sender_role.replace('_', ' '))} - ${escapeHtml(msg.sender_name || '')}</div>
+        ${msg.content ? `<div>${escapeHtml(msg.content)}</div>` : ''}
+        ${attachmentHtml}
+        <div class="small text-muted">${escapeHtml(msg.created_at)}</div>
+      </div>`;
+    box.appendChild(row);
+    box.scrollTop = box.scrollHeight;
+  };
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    const res = await fetch(sendUrl, { method: 'POST', body: data, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+    const payload = await res.json();
+    if (!payload.success) {
+      alert(payload.error || 'Could not send message.');
+      return;
+    }
+    pushMessage(payload.message);
+    form.reset();
+    contentInput.focus();
+  });
+
+  async function poll() {
+    const res = await fetch(`${pollUrl}?last_id=${lastId()}`);
+    const payload = await res.json();
+    if (!payload.success || !payload.messages) return;
+    payload.messages.forEach(pushMessage);
+  }
+
+  box.scrollTop = box.scrollHeight;
+  setInterval(poll, 4000);
+})();
+</script>
+{% endblock %}

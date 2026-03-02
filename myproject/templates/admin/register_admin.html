@@ -1,0 +1,1024 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}Create Admin — BookHub Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ══════════════════════════════════════════
+       CREATE ADMIN PAGE STYLES
+    ══════════════════════════════════════════ */
+
+    /* ── Page Layout ── */
+    .create-admin-page {
+        max-width: 820px;
+        margin: 0 auto;
+    }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.75rem;
+        font-size: 0.82rem;
+        color: var(--text-muted);
+    }
+    .breadcrumb-nav a {
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: color 150ms;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .breadcrumb-nav a:hover { color: var(--primary); }
+    .breadcrumb-nav .sep { opacity: 0.4; font-size: 0.75rem; }
+    .breadcrumb-nav .current { color: var(--text-primary); font-weight: 600; }
+
+    /* ── Page Header ── */
+    .page-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .page-head-icon {
+        width: 52px; height: 52px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem;
+        color: #fff;
+        box-shadow: 0 8px 24px var(--primary-glow);
+        flex-shrink: 0;
+    }
+    .page-head-text h1 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.65rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: var(--text-primary);
+        margin: 0 0 0.3rem;
+    }
+    .page-head-text p {
+        color: var(--text-muted);
+        font-size: 0.88rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .page-head-text p i { color: var(--warning); }
+
+    /* ── Main Form Card ── */
+    .form-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        margin-bottom: 1.5rem;
+    }
+
+    .form-card-header {
+        padding: 1.25rem 1.75rem;
+        border-bottom: 1px solid var(--border-soft);
+        background: var(--bg-raised);
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+    .form-card-header .fch-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-soft);
+    }
+    .form-card-header h2 {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+    .form-card-header .step-badge {
+        margin-left: auto;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 0.2rem 0.65rem;
+        border-radius: 999px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        border: 1px solid var(--border);
+    }
+
+    .form-card-body {
+        padding: 1.75rem;
+    }
+
+    /* ── Form Grid ── */
+    .form-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+    }
+    @media (max-width: 600px) {
+        .form-grid-2 { grid-template-columns: 1fr; }
+    }
+
+    /* ── Field Groups ── */
+    .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+    }
+    .field-group.full { grid-column: 1 / -1; }
+
+    .field-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .field-label .required {
+        color: var(--danger);
+        font-size: 0.9rem;
+        line-height: 1;
+    }
+    .field-label .optional-tag {
+        font-size: 0.68rem;
+        font-weight: 600;
+        padding: 0.12rem 0.45rem;
+        border-radius: 999px;
+        background: var(--bg-raised);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        text-transform: none;
+        letter-spacing: 0;
+    }
+
+    /* ── Custom Inputs ── */
+    .input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        font-size: 1rem;
+        color: var(--text-muted);
+        pointer-events: none;
+        transition: color 200ms;
+        z-index: 1;
+    }
+
+    .styled-input,
+    .styled-select {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.75rem;
+        background: var(--bg-raised);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        font-size: 0.9rem;
+        font-family: 'Outfit', sans-serif;
+        color: var(--text-primary);
+        transition: all 200ms ease;
+        outline: none;
+        appearance: none;
+        -webkit-appearance: none;
+    }
+    .styled-input::placeholder { color: var(--text-muted); font-size: 0.85rem; }
+    .styled-input:focus,
+    .styled-select:focus {
+        border-color: var(--primary);
+        background: var(--bg-surface);
+        box-shadow: 0 0 0 4px var(--primary-soft);
+    }
+    .styled-input:focus ~ .input-icon,
+    .input-wrap:focus-within .input-icon {
+        color: var(--primary);
+    }
+
+    /* Custom select arrow */
+    .select-wrap::after {
+        content: '\f282';
+        font-family: 'Bootstrap Icons';
+        position: absolute;
+        right: 1rem;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        pointer-events: none;
+        transition: transform 200ms, color 200ms;
+    }
+    .select-wrap:focus-within::after {
+        transform: rotate(180deg);
+        color: var(--primary);
+    }
+    .styled-select { padding-right: 2.75rem; cursor: pointer; }
+
+    /* Hint text */
+    .field-hint {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        margin-top: 0.1rem;
+    }
+
+    /* ── Admin Type Cards ── */
+    .type-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+    @media (max-width: 600px) {
+        .type-cards-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .type-option { display: none; }
+    .type-card-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem 0.75rem;
+        background: var(--bg-raised);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: all 200ms ease;
+        text-align: center;
+    }
+    .type-card-label:hover {
+        border-color: var(--primary);
+        background: var(--primary-soft);
+    }
+    .type-option:checked + .type-card-label {
+        border-color: var(--primary);
+        background: var(--primary-soft);
+        box-shadow: 0 0 0 3px var(--primary-soft);
+    }
+    .type-card-icon {
+        width: 40px; height: 40px;
+        border-radius: 11px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem;
+        transition: all 200ms ease;
+    }
+    .type-card-label:hover .type-card-icon,
+    .type-option:checked + .type-card-label .type-card-icon {
+        transform: scale(1.1);
+    }
+    .type-card-name {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        line-height: 1.2;
+    }
+    .type-option:checked + .type-card-label .type-card-name {
+        color: var(--primary);
+    }
+
+    /* Type icon colors */
+    .t-finance  .type-card-icon { background: rgba(0,201,139,0.12); color: #00c98b; }
+    .t-hr       .type-card-icon { background: rgba(91,76,255,0.12);  color: #5b4cff; }
+    .t-it       .type-card-icon { background: rgba(56,189,248,0.12); color: #38bdf8; }
+    .t-ops      .type-card-icon { background: rgba(255,183,3,0.12);  color: #ffb703; }
+    .t-support  .type-card-icon { background: rgba(255,77,109,0.12); color: #ff4d6d; }
+
+    /* Hidden real select */
+    #admin_type_hidden { display: none; }
+
+    /* ── Divider ── */
+    .form-divider {
+        height: 1px;
+        background: var(--border-soft);
+        margin: 1.5rem 0;
+        position: relative;
+    }
+    .form-divider::before {
+        content: attr(data-label);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--bg-surface);
+        padding: 0 0.75rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+    }
+
+    /* ── Submit Button ── */
+    .submit-btn {
+        width: 100%;
+        padding: 0.9rem 1.5rem;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        transition: all 200ms ease;
+        box-shadow: 0 6px 20px var(--primary-glow);
+        letter-spacing: 0.01em;
+        position: relative;
+        overflow: hidden;
+    }
+    .submit-btn::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+        opacity: 0;
+        transition: opacity 200ms;
+    }
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 28px var(--primary-glow);
+    }
+    .submit-btn:hover::before { opacity: 1; }
+    .submit-btn:active { transform: translateY(0); }
+
+    .submit-btn .btn-icon {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.18);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    /* ── Alert Messages ── */
+    .alert-banner {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+        border-radius: var(--radius);
+        margin-bottom: 1.5rem;
+        border: 1px solid;
+        animation: slideIn 0.3s ease;
+    }
+    .alert-banner.success {
+        background: rgba(0,201,139,0.08);
+        border-color: rgba(0,201,139,0.25);
+        color: #007d59;
+    }
+    [data-theme="dark"] .alert-banner.success { color: #00e5a0; }
+    .alert-banner.error {
+        background: rgba(255,77,109,0.08);
+        border-color: rgba(255,77,109,0.25);
+        color: #c9184a;
+    }
+    [data-theme="dark"] .alert-banner.error { color: #ff8fab; }
+    .alert-banner.warning {
+        background: rgba(255,183,3,0.08);
+        border-color: rgba(255,183,3,0.3);
+        color: #9a6f00;
+    }
+    [data-theme="dark"] .alert-banner.warning { color: #ffd166; }
+
+    .alert-icon {
+        width: 34px; height: 34px;
+        border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    .alert-banner.success .alert-icon { background: rgba(0,201,139,0.15); }
+    .alert-banner.error   .alert-icon { background: rgba(255,77,109,0.15); }
+    .alert-banner.warning .alert-icon { background: rgba(255,183,3,0.15); }
+    .alert-text strong { display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 0.15rem; }
+    .alert-text span { font-size: 0.83rem; opacity: 0.85; }
+    .alert-close {
+        margin-left: auto;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        opacity: 0.5;
+        padding: 0;
+        flex-shrink: 0;
+        color: inherit;
+        transition: opacity 150ms;
+    }
+    .alert-close:hover { opacity: 1; }
+
+    /* ── Success Result Card ── */
+    .result-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow);
+        animation: slideIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .result-banner {
+        padding: 1.25rem 1.75rem;
+        background: linear-gradient(135deg, rgba(0,201,139,0.12), rgba(56,189,248,0.08));
+        border-bottom: 1px solid rgba(0,201,139,0.2);
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+    }
+    .result-banner-icon {
+        width: 44px; height: 44px;
+        border-radius: 12px;
+        background: rgba(0,201,139,0.15);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem;
+        color: var(--success);
+        flex-shrink: 0;
+    }
+    .result-banner-text h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 0.2rem;
+    }
+    .result-banner-text p {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .result-body {
+        padding: 1.5rem 1.75rem;
+    }
+
+    .result-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+    @media (max-width: 500px) { .result-info-grid { grid-template-columns: 1fr; } }
+
+    .result-info-item {
+        background: var(--bg-raised);
+        border: 1px solid var(--border-soft);
+        border-radius: var(--radius);
+        padding: 0.9rem 1rem;
+    }
+    .result-info-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--text-muted);
+        margin-bottom: 0.3rem;
+    }
+    .result-info-value {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .result-info-value i { color: var(--primary); font-size: 0.9rem; }
+
+    /* Ref number display */
+    .ref-display {
+        background: linear-gradient(135deg, rgba(91,76,255,0.08), rgba(155,143,255,0.05));
+        border: 1.5px dashed rgba(91,76,255,0.3);
+        border-radius: var(--radius);
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .ref-display-left { flex: 1; }
+    .ref-display-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        margin-bottom: 0.4rem;
+    }
+    .ref-code {
+        font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+        margin-bottom: 0.4rem;
+    }
+    .ref-note {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+    .copy-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.7rem 1.1rem;
+        background: var(--primary-soft);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--primary);
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 200ms;
+        font-family: 'Outfit', sans-serif;
+        flex-shrink: 0;
+    }
+    .copy-btn i { font-size: 1.2rem; }
+    .copy-btn:hover { background: var(--primary); color: #fff; transform: scale(1.04); }
+
+    /* ── Bottom Nav ── */
+    .bottom-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .nav-links {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    .nav-link-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.45rem 0.9rem;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        background: var(--bg-raised);
+        transition: all 150ms;
+    }
+    .nav-link-btn:hover {
+        background: var(--primary-soft);
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+    .nav-link-btn.danger { color: var(--danger); }
+    .nav-link-btn.danger:hover { background: rgba(255,77,109,0.1); border-color: var(--danger); color: var(--danger); }
+
+    /* ── Permission Preview ── */
+    .perm-preview {
+        display: none;
+        grid-column: 1 / -1;
+        padding: 1rem 1.25rem;
+        background: var(--bg-raised);
+        border: 1px solid var(--border-soft);
+        border-radius: var(--radius);
+        gap: 0.75rem;
+        align-items: flex-start;
+        animation: slideIn 0.2s ease;
+    }
+    .perm-preview.visible { display: flex; }
+    .perm-preview-icon {
+        width: 34px; height: 34px;
+        border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    .perm-preview-content { flex: 1; }
+    .perm-preview-title { font-size: 0.82rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem; }
+    .perm-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .perm-tag {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 0.18rem 0.55rem;
+        border-radius: 999px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        border: 1px solid var(--border);
+    }
+
+    @keyframes slideIn {
+        from { opacity:0; transform:translateY(-10px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="create-admin-page" data-aos="fade-up">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav">
+        <a href="{% url 'dashboard_super' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <span class="sep"><i class="bi bi-chevron-right"></i></span>
+        <span class="current">Create Admin</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-head">
+        <div class="page-head-icon">
+            <i class="bi bi-person-plus-fill"></i>
+        </div>
+        <div class="page-head-text">
+            <h1>Create Admin Account</h1>
+            <p>
+                <i class="bi bi-shield-fill-exclamation"></i>
+                Only Super Admins can create new administrator accounts.
+            </p>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert-banner {{ message.tags|default:'success' }}">
+            <div class="alert-icon">
+                {% if message.tags == 'error' %}
+                    <i class="bi bi-x-circle-fill"></i>
+                {% elif message.tags == 'warning' %}
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                {% else %}
+                    <i class="bi bi-check-circle-fill"></i>
+                {% endif %}
+            </div>
+            <div class="alert-text">
+                <strong>{% if message.tags == 'error' %}Error{% elif message.tags == 'warning' %}Warning{% else %}Success{% endif %}</strong>
+                <span>{{ message }}</span>
+            </div>
+            <button class="alert-close" onclick="this.closest('.alert-banner').remove()" aria-label="Dismiss">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Success Result (if admin was just created) -->
+    {% if generated_ref_number %}
+    <div class="result-card" data-aos="zoom-in">
+        <div class="result-banner">
+            <div class="result-banner-icon">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="result-banner-text">
+                <h3>Admin Account Created Successfully</h3>
+                <p>The new administrator is ready. Share the reference number securely.</p>
+            </div>
+        </div>
+        <div class="result-body">
+            <div class="result-info-grid">
+                <div class="result-info-item">
+                    <div class="result-info-label">Admin Name</div>
+                    <div class="result-info-value">
+                        <i class="bi bi-person-fill"></i>
+                        {{ created_admin.name }}
+                    </div>
+                </div>
+                <div class="result-info-item">
+                    <div class="result-info-label">Admin Type</div>
+                    <div class="result-info-value">
+                        <i class="bi bi-briefcase-fill"></i>
+                        {{ created_admin.admin_type|default:"Normal Admin" }}
+                    </div>
+                </div>
+                {% if created_admin.email %}
+                <div class="result-info-item">
+                    <div class="result-info-label">Email</div>
+                    <div class="result-info-value">
+                        <i class="bi bi-envelope-fill"></i>
+                        {{ created_admin.email }}
+                    </div>
+                </div>
+                {% endif %}
+                <div class="result-info-item">
+                    <div class="result-info-label">Created At</div>
+                    <div class="result-info-value">
+                        <i class="bi bi-calendar3"></i>
+                        {% now "M d, Y — g:i a" %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="ref-display">
+                <div class="ref-display-left">
+                    <div class="ref-display-label">
+                        <i class="bi bi-key-fill" style="margin-right:0.3rem;"></i>
+                        Reference Number
+                    </div>
+                    <div class="ref-code" id="refCode">{{ generated_ref_number }}</div>
+                    <div class="ref-note">
+                        <i class="bi bi-info-circle"></i>
+                        Share this with the new admin — it's required for first login.
+                    </div>
+                </div>
+                <button class="copy-btn" onclick="copyRef('{{ generated_ref_number }}')" id="copyBtn">
+                    <i class="bi bi-copy" id="copyIcon"></i>
+                    <span id="copyLabel">Copy</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Form Card -->
+    <form method="post" action="{% url 'register_admin' %}" id="createAdminForm">
+        {% csrf_token %}
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <div class="fch-dot"></div>
+                <h2>Account Information</h2>
+                <span class="step-badge">Required</span>
+            </div>
+            <div class="form-card-body">
+                <div class="form-grid-2">
+
+                    <!-- Admin Name -->
+                    <div class="field-group">
+                        <label class="field-label" for="admin_name">
+                            Admin Name <span class="required">*</span>
+                        </label>
+                        <div class="input-wrap">
+                            <i class="bi bi-person input-icon"></i>
+                            <input
+                                class="styled-input"
+                                id="admin_name"
+                                name="admin_name"
+                                type="text"
+                                placeholder="e.g. Sarah Johnson"
+                                required
+                                autocomplete="name"
+                            >
+                        </div>
+                        <div class="field-hint"><i class="bi bi-info-circle"></i> Full name as it will appear in the system</div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="field-group">
+                        <label class="field-label" for="email">
+                            Email Address
+                            <span class="optional-tag">Optional</span>
+                        </label>
+                        <div class="input-wrap">
+                            <i class="bi bi-envelope input-icon"></i>
+                            <input
+                                class="styled-input"
+                                id="email"
+                                name="email"
+                                type="email"
+                                placeholder="admin@example.com"
+                                autocomplete="email"
+                            >
+                        </div>
+                        <div class="field-hint"><i class="bi bi-info-circle"></i> Used for notifications and account recovery</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Type Card -->
+        <div class="form-card">
+            <div class="form-card-header">
+                <div class="fch-dot" style="background:var(--success);box-shadow:0 0 0 3px rgba(0,201,139,0.15);"></div>
+                <h2>Admin Role & Permissions</h2>
+                <span class="step-badge" style="background:rgba(0,201,139,0.1);color:var(--success);border-color:rgba(0,201,139,0.2);">Select One</span>
+            </div>
+            <div class="form-card-body">
+                <div class="form-grid-2">
+
+                    <div class="field-group full">
+                        <label class="field-label">Admin Type <span class="required">*</span></label>
+
+                        <!-- Visual Type Selector -->
+                        <div class="type-cards-grid" id="typeSelector">
+
+                            <div class="t-finance">
+                                <input type="radio" class="type-option" name="admin_type_ui" id="t-finance" value="Finance Admin">
+                                <label class="type-card-label" for="t-finance">
+                                    <div class="type-card-icon"><i class="bi bi-cash-coin"></i></div>
+                                    <span class="type-card-name">Finance Admin</span>
+                                </label>
+                            </div>
+
+                            <div class="t-hr">
+                                <input type="radio" class="type-option" name="admin_type_ui" id="t-hr" value="HR Admin">
+                                <label class="type-card-label" for="t-hr">
+                                    <div class="type-card-icon"><i class="bi bi-people-fill"></i></div>
+                                    <span class="type-card-name">HR Admin</span>
+                                </label>
+                            </div>
+
+                            <div class="t-it">
+                                <input type="radio" class="type-option" name="admin_type_ui" id="t-it" value="IT Admin">
+                                <label class="type-card-label" for="t-it">
+                                    <div class="type-card-icon"><i class="bi bi-terminal-fill"></i></div>
+                                    <span class="type-card-name">IT Admin</span>
+                                </label>
+                            </div>
+
+                            <div class="t-ops">
+                                <input type="radio" class="type-option" name="admin_type_ui" id="t-ops" value="Operations Admin">
+                                <label class="type-card-label" for="t-ops">
+                                    <div class="type-card-icon"><i class="bi bi-gear-wide-connected"></i></div>
+                                    <span class="type-card-name">Operations Admin</span>
+                                </label>
+                            </div>
+
+                            <div class="t-support">
+                                <input type="radio" class="type-option" name="admin_type_ui" id="t-support" value="Support Admin">
+                                <label class="type-card-label" for="t-support">
+                                    <div class="type-card-icon"><i class="bi bi-headset"></i></div>
+                                    <span class="type-card-name">Support Admin</span>
+                                </label>
+                            </div>
+
+                        </div>
+
+                        <!-- Hidden real select for form submission -->
+                        <select id="admin_type" name="admin_type" id="admin_type_hidden" required style="display:none;">
+                            <option value="">Select admin type</option>
+                            <option value="Finance Admin">Finance Admin</option>
+                            <option value="HR Admin">HR Admin</option>
+                            <option value="IT Admin">IT Admin</option>
+                            <option value="Operations Admin">Operations Admin</option>
+                            <option value="Support Admin">Support Admin</option>
+                        </select>
+
+                        <div class="field-hint" style="margin-top:0.6rem;">
+                            <i class="bi bi-info-circle"></i> Select the role that defines this admin's access scope
+                        </div>
+                    </div>
+
+                    <!-- Permission Preview (shown when type selected) -->
+                    <div class="perm-preview field-group full" id="permPreview">
+                        <div class="perm-preview-icon" id="permIcon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <div class="perm-preview-content">
+                            <div class="perm-preview-title" id="permTitle">Permissions</div>
+                            <div class="perm-tags" id="permTags"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="submit-btn" id="submitBtn">
+            <div class="btn-icon">
+                <i class="bi bi-person-check-fill"></i>
+            </div>
+            Create Admin & Generate Reference Number
+            <i class="bi bi-arrow-right ms-auto"></i>
+        </button>
+
+    </form>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav" style="margin-top: 1.5rem;">
+        <div class="nav-links">
+            <a href="{% url 'dashboard_super' %}" class="nav-link-btn">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+            <a href="{% url 'view_admins' %}" class="nav-link-btn">
+                <i class="bi bi-people"></i> View All Admins
+            </a>
+        </div>
+        <a href="{% url 'logout' %}" class="nav-link-btn danger">
+            <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+    </div>
+
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ── Type card → hidden select sync ──
+    const typeRadios = document.querySelectorAll('.type-option');
+    const hiddenSelect = document.getElementById('admin_type');
+    const permPreview = document.getElementById('permPreview');
+
+    const permData = {
+        'Finance Admin': {
+            color: '#00c98b',
+            bg: 'rgba(0,201,139,0.12)',
+            icon: 'bi-cash-coin',
+            perms: ['View Reports','Manage Invoices','Process Payments','Export Data']
+        },
+        'HR Admin': {
+            color: '#5b4cff',
+            bg: 'rgba(91,76,255,0.12)',
+            icon: 'bi-people-fill',
+            perms: ['Manage Users','View Profiles','Send Notifications','Access HR Portal']
+        },
+        'IT Admin': {
+            color: '#38bdf8',
+            bg: 'rgba(56,189,248,0.12)',
+            icon: 'bi-terminal-fill',
+            perms: ['System Config','API Access','Server Logs','Deploy Updates']
+        },
+        'Operations Admin': {
+            color: '#ffb703',
+            bg: 'rgba(255,183,3,0.12)',
+            icon: 'bi-gear-wide-connected',
+            perms: ['Manage Stores','View Orders','Logistics Access','Analytics']
+        },
+        'Support Admin': {
+            color: '#ff4d6d',
+            bg: 'rgba(255,77,109,0.12)',
+            icon: 'bi-headset',
+            perms: ['Support Tickets','User Assistance','FAQ Management','Live Chat']
+        }
+    };
+
+    typeRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            // Sync hidden select
+            hiddenSelect.value = radio.value;
+
+            // Show permission preview
+            const data = permData[radio.value];
+            if (!data) return;
+
+            const permIcon  = document.getElementById('permIcon');
+            const permTitle = document.getElementById('permTitle');
+            const permTags  = document.getElementById('permTags');
+
+            permIcon.style.background = data.bg;
+            permIcon.style.color = data.color;
+            permIcon.innerHTML = `<i class="bi ${data.icon}"></i>`;
+            permTitle.textContent = `${radio.value} — Default Permissions`;
+
+            permTags.innerHTML = data.perms
+                .map(p => `<span class="perm-tag">${p}</span>`)
+                .join('');
+
+            permPreview.classList.add('visible');
+        });
+    });
+
+    // ── Copy ref number ──
+    window.copyRef = function(code) {
+        navigator.clipboard.writeText(code).then(() => {
+            const icon = document.getElementById('copyIcon');
+            const label = document.getElementById('copyLabel');
+            icon.className = 'bi bi-check-lg';
+            label.textContent = 'Copied!';
+            setTimeout(() => {
+                icon.className = 'bi bi-copy';
+                label.textContent = 'Copy';
+            }, 2000);
+        });
+    };
+
+    // ── Submit button loading state ──
+    document.getElementById('createAdminForm')?.addEventListener('submit', function() {
+        const btn = document.getElementById('submitBtn');
+        btn.innerHTML = `
+            <div class="btn-icon"><i class="bi bi-arrow-repeat" style="animation:spin 0.8s linear infinite;display:inline-block;"></i></div>
+            Creating Account…
+        `;
+        btn.disabled = true;
+        btn.style.opacity = '0.8';
+    });
+
+});
+</script>
+<style>
+@keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+</style>
+{% endblock %}

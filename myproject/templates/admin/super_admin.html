@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book-Hub · Super Admin</title>
+    <!-- Font Awesome 5 -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f5fc;
+            color: #1e293b;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #0f2a44;
+            color: white;
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo i {
+            background: #f5b042;
+            color: #0f2a44;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+
+        .sidebar-logo span {
+            color: #f5b042;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu a {
+            color: #b6cde3;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1.2rem;
+            border-radius: 12px;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: rgba(245,176,66,0.15);
+            color: white;
+        }
+
+        .sidebar-menu a i {
+            width: 24px;
+            color: #f5b042;
+        }
+
+        .badge {
+            background: #f5b042;
+            color: #0f2a44;
+            padding: 0.25rem 0.6rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: white;
+            padding: 1rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .page-title h1 {
+            font-size: 1.8rem;
+            color: #0f2a44;
+        }
+
+        .page-title p {
+            color: #5e738f;
+            font-size: 0.9rem;
+            margin-top: 0.2rem;
+        }
+
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .notifications {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .notifications i {
+            font-size: 1.3rem;
+            color: #5e738f;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #f5b042;
+            color: #0f2a44;
+            font-size: 0.7rem;
+            font-weight: 600;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: #f8fafd;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: #0f2a44;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .admin-details h4 {
+            font-size: 0.9rem;
+        }
+
+        .admin-details p {
+            font-size: 0.8rem;
+            color: #f5b042;
+            font-weight: 600;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 24px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            transition: 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(15,42,68,0.1);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            background: #fef6e7;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon i {
+            font-size: 2rem;
+            color: #f5b042;
+        }
+
+        .stat-info h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0f2a44;
+        }
+
+        .stat-info p {
+            color: #5e738f;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Charts Row */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 24px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-header h3 {
+            color: #0f2a44;
+            font-size: 1.2rem;
+        }
+
+        .chart-header span {
+            color: #f5b042;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        canvas {
+            max-height: 250px;
+        }
+
+        /* Tables */
+        .recent-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .recent-card {
+            background: white;
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header h3 {
+            color: #0f2a44;
+            font-size: 1.2rem;
+        }
+
+        .view-all {
+            color: #f5b042;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .table {
+            width: 100%;
+        }
+
+        .table-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #eef3f9;
+        }
+
+        .table-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-avatar {
+            width: 40px;
+            height: 40px;
+            background: #f0f5fc;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0f2a44;
+            font-weight: 600;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-info h4 {
+            font-size: 0.95rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .item-info p {
+            font-size: 0.8rem;
+            color: #5e738f;
+        }
+
+        .item-badge {
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #e3f9e5;
+            color: #1e7b48;
+        }
+
+        .badge-warning {
+            background: #fff3e0;
+            color: #b45b0a;
+        }
+
+        .badge-danger {
+            background: #ffe8e8;
+            color: #b91c1c;
+        }
+
+        .badge-info {
+            background: #e1f0fa;
+            color: #1a5c8c;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .charts-row,
+            .recent-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 80px;
+                padding: 2rem 0.5rem;
+            }
+            .sidebar-logo span,
+            .sidebar-menu a span {
+                display: none;
+            }
+            .main-content {
+                margin-left: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <i class="fas fa-shield-alt"></i>
+                <div>book<span>-hub</span> admin</div>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li><a href="{% url 'super_admin' %}" class="active"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+                <li><a href="{% url 'admin_users' %}"><i class="fas fa-users"></i> <span>Users</span> <span class="badge">{{ total_users }}</span></a></li>
+                <li><a href="{% url 'admin_stores' %}"><i class="fas fa-store"></i> <span>Stores</span> <span class="badge">{{ total_stores }}</span></a></li>
+                <li><a href="{% url 'admin_books' %}"><i class="fas fa-book"></i> <span>Books</span> <span class="badge">{{ total_books }}</span></a></li>
+                <li><a href="{% url 'admin_orders' %}"><i class="fas fa-shopping-cart"></i> <span>Orders</span> <span class="badge">{{ pending_orders }}</span></a></li>
+                <li><a href="{% url 'admin_reports' %}"><i class="fas fa-chart-bar"></i> <span>Reports</span></a></li>
+                <li style="margin-top: 2rem;"><a href="{% url 'index' %}"><i class="fas fa-globe"></i> <span>View Site</span></a></li>
+                <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="page-title">
+                    <h1>Super Admin Dashboard</h1>
+                    <p>Welcome back, {{ request.user.first_name|default:request.user.username }} · Platform overview</p>
+                </div>
+                
+                <div class="admin-profile">
+                    <div class="notifications">
+                        <i class="far fa-bell"></i>
+                        <span class="notification-badge">{{ pending_orders }}</span>
+                    </div>
+                    
+                    <div class="admin-info">
+                        <div class="avatar">
+                            {{ request.user.first_name|first|default:request.user.username|first|upper }}
+                        </div>
+                        <div class="admin-details">
+                            <h4>{{ request.user.get_full_name|default:request.user.username }}</h4>
+                            <p>Super Admin</p>
+                        </div>
+                        <i class="fas fa-chevron-down" style="color: #5e738f; font-size: 0.8rem;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ total_users }}</h3>
+                        <p>Total Users</p>
+                        <small style="color: #5e738f;">
+                            {{ customers_count }} customers · {{ store_owners_count }} store owners
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ total_stores }}</h3>
+                        <p>Registered Stores</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ total_books }}</h3>
+                        <p>Books in Inventory</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ total_orders }}</h3>
+                        <p>Total Orders</p>
+                        <small style="color: #5e738f;">{{ pending_orders }} pending</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>₹{{ today_revenue|floatformat:0 }}</h3>
+                        <p>Today's Revenue</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-week"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>₹{{ weekly_revenue|floatformat:0 }}</h3>
+                        <p>Weekly Revenue</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>₹{{ monthly_revenue|floatformat:0 }}</h3>
+                        <p>Monthly Revenue</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ admins_count }}</h3>
+                        <p>Admin Staff</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Order Status Distribution</h3>
+                        <span>Current</span>
+                    </div>
+                    <canvas id="orderStatusChart"></canvas>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Revenue Overview</h3>
+                        <span>Last 30 days</span>
+                    </div>
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="recent-section">
+                <!-- Recent Users -->
+                <div class="recent-card">
+                    <div class="card-header">
+                        <h3>Recent Users</h3>
+                        <a href="{% url 'admin_users' %}" class="view-all">View all <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    
+                    <div class="table">
+                        {% for user in recent_users %}
+                        <div class="table-item">
+                            <div class="item-avatar">
+                                {{ user.first_name|first|default:user.username|first|upper }}
+                            </div>
+                            <div class="item-info">
+                                <h4>{{ user.get_full_name|default:user.username }}</h4>
+                                <p>{{ user.email }}</p>
+                            </div>
+                            <span class="item-badge 
+                                {% if user.is_staff %}badge-info
+                                {% elif user.groups.first.name == 'store_owner' %}badge-success
+                                {% else %}badge-warning{% endif %}">
+                                {% if user.is_staff %}Admin
+                                {% elif user.groups.first.name == 'store_owner' %}Store Owner
+                                {% else %}Customer{% endif %}
+                            </span>
+                        </div>
+                        {% empty %}
+                        <p style="color: #5e738f; text-align: center;">No recent users</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Recent Orders -->
+                <div class="recent-card">
+                    <div class="card-header">
+                        <h3>Recent Orders</h3>
+                        <a href="{% url 'admin_orders' %}" class="view-all">View all <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    
+                    <div class="table">
+                        {% for order in recent_orders %}
+                        <div class="table-item">
+                            <div class="item-avatar">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <div class="item-info">
+                                <h4>{{ order.order_number }}</h4>
+                                <p>{{ order.customer.username }} · {{ order.store.store_name }}</p>
+                            </div>
+                            <span class="item-badge 
+                                {% if order.status == 'completed' %}badge-success
+                                {% elif order.status == 'cancelled' %}badge-danger
+                                {% elif order.status == 'pending' %}badge-warning
+                                {% else %}badge-info{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </div>
+                        {% empty %}
+                        <p style="color: #5e738f; text-align: center;">No recent orders</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Stores -->
+            <div class="recent-card" style="margin-bottom: 2rem;">
+                <div class="card-header">
+                    <h3>Recently Added Stores</h3>
+                    <a href="{% url 'admin_stores' %}" class="view-all">View all <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="table">
+                    {% for store in recent_stores %}
+                    <div class="table-item">
+                        <div class="item-avatar">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <div class="item-info">
+                            <h4>{{ store.store_name }}</h4>
+                            <p>{{ store.owner_full_name }} · {{ store.city }}</p>
+                        </div>
+                        <span class="item-badge badge-success">
+                            {% if store.offers_rental %}Rent{% endif %}
+                            {% if store.offers_sale %} · Buy{% endif %}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <p style="color: #5e738f; text-align: center;">No recent stores</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Top Stores and Books -->
+            <div class="recent-section">
+                <!-- Top Stores -->
+                <div class="recent-card">
+                    <div class="card-header">
+                        <h3>Top Stores by Orders</h3>
+                        <span class="badge-info" style="padding: 0.3rem 1rem;">Most active</span>
+                    </div>
+                    
+                    <div class="table">
+                        {% for store in top_stores %}
+                        <div class="table-item">
+                            <div class="item-avatar">
+                                <i class="fas fa-trophy" style="color: #f5b042;"></i>
+                            </div>
+                            <div class="item-info">
+                                <h4>{{ store.store_name }}</h4>
+                                <p>{{ store.city }} · {{ store.order_count }} orders</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p style="color: #5e738f; text-align: center;">No data available</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Top Books -->
+                <div class="recent-card">
+                    <div class="card-header">
+                        <h3>Popular Books</h3>
+                        <span class="badge-info" style="padding: 0.3rem 1rem;">Most ordered</span>
+                    </div>
+                    
+                    <div class="table">
+                        {% for book in top_books %}
+                        <div class="table-item">
+                            <div class="item-avatar">
+                                <i class="fas fa-book" style="color: #f5b042;"></i>
+                            </div>
+                            <div class="item-info">
+                                <h4>{{ book.title }}</h4>
+                                <p>{{ book.author }} · {{ book.order_count }} orders</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p style="color: #5e738f; text-align: center;">No data available</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Order Status Chart
+        const orderCtx = document.getElementById('orderStatusChart').getContext('2d');
+        new Chart(orderCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [
+                    {% for status, count in order_status_counts.items %}
+                        {% if count > 0 %}'{{ status|title }}',{% endif %}
+                    {% endfor %}
+                ],
+                datasets: [{
+                    data: [
+                        {% for status, count in order_status_counts.items %}
+                            {% if count > 0 %}{{ count }},{% endif %}
+                        {% endfor %}
+                    ],
+                    backgroundColor: [
+                        '#f5b042',
+                        '#1a5c8c',
+                        '#1e7b48',
+                        '#b45b0a',
+                        '#5e738f',
+                        '#b91c1c',
+                        '#0f2a44'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+
+        // Revenue Chart (simplified - you can add real data from DB)
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: [{{ weekly_revenue|floatformat:0 }}, {{ weekly_revenue|floatformat:0 }}, {{ weekly_revenue|floatformat:0 }}, {{ weekly_revenue|floatformat:0 }}],
+                    borderColor: '#f5b042',
+                    backgroundColor: 'rgba(245,176,66,0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

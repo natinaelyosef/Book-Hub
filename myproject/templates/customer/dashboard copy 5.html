@@ -1,0 +1,307 @@
+<!-- customer/dashboard.html -->
+{% extends 'customer/base.html' %}
+
+{% block content %}
+<div class="container">
+    <!-- Search and Filters Section -->
+    <div class="store-filter"   style="display: none;" >
+        <h2>Browse Books</h2>
+        
+        <!-- Main Search Form -->
+        <form method="GET" action="{% url 'customer_dashboard' %}" style="margin-bottom: 20px;">
+            <div class="search-box" style="max-width: 100%; border-radius: 8px;">
+                <input type="text" name="search" value="{{ search_query|default:'' }}" placeholder="Search book titles...">
+                <button type="submit"><i class="fas fa-search"></i> Search</button>
+            </div>
+        </form>
+        
+        <!-- Filter Tags -->
+        <div class="store-tags">
+            <a href="?{% if search_query %}search={{ search_query }}&{% endif %}" 
+               class="store-tag {% if not selected_genre and not selected_store and not selected_availability %}active{% endif %}">
+                All Books
+            </a>
+            
+            <a href="?{% if search_query %}search={{ search_query }}&{% endif %}availability=rent" 
+               class="store-tag {% if selected_availability == 'rent' %}active{% endif %}">
+                Available for Rent
+            </a>
+            
+            <a href="?{% if search_query %}search={{ search_query }}&{% endif %}availability=buy" 
+               class="store-tag {% if selected_availability == 'buy' %}active{% endif %}">
+                Available for Purchase
+            </a>
+            
+            <!-- Genre Filters -->
+            {% for genre in genres %}
+            <a href="?{% if search_query %}search={{ search_query }}&{% endif %}genre={{ genre }}" 
+               class="store-tag {% if selected_genre == genre %}active{% endif %}">
+                {{ genre }}
+            </a>
+            {% endfor %}
+        </div>
+        
+        <!-- Store Filter Dropdown -->
+        <div class="store-dropdown" style="margin-top: 15px;">
+            <label for="store-filter">Filter by Store:</label>
+            <select id="store-filter" onchange="window.location.href='?{% if search_query %}search={{ search_query }}&{% endif %}store='+this.value" style="margin-left: 10px; padding: 8px; border-radius: 5px;">
+                <option value="">All Stores</option>
+                {% for store in stores %}
+                <option value="{{ store.id }}" {% if selected_store == store.id|stringformat:'s' %}selected{% endif %}>
+                    {{ store.store_name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Results Count with Clear Button -->
+    <div class="results-count" style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div style="flex: 1;">
+                <p style="font-size: 1.1rem; margin: 0;">
+                    Found <strong>{{ total_books }}</strong> book{{ total_books|pluralize }}
+                    {% if search_query %}
+                    matching "<strong style="color: #3498db;">{{ search_query }}</strong>"
+                    {% endif %}
+                </p>
+                {% if search_query and total_books == 0 %}
+                <p style="margin-top: 10px; color: #e74c3c;">
+                    <i class="fas fa-exclamation-circle"></i> No books found. Try a different search term.
+                </p>
+                {% endif %}
+            </div>
+            
+            {% if search_query %}
+            <div style="display: flex; gap: 10px;">
+                <a href="{% url 'customer_dashboard' %}" 
+                   class="clear-search-btn" 
+                   style="display: inline-flex; align-items: center; background-color: #95a5a6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: 600; transition: background-color 0.3s; border: none; cursor: pointer;">
+                    <i class="fas fa-times" style="margin-right: 8px;"></i> Clear Search
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Active filters display -->
+        {% if selected_genre or selected_store or selected_availability %}
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+            <p style="margin-bottom: 10px; font-weight: 500;">Active filters:</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                {% if selected_genre %}
+                <span style="background: #3498db; color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.9rem;">
+                    Genre: {{ selected_genre }}
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}" style="color: white; margin-left: 5px; text-decoration: none;">×</a>
+                </span>
+                {% endif %}
+                
+                {% if selected_availability %}
+                <span style="background: #2ecc71; color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.9rem;">
+                    {% if selected_availability == 'rent' %}Available for Rent{% else %}Available for Purchase{% endif %}
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}" style="color: white; margin-left: 5px; text-decoration: none;">×</a>
+                </span>
+                {% endif %}
+                
+                {% if selected_store %}
+                <span style="background: #9b59b6; color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.9rem;">
+                    Store: {% for store in stores %}{% if store.id|stringformat:'s' == selected_store %}{{ store.store_name }}{% endif %}{% endfor %}
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}" style="color: white; margin-left: 5px; text-decoration: none;">×</a>
+                </span>
+                {% endif %}
+                
+                {% if search_query or selected_genre or selected_store or selected_availability %}
+                <a href="{% url 'customer_dashboard' %}" 
+                   style="display: inline-flex; align-items: center; background-color: #e74c3c; color: white; padding: 5px 15px; text-decoration: none; border-radius: 20px; font-size: 0.9rem; font-weight: 600;">
+                    <i class="fas fa-filter-circle-xmark" style="margin-right: 5px;"></i> Clear All
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Book Grid -->
+    <div class="book-grid">
+        {% for book in books %}
+        <div class="book-card">
+            <div class="book-image">
+                {% if book.store %}
+                <div class="store-badge">{{ book.store.store_name|default:"Book Store" }}</div>
+                {% endif %}
+                <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="{{ book.title }}">
+            </div>
+            <div class="book-info">
+                <h3 class="book-title">{{ book.title }}</h3>
+                <div class="book-author">{{ book.author }}</div>
+                <div class="book-genre" style="color: #3498db; margin-bottom: 10px; font-weight: 500;">
+                    {{ book.genre }}
+                </div>
+              
+                
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+                <div class="book-pricing">
+                    {% if book.available_copies > 0 %}
+                    <div class="price-option">
+                        <span class="price-label">RENT FOR</span>
+                        <span class="price-amount rent-price">${{ book.rental_price }}</span>
+                        <span class="price-label">/month</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if book.available_sales > 0 %}
+                    <div class="price-option">
+                        <span class="price-label">BUY FOR</span>
+                        <span class="price-amount buy-price">${{ book.sale_price }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+
+                <div class="book-availability" style="margin-bottom: 15px;">
+                    {% if book.available_copies > 0 %}
+                    <span style="color: #27ae60; font-weight: 500;">
+                        <i class="fas fa-check-circle"></i> {{ book.available_copies }} available for rent
+                    </span>
+                    {% else %}
+                    <span style="color: #e74c3c; font-weight: 500;">
+                        <i class="fas fa-times-circle"></i> Not available for rent
+                    </span>
+                    {% endif %}
+                    
+                    <br>
+                    
+                    {% if book.available_sales > 0 %}
+                    <span style="color: #27ae60; font-weight: 500;">
+                        <i class="fas fa-check-circle"></i> {{ book.available_sales }} available for purchase
+                    </span>
+                    {% else %}
+                    <span style="color: #e74c3c; font-weight: 500;">
+                        <i class="fas fa-times-circle"></i> Not available for purchase
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="book-actions">
+                    {% if book.available_copies > 0 %}
+                    <a href="{% url 'add_to_cart_rent' book.id %}" class="btn btn-rent">
+                        <i class="fas fa-exchange-alt"></i> Rent Now
+                    </a>
+                    {% endif %}
+                    
+                    {% if book.available_sales > 0 %}
+                    <a href="{% url 'add_to_cart_buy' book.id %}" class="btn btn-buy">
+                        <i class="fas fa-shopping-cart"></i> Buy Now
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'book_detail' book.id %}" class="btn" style="background-color: #f39c12; color: white; flex: 0.5;">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
+            <h3>No books found matching your criteria.</h3>
+            <p>Try adjusting your search or filters.</p>
+            <a href="{% url 'customer_dashboard' %}" class="btn" style="background-color: #3498db; color: white; margin-top: 15px;">
+                <i class="fas fa-times"></i> Clear All Filters
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if books.has_other_pages %}
+    <div style="margin: 40px 0; text-align: center;">
+        <div style="display: inline-flex; gap: 10px; align-items: center;">
+            {% if books.has_previous %}
+            <a href="?page={{ books.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_genre %}&genre={{ selected_genre }}{% endif %}{% if selected_store %}&store={{ selected_store }}{% endif %}{% if selected_availability %}&availability={{ selected_availability }}{% endif %}" 
+               class="btn" style="background-color: #3498db; color: white; padding: 10px 20px;">
+                <i class="fas fa-chevron-left"></i> Previous
+            </a>
+            {% endif %}
+            
+            <span style="padding: 10px 20px; background: #ecf0f1; border-radius: 5px; font-weight: 500;">
+                Page {{ books.number }} of {{ books.paginator.num_pages }}
+            </span>
+            
+            {% if books.has_next %}
+            <a href="?page={{ books.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_genre %}&genre={{ selected_genre }}{% endif %}{% if selected_store %}&store={{ selected_store }}{% endif %}{% if selected_availability %}&availability={{ selected_availability }}{% endif %}" 
+               class="btn" style="background-color: #3498db; color: white; padding: 10px 20px;">
+                Next <i class="fas fa-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- TEMPORARY DEBUG - REMOVE AFTER TESTING -->
+    {% if debug_count > 0 and search_query %}
+    <div style="margin-top: 20px; padding: 15px; background: #e8f4f8; border-radius: 8px; font-size: 0.9em;">
+        <h4>Debug Info (Search Results):</h4>
+        <p>Search query: "{{ search_query }}"</p>
+        <p>Found {{ debug_count }} book(s)</p>
+        <p>Sample titles found: {{ debug_titles|slice:":5"|join:", " }}</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add CSS for button hover effects -->
+<style>
+.clear-search-btn:hover {
+    background-color: #7f8c8d !important;
+}
+</style>
+
+<!-- Quick Search Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('input[name="search"]');
+    let searchTimeout;
+    
+    // Quick search as you type (optional AJAX feature)
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const query = this.value.trim();
+            if (query.length >= 2) {
+                console.log('Searching for:', query);
+                // You could implement AJAX search here if needed
+            }
+        }, 300);
+    });
+    
+    // Update cart count from session
+    function updateCartCount() {
+        fetch('/get-cart-count/')
+            .then(response => response.json())
+            .then(data => {
+                const cartBadge = document.querySelector('.cart-badge');
+                if (cartBadge) {
+                    cartBadge.textContent = data.count;
+                }
+            });
+    }
+    
+    // Update cart count on page load
+    updateCartCount();
+});
+</script>
+{% endblock %}

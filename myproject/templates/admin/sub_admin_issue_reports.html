@@ -1,0 +1,97 @@
+{% extends 'admin/base_sub_admin.html' %}
+
+{% block title %}Sub-Admin Issue Reports{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <h2 class="mb-0">Issue Reports</h2>
+    <a class="btn btn-outline-secondary" href="{% url 'dashboard_admin' %}">Back to Dashboard</a>
+  </div>
+
+  <form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+      <input type="text" class="form-control" name="search" value="{{ search_query }}" placeholder="Search users or description">
+    </div>
+    <div class="col-md-2">
+      <select name="status" class="form-select">
+        <option value="">All Statuses</option>
+        {% for value,label in report_status_choices %}
+        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="assigned" class="form-select">
+        <option value="">All Assignments</option>
+        <option value="mine" {% if assigned_filter == 'mine' %}selected{% endif %}>Assigned to Me</option>
+        <option value="unassigned" {% if assigned_filter == 'unassigned' %}selected{% endif %}>Unassigned</option>
+      </select>
+    </div>
+    <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Filter</button></div>
+  </form>
+
+  <div class="alert alert-info d-flex gap-4 flex-wrap">
+    <span><strong>Pending:</strong> {{ pending_reports }}</span>
+    <span><strong>Under Review:</strong> {{ under_review_reports }}</span>
+  </div>
+
+  <div class="card" style="border:1px solid var(--border); background:var(--bg-surface); border-radius:14px;">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Reporter</th>
+            <th>Reported User</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Attachment</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for report in reports %}
+          <tr>
+            <td>#{{ report.id }}</td>
+            <td>{{ report.reporter.username }}<br><small class="text-muted">{{ report.get_reporter_role_display }}</small></td>
+            <td>{{ report.reported_user.username }}</td>
+            <td>{{ report.get_category_display }}</td>
+            <td style="min-width:240px;">{{ report.description|truncatechars:120 }}</td>
+            <td>
+              {% if report.attachment %}
+              <a href="{{ report.attachment.url }}" target="_blank">View</a>
+              {% else %}
+              -
+              {% endif %}
+            </td>
+            <td>{{ report.get_status_display }}</td>
+            <td style="min-width:280px;">
+              <form method="post" action="{% url 'sub_admin_update_issue_report' report.id %}">
+                {% csrf_token %}
+                <div class="mb-1">
+                  <select name="status" class="form-select form-select-sm" required>
+                    {% for value,label in report_status_choices %}
+                    <option value="{{ value }}" {% if report.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="mb-1"><textarea name="resolution_note" class="form-control form-control-sm" rows="2" placeholder="Resolution note"></textarea></div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" name="escalate_to_admin" value="1" id="escalate-{{ report.id }}">
+                  <label class="form-check-label" for="escalate-{{ report.id }}">Escalate to Admin</label>
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary">Update</button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center text-muted py-4">No reports found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

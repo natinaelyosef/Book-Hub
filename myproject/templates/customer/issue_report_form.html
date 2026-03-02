@@ -1,0 +1,1127 @@
+<!-- customer/issue_report_form.html -->
+{% extends 'customer/base.html' %}
+
+{% block content %}
+<div class="report-container">
+    <!-- Header -->
+    <div class="report-header">
+        <div class="header-icon">
+            <i class="bi bi-flag"></i>
+        </div>
+        <div class="header-text">
+            <h1 class="header-title">Report an Issue</h1>
+            <p class="header-subtitle">Help us maintain a safe and fair marketplace for everyone</p>
+        </div>
+    </div>
+    
+    <!-- Main Card -->
+    <div class="report-card">
+        <div class="card-header">
+            <div class="header-tabs">
+                <div class="header-tab active">
+                    <i class="bi bi-pencil-square"></i>
+                    New Report
+                </div>
+                <a href="{% url 'my_issue_reports' %}" class="header-tab">
+                    <i class="bi bi-clock-history"></i>
+                    My Reports
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" id="reportForm">
+                {% csrf_token %}
+                
+                <!-- Progress Steps -->
+                <div class="progress-steps">
+                    <div class="step active">
+                        <div class="step-number">1</div>
+                        <div class="step-label">Details</div>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-label">Evidence</div>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Submit</div>
+                    </div>
+                </div>
+                
+                <!-- Step 1: User & Category -->
+                <div class="form-section" id="step1">
+                    <div class="section-title">
+                        <i class="bi bi-person"></i>
+                        <h3>Report Details</h3>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-shop"></i>
+                                Reported Store Owner
+                            </label>
+                            <div class="select-wrapper">
+                                <select name="reported_user" class="form-control" required id="reportedUser">
+                                    <option value="" disabled selected>Select store owner</option>
+                                    {% for target_user in target_users %}
+                                    <option value="{{ target_user.id }}" data-avatar="{{ target_user.userprofile.avatar.url|default:'' }}">
+                                        {{ target_user.username }}
+                                        {% if target_user.email %}({{ target_user.email }}){% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <i class="select-arrow bi bi-chevron-down"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-tag"></i>
+                                Issue Category
+                            </label>
+                            <div class="select-wrapper">
+                                <select name="category" class="form-control" required id="category">
+                                    <option value="" disabled selected>Select category</option>
+                                    {% for value,label in report_categories %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <i class="select-arrow bi bi-chevron-down"></i>
+                            </div>
+                            
+                            <!-- Category help text -->
+                            <div class="category-help" id="categoryHelp">
+                                <i class="bi bi-info-circle"></i>
+                                <span>Choose the category that best describes your issue</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Description & Attachment -->
+                <div class="form-section" id="step2">
+                    <div class="section-title">
+                        <i class="bi bi-chat-text"></i>
+                        <h3>Issue Details</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-pencil"></i>
+                            Description
+                        </label>
+                        <div class="textarea-wrapper">
+                            <textarea 
+                                name="description" 
+                                rows="5" 
+                                class="form-control" 
+                                required 
+                                placeholder="Please describe the issue clearly. Include relevant details like order numbers, dates, and what happened..."
+                                id="description"></textarea>
+                            <div class="textarea-character" id="charCount">0/2000</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-paperclip"></i>
+                            Attachment (optional)
+                        </label>
+                        
+                        <div class="upload-area" id="uploadArea">
+                            <input type="file" name="attachment" class="file-input" id="fileInput" accept="image/*,.pdf,.doc,.docx,.txt">
+                            <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                            <p class="upload-text">Drag & drop or <span class="upload-link">browse</span> to upload</p>
+                            <p class="upload-hint">Supports: images, PDF, DOC (max 10MB)</p>
+                        </div>
+                        
+                        <div class="file-preview" id="filePreview" style="display: none;">
+                            <i class="bi bi-file-earmark"></i>
+                            <span class="file-name" id="fileName"></span>
+                            <button type="button" class="file-remove" id="removeFile">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="form-text">
+                            <i class="bi bi-camera"></i> Screenshots help us resolve issues faster
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Review & Submit -->
+                <div class="form-section" id="step3" style="display: none;">
+                    <div class="section-title">
+                        <i class="bi bi-check-circle"></i>
+                        <h3>Review & Submit</h3>
+                    </div>
+                    
+                    <div class="review-card" id="reviewCard">
+                        <!-- Will be populated by JS -->
+                    </div>
+                </div>
+                
+                <!-- Navigation Buttons -->
+                <div class="form-navigation">
+                    <button type="button" class="nav-btn prev-btn" id="prevBtn" style="display: none;">
+                        <i class="bi bi-arrow-left"></i>
+                        Previous
+                    </button>
+                    
+                    <button type="button" class="nav-btn next-btn" id="nextBtn">
+                        Next Step
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+                    
+                    <button type="submit" class="nav-btn submit-btn" id="submitBtn" style="display: none;">
+                        <i class="bi bi-send-check"></i>
+                        Submit Report
+                    </button>
+                    
+                    <a href="{% url 'my_issue_reports' %}" class="nav-btn cancel-btn">
+                        <i class="bi bi-x-circle"></i>
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Tips Section -->
+    <div class="tips-section">
+        <div class="tips-header">
+            <i class="bi bi-lightbulb"></i>
+            <h3>Reporting Tips</h3>
+        </div>
+        
+        <div class="tips-grid">
+            <div class="tip-card">
+                <div class="tip-icon">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <h4>Be Timely</h4>
+                <p>Report issues as soon as they occur for faster resolution</p>
+            </div>
+            
+            <div class="tip-card">
+                <div class="tip-icon">
+                    <i class="bi bi-chat"></i>
+                </div>
+                <h4>Be Specific</h4>
+                <p>Include dates, order numbers, and exact details of what happened</p>
+            </div>
+            
+            <div class="tip-card">
+                <div class="tip-icon">
+                    <i class="bi bi-camera"></i>
+                </div>
+                <h4>Add Evidence</h4>
+                <p>Screenshots and files help us understand the issue better</p>
+            </div>
+            
+            <div class="tip-card">
+                <div class="tip-icon">
+                    <i class="bi bi-shield"></i>
+                </div>
+                <h4>Stay Safe</h4>
+                <p>Never share personal information like passwords or payment details</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ===== REPORT CONTAINER ===== */
+.report-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+/* ===== REPORT HEADER ===== */
+.report-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    padding: 2rem 2.5rem;
+    border-radius: var(--radius-xl);
+    color: white;
+    box-shadow: 0 12px 30px var(--primary-glow);
+}
+
+.header-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.header-text {
+    flex: 1;
+}
+
+.header-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.02em;
+}
+
+.header-subtitle {
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+/* ===== REPORT CARD ===== */
+.report-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 2rem;
+}
+
+.card-header {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-raised);
+    padding: 0.5rem 1.5rem;
+}
+
+.header-tabs {
+    display: flex;
+    gap: 2rem;
+}
+
+.header-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    transition: all var(--t-fast);
+    cursor: pointer;
+}
+
+.header-tab i {
+    font-size: 1rem;
+}
+
+.header-tab:hover {
+    color: var(--primary);
+}
+
+.header-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+/* ===== PROGRESS STEPS ===== */
+.progress-steps {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding: 0.5rem;
+    background: var(--bg-raised);
+    border-radius: 999px;
+}
+
+.step {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    background: transparent;
+    transition: all var(--t-fast);
+}
+
+.step.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.step-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.step.active .step-number {
+    background: white;
+    color: var(--primary);
+}
+
+.step-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.step-line {
+    width: 40px;
+    height: 2px;
+    background: var(--border);
+}
+
+/* ===== FORM SECTIONS ===== */
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.section-title i {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.section-title h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Form Grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.form-label i {
+    color: var(--primary);
+    font-size: 0.9rem;
+}
+
+/* Select Wrapper */
+.select-wrapper {
+    position: relative;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    background: var(--bg-raised);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: all var(--t-fast);
+    appearance: none;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px var(--primary-soft);
+}
+
+.select-arrow {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+/* Category Help */
+.category-help {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--primary-soft);
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+    color: var(--primary);
+}
+
+.category-help i {
+    font-size: 0.9rem;
+}
+
+/* Textarea */
+.textarea-wrapper {
+    position: relative;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 120px;
+    font-family: 'Outfit', sans-serif;
+}
+
+.textarea-character {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    background: var(--bg-raised);
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+}
+
+/* Upload Area */
+.upload-area {
+    position: relative;
+    padding: 2rem;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--t-fast);
+}
+
+.upload-area:hover {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+}
+
+.upload-area.dragover {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+}
+
+.file-input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+}
+
+.upload-icon {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.upload-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.upload-link {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.upload-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* File Preview */
+.file-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-top: 0.5rem;
+}
+
+.file-preview i {
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
+.file-name {
+    flex: 1;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.file-remove {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--t-fast);
+}
+
+.file-remove:hover {
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-color: var(--danger);
+}
+
+/* Review Card */
+.review-card {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.review-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+.review-label {
+    width: 100px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.review-value {
+    flex: 1;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+.review-value.attachment {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary);
+}
+
+/* Navigation Buttons */
+.form-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all var(--t-fast);
+    cursor: pointer;
+    border: none;
+}
+
+.prev-btn {
+    background: var(--bg-raised);
+    color: var(--text-secondary);
+    border: 1.5px solid var(--border);
+}
+
+.prev-btn:hover {
+    background: var(--primary-soft);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.next-btn {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.next-btn:hover {
+    background: var(--primary-dark);
+    transform: translateX(4px);
+}
+
+.submit-btn {
+    background: var(--success);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,201,139,0.3);
+}
+
+.submit-btn:hover {
+    background: var(--success-dark, #00b37a);
+    transform: translateY(-2px);
+}
+
+.cancel-btn {
+    background: var(--bg-raised);
+    color: var(--text-secondary);
+    border: 1.5px solid var(--border);
+    margin-left: auto;
+}
+
+.cancel-btn:hover {
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-color: var(--danger);
+}
+
+/* ===== TIPS SECTION ===== */
+.tips-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.tips-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.tips-header i {
+    font-size: 1.2rem;
+    color: var(--accent);
+}
+
+.tips-header h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.tips-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+.tip-card {
+    text-align: center;
+}
+
+.tip-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--primary-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+    color: var(--primary);
+    font-size: 1.2rem;
+    transition: all var(--t);
+}
+
+.tip-card:hover .tip-icon {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-4px);
+}
+
+.tip-card h4 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.tip-card p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .report-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .progress-steps {
+        flex-direction: column;
+        gap: 0.5rem;
+        border-radius: var(--radius);
+        padding: 1rem;
+    }
+    
+    .step {
+        width: 100%;
+    }
+    
+    .step-line {
+        display: none;
+    }
+    
+    .tips-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .form-navigation {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .cancel-btn {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .tips-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-tabs {
+        gap: 1rem;
+    }
+    
+    .header-tab span {
+        display: none;
+    }
+    
+    .header-tab i {
+        font-size: 1.2rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ===== ELEMENTS =====
+    const form = document.getElementById('reportForm');
+    const reportedUser = document.getElementById('reportedUser');
+    const category = document.getElementById('category');
+    const description = document.getElementById('description');
+    const charCount = document.getElementById('charCount');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const progressSteps = document.querySelectorAll('.step');
+    
+    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const removeFile = document.getElementById('removeFile');
+    const reviewCard = document.getElementById('reviewCard');
+    
+    let currentStep = 1;
+    let selectedFile = null;
+    
+    // ===== CHARACTER COUNT =====
+    if (description) {
+        description.addEventListener('input', function() {
+            const length = this.value.length;
+            charCount.textContent = length + '/2000';
+            
+            if (length > 2000) {
+                charCount.style.color = 'var(--danger)';
+            } else {
+                charCount.style.color = 'var(--text-muted)';
+            }
+        });
+    }
+    
+    // ===== FILE UPLOAD =====
+    if (uploadArea) {
+        // Drag and drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.add('dragover');
+            });
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.remove('dragover');
+            });
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            const file = e.dataTransfer.files[0];
+            handleFileSelect(file);
+        });
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                handleFileSelect(this.files[0]);
+            }
+        });
+        
+        function handleFileSelect(file) {
+            selectedFile = file;
+            fileName.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+            filePreview.style.display = 'flex';
+            uploadArea.style.display = 'none';
+        }
+        
+        if (removeFile) {
+            removeFile.addEventListener('click', function() {
+                selectedFile = null;
+                fileInput.value = '';
+                filePreview.style.display = 'none';
+                uploadArea.style.display = 'block';
+            });
+        }
+    }
+    
+    // ===== STEP NAVIGATION =====
+    function updateStep(step) {
+        // Update step visibility
+        step1.style.display = step === 1 ? 'block' : 'none';
+        step2.style.display = step === 2 ? 'block' : 'none';
+        step3.style.display = step === 3 ? 'block' : 'none';
+        
+        // Update buttons
+        prevBtn.style.display = step > 1 ? 'flex' : 'none';
+        
+        if (step === 3) {
+            nextBtn.style.display = 'none';
+            submitBtn.style.display = 'flex';
+            updateReviewCard();
+        } else {
+            nextBtn.style.display = 'flex';
+            submitBtn.style.display = 'none';
+        }
+        
+        // Update progress steps
+        progressSteps.forEach((stepEl, index) => {
+            if (index < step) {
+                stepEl.classList.add('active');
+            } else {
+                stepEl.classList.remove('active');
+            }
+        });
+        
+        currentStep = step;
+    }
+    
+    function validateStep(step) {
+        if (step === 1) {
+            return reportedUser.value && category.value;
+        }
+        if (step === 2) {
+            return description.value.trim().length > 0;
+        }
+        return true;
+    }
+    
+    function updateReviewCard() {
+        const userOption = reportedUser.options[reportedUser.selectedIndex];
+        const userName = userOption ? userOption.textContent : 'Not selected';
+        const categoryText = category.options[category.selectedIndex]?.textContent || 'Not selected';
+        
+        let attachmentHtml = '';
+        if (selectedFile) {
+            attachmentHtml = `
+                <div class="review-item">
+                    <div class="review-label">Attachment</div>
+                    <div class="review-value attachment">
+                        <i class="bi bi-paperclip"></i>
+                        ${selectedFile.name}
+                    </div>
+                </div>
+            `;
+        }
+        
+        reviewCard.innerHTML = `
+            <div class="review-item">
+                <div class="review-label">Reported User</div>
+                <div class="review-value">${userName}</div>
+            </div>
+            <div class="review-item">
+                <div class="review-label">Category</div>
+                <div class="review-value">${categoryText}</div>
+            </div>
+            <div class="review-item">
+                <div class="review-label">Description</div>
+                <div class="review-value">${description.value.substring(0, 200)}${description.value.length > 200 ? '...' : ''}</div>
+            </div>
+            ${attachmentHtml}
+        `;
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            if (validateStep(currentStep)) {
+                if (currentStep < 3) {
+                    updateStep(currentStep + 1);
+                }
+            } else {
+                // Highlight missing fields
+                if (currentStep === 1) {
+                    if (!reportedUser.value) reportedUser.style.borderColor = 'var(--danger)';
+                    if (!category.value) category.style.borderColor = 'var(--danger)';
+                } else if (currentStep === 2) {
+                    if (!description.value.trim()) description.style.borderColor = 'var(--danger)';
+                }
+                
+                setTimeout(() => {
+                    if (reportedUser) reportedUser.style.borderColor = '';
+                    if (category) category.style.borderColor = '';
+                    if (description) description.style.borderColor = '';
+                }, 2000);
+            }
+        });
+    }
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            if (currentStep > 1) {
+                updateStep(currentStep - 1);
+            }
+        });
+    }
+    
+    // ===== CATEGORY HELPER =====
+    const categoryHelp = document.getElementById('categoryHelp');
+    const helpMessages = {
+        'fraud': 'Report suspicious activity, fake listings, or scams',
+        'poor_service': 'Issues with delivery, customer service, or order handling',
+        'inappropriate_behavior': 'Harassment, offensive language, or inappropriate conduct',
+        'policy_violation': 'Store policies not followed or platform rules broken',
+        'abusive_behavior': 'Threatening, bullying, or harmful behavior',
+        'fake_order': 'Suspicious orders or fake purchase attempts',
+        'payment_issue': 'Problems with payments, refunds, or charges',
+        'misuse_platform': 'Misuse of platform features or functions',
+        'other': 'Other issues not covered above'
+    };
+    
+    if (category) {
+        category.addEventListener('change', function() {
+            const value = this.value;
+            const helpText = helpMessages[value] || 'Choose the category that best describes your issue';
+            
+            categoryHelp.innerHTML = `
+                <i class="bi bi-info-circle"></i>
+                <span>${helpText}</span>
+            `;
+            
+            // Reset border
+            this.style.borderColor = '';
+        });
+    }
+    
+    // ===== RESET BORDERS ON INPUT =====
+    if (reportedUser) {
+        reportedUser.addEventListener('change', () => {
+            reportedUser.style.borderColor = '';
+        });
+    }
+    
+    if (description) {
+        description.addEventListener('input', () => {
+            description.style.borderColor = '';
+        });
+    }
+    
+    // ===== FORM SUBMIT =====
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!validateStep(1) || !validateStep(2)) {
+                e.preventDefault();
+                alert('Please complete all required fields');
+            }
+        });
+    }
+    
+    // ===== INIT =====
+    updateStep(1);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,284 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Messages - Store Dashboard{% endblock %}
+
+{% block content %}
+<div class="wa-history-shell">
+    <div class="wa-history-header">
+        <div>
+            <h4>Chats</h4>
+            <p>Messages with your customers</p>
+        </div>
+        {% if total_unread %}
+        <span class="wa-total-unread">{{ total_unread }} unread</span>
+        {% endif %}
+    </div>
+
+    <form method="GET" class="wa-history-search">
+        <div class="wa-search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" name="search" placeholder="Search customer, message, or book" value="{{ search_query }}">
+        </div>
+        <select name="store">
+            <option value="">All stores</option>
+            {% for store in stores %}
+            <option value="{{ store.id }}" {% if selected_store == store.id|stringformat:"s" %}selected{% endif %}>
+                {{ store.store_name }}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit" title="Search">
+            <i class="bi bi-arrow-right"></i>
+        </button>
+    </form>
+
+    <div class="wa-history-list">
+        {% for item in conversation_data %}
+        <a href="{% url 'store_chat_detail' item.conversation.id %}" class="wa-history-item {% if item.unread_count %}unread{% endif %}">
+            <div class="wa-avatar">{{ item.conversation.customer.username|first|upper }}</div>
+
+            <div class="wa-item-body">
+                <div class="wa-item-top">
+                    <h6>{{ item.conversation.customer.username }}</h6>
+                    <span>{{ item.conversation.updated_at|date:"H:i" }}</span>
+                </div>
+
+                <div class="wa-item-message">
+                    {% if item.last_message %}
+                        {% if item.last_message.sender == request.user %}You:{% else %}{{ item.last_message.sender.username }}:{% endif %}
+                        {{ item.last_message.content|truncatechars:70 }}
+                    {% else %}
+                        No messages yet
+                    {% endif %}
+                </div>
+
+                <div class="wa-item-meta">
+                    <span><i class="bi bi-shop"></i> {{ item.conversation.store.store_name }}</span>
+                    {% if item.conversation.book %}
+                    <span><i class="bi bi-book"></i> {{ item.conversation.book.title|truncatechars:34 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if item.unread_count %}
+            <span class="wa-item-unread">{{ item.unread_count }}</span>
+            {% endif %}
+        </a>
+        {% empty %}
+        <div class="wa-history-empty">
+            <i class="bi bi-chat-dots"></i>
+            <h5>No conversations yet</h5>
+            <p>Customer conversations will appear here.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.wa-history-shell {
+    max-width: 980px;
+    margin: 1rem auto;
+    border: 1px solid #d1d7db;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.wa-history-header {
+    background: #075e54;
+    color: #fff;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.wa-history-header h4 {
+    margin: 0;
+}
+
+.wa-history-header p {
+    margin: 2px 0 0;
+    opacity: 0.9;
+    font-size: 13px;
+}
+
+.wa-total-unread {
+    background: #25d366;
+    color: #083f35;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+}
+
+.wa-history-search {
+    background: #f0f2f5;
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: 1fr 220px 44px;
+    gap: 10px;
+    border-bottom: 1px solid #dde2e6;
+}
+
+.wa-search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid #d1d7db;
+    border-radius: 8px;
+    padding: 0 10px;
+}
+
+.wa-search-box input {
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 10px 0;
+    font-size: 14px;
+}
+
+.wa-history-search select {
+    border: 1px solid #d1d7db;
+    border-radius: 8px;
+    padding: 10px;
+    background: #fff;
+    font-size: 14px;
+}
+
+.wa-history-search button {
+    border: none;
+    border-radius: 50%;
+    background: #075e54;
+    color: #fff;
+}
+
+.wa-history-list {
+    background: #fff;
+}
+
+.wa-history-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    text-decoration: none;
+    color: #111b21;
+    border-bottom: 1px solid #edf0f2;
+    transition: background 0.2s;
+    position: relative;
+}
+
+.wa-history-item:hover {
+    background: #f8f9fa;
+}
+
+.wa-history-item.unread {
+    background: #eef8f6;
+}
+
+.wa-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #128c7e;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.wa-item-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.wa-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.wa-item-top h6 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.wa-item-top span {
+    color: #667781;
+    font-size: 12px;
+}
+
+.wa-item-message {
+    color: #54656f;
+    font-size: 14px;
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wa-item-meta {
+    margin-top: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: #667781;
+    font-size: 12px;
+}
+
+.wa-item-unread {
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #25d366;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+.wa-history-empty {
+    text-align: center;
+    padding: 56px 20px;
+    color: #667781;
+}
+
+.wa-history-empty i {
+    font-size: 48px;
+}
+
+.wa-history-empty h5 {
+    margin-top: 10px;
+    color: #111b21;
+}
+
+@media (max-width: 768px) {
+    .wa-history-shell {
+        margin: 0.5rem;
+    }
+
+    .wa-history-search {
+        grid-template-columns: 1fr;
+    }
+
+    .wa-history-search button {
+        height: 42px;
+        border-radius: 8px;
+    }
+
+    .wa-item-message {
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+}
+</style>
+{% endblock %}

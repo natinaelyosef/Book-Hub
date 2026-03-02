@@ -1,0 +1,529 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book-Hub · admin login</title>
+  <!-- Font Awesome 5 -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+  <!-- Google Font: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #edf3fa;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      color: #1e293b;
+    }
+
+    .login-wrapper {
+      max-width: 1060px;
+      width: 100%;
+      background: white;
+      border-radius: 48px;
+      box-shadow: 0 30px 60px -15px rgba(15, 42, 68, 0.25);
+      display: flex;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+
+    /* ————— left side: brand / welcome back ————— */
+    .brand-panel {
+      flex: 1.1;
+      background: #0f2a44;
+      padding: 3rem 2.5rem;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .brand-panel::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 200px;
+      height: 200px;
+      background: #f5b042;
+      opacity: 0.05;
+      border-radius: 0 80% 0 0;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 1.9rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 2.5rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand-logo i {
+      background: #f5b042;
+      color: #0f2a44;
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+
+    .brand-logo span {
+      color: #f5b042;
+      font-weight: 300;
+    }
+
+    .welcome-message h2 {
+      font-size: 2.3rem;
+      font-weight: 600;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+
+    .welcome-message p {
+      color: #b6cde3;
+      font-size: 1.1rem;
+      margin-bottom: 3rem;
+      max-width: 85%;
+    }
+
+    .admin-tip {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(4px);
+      padding: 1.3rem 1.8rem;
+      border-radius: 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 1rem;
+      border: 1px solid rgba(245,176,66,0.3);
+    }
+
+    .admin-tip i {
+      color: #f5b042;
+      font-size: 1.8rem;
+    }
+
+    .admin-tip div {
+      font-weight: 500;
+    }
+
+    .admin-tip small {
+      display: block;
+      color: #9bb5d3;
+      font-size: 0.85rem;
+    }
+
+    .footer-stats {
+      margin-top: 2.5rem;
+      color: #5f7da0;
+      font-size: 0.9rem;
+      display: flex;
+      gap: 2rem;
+    }
+
+    .footer-stats i {
+      color: #f5b042;
+    }
+
+       .foot-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #f2f7ff;
+      border-radius: 40px;
+      padding: 0.7rem 1.4rem;
+      border: 1px solid #dde6f2;
+      color: #0f2a44;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+
+    .foot-link i {
+      color: #f5b042;
+    }
+
+    .foot-link:hover {
+      background: #e2ecf9;
+      border-color: #f5b042;
+    }
+
+    /* ————— right side: login form ————— */
+    .form-panel {
+      flex: 1.3;
+      padding: 3rem 3.5rem;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .form-header {
+      margin-bottom: 2.2rem;
+    }
+
+    .form-header h3 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #0f2a44;
+    }
+
+    .form-header p {
+      color: #5e738f;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-header p i {
+      color: #f5b042;
+    }
+
+    /* Message alerts */
+    .message {
+      padding: 1rem 1.5rem;
+      border-radius: 16px;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .message.error {
+      background: #fee9e9;
+      border: 1px solid #fbc5c5;
+      color: #b91c1c;
+    }
+
+    .message.success {
+      background: #e3f9e5;
+      border: 1px solid #b8e5be;
+      color: #1e7b48;
+    }
+
+    .message i {
+      font-size: 1.2rem;
+    }
+
+    /* input groups */
+    .input-group {
+      margin-bottom: 1.8rem;
+    }
+
+    .input-group label {
+      display: block;
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: #344e6c;
+      margin-bottom: 0.5rem;
+    }
+
+    .input-group label i {
+      color: #f5b042;
+      width: 22px;
+      margin-right: 6px;
+    }
+
+    /* field wrapper for relative positioning (used for password toggle) */
+    .field-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 1rem 1.4rem;
+      background: #f8fafd;
+      border: 1.5px solid #e3eaf2;
+      border-radius: 24px;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+      transition: 0.2s;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #f5b042;
+      background: #ffffff;
+      box-shadow: 0 4px 14px rgba(245,176,66,0.15);
+    }
+
+    /* password toggle button (eye) */
+    .password-toggle {
+      position: absolute;
+      right: 1.2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #8ba0bc;
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 0.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+      z-index: 2;
+    }
+    .password-toggle:hover {
+      color: #f5b042;
+    }
+
+    /* extra options (remember + forgot) */
+    .login-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0.8rem 0 2.2rem;
+    }
+
+    .remember {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .remember input {
+      width: 18px;
+      height: 18px;
+      accent-color: #f5b042;
+    }
+
+    .remember label {
+      color: #2d4a6e;
+      font-size: 0.95rem;
+    }
+
+    .forgot-link {
+      color: #f5b042;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.95rem;
+      border-bottom: 1px dashed #f5b042;
+    }
+
+    .btn-login {
+      background: #0f2a44;
+      color: white;
+      border: none;
+      padding: 1.2rem 2rem;
+      width: 100%;
+      font-size: 1.2rem;
+      font-weight: 600;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 8px 18px -6px rgba(15,42,68,0.4);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .btn-login i {
+      color: #f5b042;
+      font-size: 1.2rem;
+    }
+
+    .btn-login:hover {
+      background: #1a3757;
+      transform: scale(1.01);
+    }
+
+    .register-prompt {
+      text-align: center;
+      margin-top: 2rem;
+      color: #6c85a3;
+      font-size: 0.95rem;
+    }
+
+    .register-prompt a {
+      color: #0f2a44;
+      font-weight: 700;
+      text-decoration: none;
+      border-bottom: 2px solid #f5b042;
+      padding-bottom: 2px;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #e5ecf5;
+      margin: 2rem 0 0.8rem;
+    }
+
+    .demo-credentials {
+      background: #f2f7ff;
+      border-radius: 18px;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.2rem;
+      border: 1px solid #dde6f2;
+    }
+
+    .demo-credentials span {
+      font-weight: 600;
+      color: #0f2a44;
+      font-size: 0.9rem;
+    }
+
+    .demo-credentials i {
+      color: #f5b042;
+      margin-right: 0.4rem;
+    }
+
+    .demo-credentials small {
+      color: #4b6b8a;
+      background: white;
+      padding: 0.3rem 0.9rem;
+      border-radius: 50px;
+      font-family: monospace;
+      font-weight: 500;
+      border: 1px solid #cbd9ec;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <!-- left side: brand + admin welcome -->
+    <div class="brand-panel">
+      <div>
+        <div class="brand-logo">
+          <i class="fas fa-book-open"></i>
+          <div>book<span>-hub</span></div>
+        </div>
+        <div class="welcome-message">
+          <h2>welcome back,<br>administrator</h2>
+          <p>Access the dashboard to manage books, stores, and insights.</p>
+        </div>
+        <div class="admin-tip">
+          <i class="fas fa-lock"></i>
+          <div>
+            secure admin access <small>your session is protected</small>
+          </div>
+        </div>
+      </div>
+   
+    </div>
+
+    <!-- right side: login form -->
+    <div class="form-panel">
+      <div class="form-header">
+        <h3>admin login</h3>
+        <p><i class="fas fa-key"></i> enter your credentials</p>
+      </div>
+
+      <!-- Display messages -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+            <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}"></i>
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" action="{% url 'admin_login' %}" id="loginForm">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'super_admin' %}">
+        
+        <!-- email / username -->
+        <div class="input-group">
+          <label><i class="fas fa-envelope"></i> email or username</label>
+          <input type="text" name="username" class="input-field" placeholder="admin@book-hub.com" required>
+        </div>
+
+        <!-- password with toggle (FIXED) -->
+        <div class="input-group">
+          <label><i class="fas fa-lock"></i> password</label>
+          <div class="field-wrapper">
+            <input type="password" name="password" class="input-field" id="passwordField" placeholder="············" required style="padding-right: 3rem;">
+            <button type="button" class="password-toggle" id="passwordToggle" aria-label="Show/hide password">
+              <i class="fas fa-eye-slash" id="passwordToggleIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- remember me & forgot -->
+        <div class="login-options">
+          <div class="remember">
+            <input type="checkbox" name="remember" id="remember">
+            <label for="remember">keep me signed in</label>
+          </div>
+          <a href="#" class="forgot-link">forgot password?</a>
+        </div>
+
+        <!-- login button -->
+        <button type="submit" class="btn-login" id="submitBtn">
+          <i class="fas fa-sign-in-alt"></i> log in to dashboard
+        </button>
+
+       
+
+        <hr>
+
+        <div class="register-prompt" style="margin-top: 0.8rem;">
+          <span style="color:#567594;">normal admin access? </span>
+          <a href="{% url 'normal_admin_login' %}">log in with reference number</a>
+        </div>
+
+        <!-- subtle note -->
+        <div class="register-prompt">
+      
+      <a href="{% url 'index' %}" class="foot-link">
+        <i class="fas fa-home"></i> back to home
+      </a>
+    </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript for password toggle -->
+  <script>
+    (function() {
+      const passwordField = document.getElementById('passwordField');
+      const passwordToggle = document.getElementById('passwordToggle');
+      const passwordToggleIcon = document.getElementById('passwordToggleIcon');
+
+      if (passwordToggle && passwordField) {
+        passwordToggle.addEventListener('click', function() {
+          const show = passwordField.type === 'password';
+          passwordField.type = show ? 'text' : 'password';
+          passwordToggleIcon.className = show ? 'fas fa-eye' : 'fas fa-eye-slash';
+        });
+      }
+
+      // Optional: simple loading state on submit
+      document.getElementById('loginForm')?.addEventListener('submit', function(e) {
+        const btn = document.getElementById('submitBtn');
+        btn.innerHTML = `<i class="fas fa-spinner fa-pulse"></i> authenticating...`;
+        btn.disabled = true;
+      });
+    })();
+  </script>
+</body>
+</html>

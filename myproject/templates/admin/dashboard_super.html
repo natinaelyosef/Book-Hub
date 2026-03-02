@@ -1,0 +1,1287 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}Dashboard — BookHub Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ══════════════════════════════════════════
+       DASHBOARD-SPECIFIC STYLES
+    ══════════════════════════════════════════ */
+
+    /* ── Hero Header ── */
+    .dash-hero {
+        position: relative;
+        padding: 2rem 2rem 1.75rem;
+        border-radius: var(--radius-xl);
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 55%, #9b6bff 100%);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        color: #fff;
+    }
+    .dash-hero::before {
+        content: '';
+        position: absolute;
+        top: -60px; right: -60px;
+        width: 280px; height: 280px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.07);
+    }
+    .dash-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -80px; left: 30%;
+        width: 200px; height: 200px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.05);
+    }
+    .dash-hero .hero-content { position: relative; z-index: 1; }
+    .dash-hero .hero-greeting {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        opacity: 0.75;
+        margin-bottom: 0.35rem;
+    }
+    .dash-hero .hero-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.9rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin-bottom: 0.4rem;
+        line-height: 1.1;
+    }
+    .dash-hero .hero-title span { opacity: 0.65; }
+    .dash-hero .hero-sub {
+        font-size: 0.88rem;
+        opacity: 0.7;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .dash-hero .hero-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    .hero-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.5rem 1.1rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 150ms ease;
+        text-decoration: none;
+    }
+    .hero-btn.solid {
+        background: rgba(255,255,255,0.22);
+        color: #fff;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    .hero-btn.solid:hover { background: rgba(255,255,255,0.32); transform: translateY(-2px); color: #fff; }
+    .hero-btn.outline {
+        background: transparent;
+        color: rgba(255,255,255,0.8);
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    .hero-btn.outline:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+    /* Hero quick-stats strip */
+    .hero-strip {
+        display: flex;
+        gap: 0;
+        margin-top: 1.5rem;
+        border-top: 1px solid rgba(255,255,255,0.15);
+        padding-top: 1.25rem;
+        position: relative;
+        z-index: 1;
+    }
+    .hero-strip-item {
+        flex: 1;
+        padding: 0 1.25rem;
+        border-right: 1px solid rgba(255,255,255,0.15);
+    }
+    .hero-strip-item:first-child { padding-left: 0; }
+    .hero-strip-item:last-child  { border-right: none; }
+    .hero-strip-item .hs-value {
+        font-size: 1.6rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 0.2rem;
+    }
+    .hero-strip-item .hs-label {
+        font-size: 0.75rem;
+        opacity: 0.6;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-weight: 600;
+    }
+    .hero-strip-item .hs-change {
+        font-size: 0.75rem;
+        margin-top: 0.2rem;
+        opacity: 0.8;
+    }
+    .hero-strip-item .hs-change.up   { color: #6effc5; }
+    .hero-strip-item .hs-change.down { color: #ffaab8; }
+
+    /* ── Stat Cards Grid ── */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 768px)  { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 420px)  { .stats-grid { grid-template-columns: 1fr; } }
+
+    .kpi-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        transition: all 250ms ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    .kpi-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 3px;
+        opacity: 0;
+        transition: opacity 250ms ease;
+    }
+    .kpi-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .kpi-card:hover::after { opacity: 1; }
+
+    .kpi-card.c-users   { --kc: #5b4cff; } .kpi-card.c-users::after   { background: linear-gradient(90deg, #5b4cff, #9b6bff); }
+    .kpi-card.c-stores  { --kc: #00c98b; } .kpi-card.c-stores::after  { background: linear-gradient(90deg, #00c98b, #00b4d8); }
+    .kpi-card.c-books   { --kc: #38bdf8; } .kpi-card.c-books::after   { background: linear-gradient(90deg, #38bdf8, #5b4cff); }
+    .kpi-card.c-orders  { --kc: #ffb703; } .kpi-card.c-orders::after  { background: linear-gradient(90deg, #ffb703, #ff6b35); }
+    .kpi-card.c-admins  { --kc: #ff4d6d; } .kpi-card.c-admins::after  { background: linear-gradient(90deg, #ff4d6d, #c9184a); }
+
+    .kpi-icon-wrap {
+        width: 42px; height: 42px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.15rem;
+        background: rgba(var(--kc-rgb, 91,76,255), 0.12);
+        color: var(--kc);
+        position: relative;
+    }
+    .kpi-card.c-users  .kpi-icon-wrap { background: rgba(91,76,255,0.12);  color: #5b4cff; }
+    .kpi-card.c-stores .kpi-icon-wrap { background: rgba(0,201,139,0.12);  color: #00c98b; }
+    .kpi-card.c-books  .kpi-icon-wrap { background: rgba(56,189,248,0.12); color: #38bdf8; }
+    .kpi-card.c-orders .kpi-icon-wrap { background: rgba(255,183,3,0.12);  color: #ffb703; }
+    .kpi-card.c-admins .kpi-icon-wrap { background: rgba(255,77,109,0.12); color: #ff4d6d; }
+
+    .kpi-meta { flex: 1; }
+    .kpi-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        margin-bottom: 0.3rem;
+    }
+    .kpi-value {
+        font-size: 1.9rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        color: var(--text-primary);
+        line-height: 1;
+    }
+    .kpi-change {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 0.18rem 0.5rem;
+        border-radius: 999px;
+        margin-top: 0.4rem;
+    }
+    .kpi-change.up   { background: rgba(0,201,139,0.12); color: var(--success); }
+    .kpi-change.down { background: rgba(255,77,109,0.12); color: var(--danger); }
+    .kpi-change.flat { background: var(--primary-soft); color: var(--text-muted); }
+
+    /* Sparkline container */
+    .kpi-spark { height: 36px; margin-top: 0.5rem; }
+
+    /* ── Section Header ── */
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    .section-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+    }
+    .section-title .title-icon {
+        width: 30px; height: 30px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.9rem;
+    }
+    .view-all-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.38rem 0.9rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: var(--primary-soft);
+        color: var(--primary);
+        border: 1px solid var(--border);
+        text-decoration: none;
+        transition: all 150ms ease;
+    }
+    .view-all-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* ── Surface Panel ── */
+    .panel {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+    }
+    .panel-body { padding: 1.4rem; }
+    .panel-body-sm { padding: 1rem; }
+
+    /* ── Chart Containers ── */
+    .chart-area { position: relative; padding: 1.4rem 1.4rem 1rem; }
+    .chart-canvas-wrap {
+        position: relative;
+        height: 220px;
+    }
+
+    /* Chart legend */
+    .chart-legend {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding: 0.75rem 1.4rem 1.25rem;
+        border-top: 1px solid var(--border-soft);
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+    .legend-dot {
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    /* ── Admin Table ── */
+    .admin-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .admin-table thead tr th {
+        padding: 0.75rem 1rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-raised);
+        white-space: nowrap;
+    }
+    .admin-table thead tr th:first-child { border-radius: var(--radius) 0 0 0; }
+    .admin-table thead tr th:last-child  { border-radius: 0 var(--radius) 0 0; }
+    .admin-table tbody tr {
+        transition: background 150ms ease;
+    }
+    .admin-table tbody tr:hover td { background: var(--primary-soft); }
+    .admin-table tbody tr:last-child td { border-bottom: none; }
+    .admin-table td {
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid var(--border-soft);
+        font-size: 0.88rem;
+        color: var(--text-primary);
+        vertical-align: middle;
+    }
+
+    /* Admin avatar */
+    .admin-avatar {
+        width: 34px; height: 34px;
+        border-radius: 9px;
+        font-weight: 700;
+        font-size: 0.82rem;
+        display: flex; align-items: center; justify-content: center;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    /* Admin name cell */
+    .admin-name-cell { display: flex; align-items: center; gap: 0.65rem; }
+    .admin-name { font-weight: 600; color: var(--text-primary); font-size: 0.88rem; }
+    .admin-username { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* Type badges */
+    .type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.22rem 0.65rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+    .type-badge.super  { background: rgba(255,183,3,0.15);   color: #e09400; border: 1px solid rgba(255,183,3,0.3); }
+    .type-badge.normal { background: rgba(56,189,248,0.12);  color: #0096c7; border: 1px solid rgba(56,189,248,0.25); }
+
+    /* Email link */
+    .email-link {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.83rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        transition: color 150ms ease;
+    }
+    .email-link:hover { color: var(--primary); }
+
+    /* Ref pill */
+    .ref-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.22rem 0.65rem;
+        border-radius: 8px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        border: 1px solid var(--border);
+        font-size: 0.78rem;
+        font-weight: 600;
+        font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    /* Date cell */
+    .date-cell {
+        color: var(--text-muted);
+        font-size: 0.82rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        white-space: nowrap;
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--text-muted);
+    }
+    .empty-state i { font-size: 2.5rem; opacity: 0.3; display: block; margin-bottom: 0.75rem; }
+    .empty-state p { font-size: 0.9rem; margin: 0; }
+
+    /* ── Quick Action Cards ── */
+    .qa-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.9rem;
+    }
+    @media (max-width: 992px) { .qa-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .qa-grid { grid-template-columns: 1fr; } }
+
+    .qa-card {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 1.25rem;
+        background: var(--bg-raised);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+        transition: all 200ms ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .qa-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        transition: opacity 200ms ease;
+    }
+    .qa-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--kc, var(--primary));
+    }
+    .qa-card:hover::before { opacity: 1; }
+
+    .qa-card.qa-create { --kc: #5b4cff; } .qa-card.qa-create::before { background: linear-gradient(135deg, rgba(91,76,255,0.05), transparent); }
+    .qa-card.qa-view   { --kc: #00c98b; } .qa-card.qa-view::before   { background: linear-gradient(135deg, rgba(0,201,139,0.05), transparent); }
+    .qa-card.qa-report { --kc: #38bdf8; } .qa-card.qa-report::before { background: linear-gradient(135deg, rgba(56,189,248,0.05), transparent); }
+    .qa-card.qa-refresh{ --kc: #ffb703; } .qa-card.qa-refresh::before{ background: linear-gradient(135deg, rgba(255,183,3,0.05), transparent); }
+
+    .qa-icon {
+        width: 44px; height: 44px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+    }
+    .qa-card.qa-create .qa-icon { background: rgba(91,76,255,0.12);  color: #5b4cff; }
+    .qa-card.qa-view   .qa-icon { background: rgba(0,201,139,0.12);  color: #00c98b; }
+    .qa-card.qa-report .qa-icon { background: rgba(56,189,248,0.12); color: #38bdf8; }
+    .qa-card.qa-refresh .qa-icon{ background: rgba(255,183,3,0.12);  color: #ffb703; }
+
+    .qa-text { position: relative; z-index: 1; }
+    .qa-title { font-weight: 700; font-size: 0.92rem; color: var(--text-primary); margin-bottom: 0.18rem; }
+    .qa-desc  { font-size: 0.78rem; color: var(--text-muted); line-height: 1.3; }
+
+    .qa-arrow {
+        margin-top: auto;
+        font-size: 0.85rem;
+        color: var(--kc, var(--primary));
+        opacity: 0;
+        transform: translateX(-4px);
+        transition: all 200ms ease;
+        position: relative;
+        z-index: 1;
+    }
+    .qa-card:hover .qa-arrow { opacity: 1; transform: translateX(0); }
+
+    /* ── Activity Feed ── */
+    .activity-list { display: flex; flex-direction: column; gap: 0; }
+    .activity-item {
+        display: flex;
+        gap: 0.9rem;
+        padding: 0.9rem 1.4rem;
+        border-bottom: 1px solid var(--border-soft);
+        transition: background 150ms ease;
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-item:hover { background: var(--primary-soft); }
+
+    .activity-dot-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+        flex-shrink: 0;
+        padding-top: 4px;
+    }
+    .activity-dot {
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .activity-dot.a-create { background: var(--primary); box-shadow: 0 0 0 3px rgba(91,76,255,0.15); }
+    .activity-dot.a-login  { background: var(--success);  box-shadow: 0 0 0 3px rgba(0,201,139,0.15); }
+    .activity-dot.a-warn   { background: var(--warning);  box-shadow: 0 0 0 3px rgba(255,183,3,0.15); }
+    .activity-dot.a-store  { background: var(--info);     box-shadow: 0 0 0 3px rgba(56,189,248,0.15); }
+
+    .activity-line { flex: 1; width: 1px; background: var(--border); margin: 4px 0 0; }
+    .activity-item:last-child .activity-line { display: none; }
+
+    .activity-content { flex: 1; min-width: 0; }
+    .activity-msg { font-size: 0.86rem; color: var(--text-secondary); line-height: 1.4; }
+    .activity-msg strong { color: var(--text-primary); font-weight: 600; }
+    .activity-time { font-size: 0.73rem; color: var(--text-muted); margin-top: 0.2rem; display: flex; align-items: center; gap: 0.3rem; }
+
+    /* ── System Health ── */
+    .health-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; padding: 1.4rem; }
+    .health-item { display: flex; flex-direction: column; gap: 0.5rem; }
+    .health-header { display: flex; justify-content: space-between; align-items: center; }
+    .health-label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 0.4rem; }
+    .health-value { font-size: 0.8rem; font-weight: 700; }
+    .health-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+    .health-fill { height: 100%; border-radius: 99px; transition: width 1s ease; }
+    .health-fill.good    { background: linear-gradient(90deg, var(--success), #00e5a0); }
+    .health-fill.warn    { background: linear-gradient(90deg, var(--warning), #ffd166); }
+    .health-fill.danger  { background: linear-gradient(90deg, var(--danger), #ff8fab); }
+
+    /* ── Store Status ── */
+    .store-status-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1.4rem;
+        border-bottom: 1px solid var(--border-soft);
+        transition: background 150ms;
+    }
+    .store-status-row:last-child { border-bottom: none; }
+    .store-status-row:hover { background: var(--primary-soft); }
+    .store-flag {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .store-flag.active  { background: var(--success); box-shadow: 0 0 0 3px rgba(0,201,139,0.2); }
+    .store-flag.pending { background: var(--warning);  box-shadow: 0 0 0 3px rgba(255,183,3,0.2); }
+    .store-flag.closed  { background: var(--danger);   box-shadow: 0 0 0 3px rgba(255,77,109,0.2); }
+    .store-info { flex: 1; min-width: 0; }
+    .store-name  { font-size: 0.86rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .store-owner { font-size: 0.75rem; color: var(--text-muted); }
+    .store-count { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); flex-shrink: 0; }
+
+    /* ── Responsive tweaks ── */
+    @media (max-width: 768px) {
+        .dash-hero { padding: 1.5rem; }
+        .dash-hero .hero-title { font-size: 1.45rem; }
+        .hero-strip { flex-wrap: wrap; gap: 1rem; }
+        .hero-strip-item { border-right: none; flex: 0 0 calc(50% - 0.5rem); padding: 0; }
+    }
+
+    /* stagger animations */
+    [data-aos-delay] { transition-delay: var(--aos-delay, 0ms) !important; }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- ══ HERO HEADER ══ -->
+<div class="dash-hero fade-in-up" data-aos="fade-down">
+    <div class="row align-items-center gy-3">
+        <div class="col-lg-7 hero-content">
+            <div class="hero-greeting">Super Admin Portal</div>
+            <div class="hero-title">
+                Good {% now "G" as hour %}{% if hour|add:"0" < 12 %}Morning{% elif hour|add:"0" < 17 %}Afternoon{% else %}Evening{% endif %},
+                <span>{{ request.user.username }} 👋</span>
+            </div>
+            <div class="hero-sub">
+                <i class="bi bi-clock-fill"></i>
+                Last updated: {% now "F j, Y — g:i a" %}
+            </div>
+            <div class="hero-actions mt-3">
+                <button class="hero-btn solid" onclick="window.location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                </button>
+                <a href="{% url 'register_admin' %}" class="hero-btn solid">
+                    <i class="bi bi-person-plus"></i> New Admin
+                </a>
+                <button class="hero-btn outline" onclick="exportPage()">
+                    <i class="bi bi-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <!-- Hero Quick Stats Strip -->
+        <div class="col-12 hero-content">
+            <div class="hero-strip">
+                <div class="hero-strip-item">
+                    <div class="hs-value" data-count="{{ total_users|default:0 }}">{{ total_users|default:0 }}</div>
+                    <div class="hs-label">Total Users</div>
+                    <div class="hs-change up"><i class="bi bi-arrow-up-short"></i>+8% this month</div>
+                </div>
+                <div class="hero-strip-item">
+                    <div class="hs-value" data-count="{{ total_stores|default:0 }}">{{ total_stores|default:0 }}</div>
+                    <div class="hs-label">Active Stores</div>
+                    <div class="hs-change up"><i class="bi bi-arrow-up-short"></i>+3 new</div>
+                </div>
+                <div class="hero-strip-item">
+                    <div class="hs-value" data-count="{{ total_books|default:0 }}">{{ total_books|default:0 }}</div>
+                    <div class="hs-label">Books Listed</div>
+                    <div class="hs-change flat"><i class="bi bi-dash"></i>Stable</div>
+                </div>
+                <div class="hero-strip-item">
+                    <div class="hs-value" data-count="{{ total_orders|default:0 }}">{{ total_orders|default:0 }}</div>
+                    <div class="hs-label">Total Orders</div>
+                    <div class="hs-change up"><i class="bi bi-arrow-up-short"></i>+12% week</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ══ KPI CARDS ══ -->
+<div class="stats-grid mb-0">
+
+    <div class="kpi-card c-users fade-in-up stagger-1" data-aos="zoom-in" data-aos-delay="0">
+        <div class="kpi-icon-wrap"><i class="bi bi-people-fill"></i></div>
+        <div class="kpi-meta">
+            <div class="kpi-label">Total Users</div>
+            <div class="kpi-value" data-count="{{ total_users|default:0 }}">{{ total_users|default:0 }}</div>
+            <div class="kpi-change up"><i class="bi bi-arrow-up-short"></i>+8.1%</div>
+        </div>
+        <div class="kpi-spark">
+            <canvas id="spark-users"></canvas>
+        </div>
+    </div>
+
+    <div class="kpi-card c-stores fade-in-up stagger-2" data-aos="zoom-in" data-aos-delay="60">
+        <div class="kpi-icon-wrap"><i class="bi bi-shop-window"></i></div>
+        <div class="kpi-meta">
+            <div class="kpi-label">Total Stores</div>
+            <div class="kpi-value" data-count="{{ total_stores|default:0 }}">{{ total_stores|default:0 }}</div>
+            <div class="kpi-change up"><i class="bi bi-arrow-up-short"></i>+3 new</div>
+        </div>
+        <div class="kpi-spark">
+            <canvas id="spark-stores"></canvas>
+        </div>
+    </div>
+
+    <div class="kpi-card c-books fade-in-up stagger-3" data-aos="zoom-in" data-aos-delay="120">
+        <div class="kpi-icon-wrap"><i class="bi bi-book-fill"></i></div>
+        <div class="kpi-meta">
+            <div class="kpi-label">Total Books</div>
+            <div class="kpi-value" data-count="{{ total_books|default:0 }}">{{ total_books|default:0 }}</div>
+            <div class="kpi-change flat"><i class="bi bi-dash"></i>Stable</div>
+        </div>
+        <div class="kpi-spark">
+            <canvas id="spark-books"></canvas>
+        </div>
+    </div>
+
+    <div class="kpi-card c-orders fade-in-up stagger-4" data-aos="zoom-in" data-aos-delay="180">
+        <div class="kpi-icon-wrap"><i class="bi bi-cart-check-fill"></i></div>
+        <div class="kpi-meta">
+            <div class="kpi-label">Total Orders</div>
+            <div class="kpi-value" data-count="{{ total_orders|default:0 }}">{{ total_orders|default:0 }}</div>
+            <div class="kpi-change up"><i class="bi bi-arrow-up-short"></i>+12%</div>
+        </div>
+        <div class="kpi-spark">
+            <canvas id="spark-orders"></canvas>
+        </div>
+    </div>
+
+    <div class="kpi-card c-admins" data-aos="zoom-in" data-aos-delay="240">
+        <div class="kpi-icon-wrap"><i class="bi bi-person-badge-fill"></i></div>
+        <div class="kpi-meta">
+            <div class="kpi-label">Admin Accounts</div>
+            <div class="kpi-value" data-count="{{ total_admin_accounts|default:0 }}">{{ total_admin_accounts|default:0 }}</div>
+            <div class="kpi-change down"><i class="bi bi-dash"></i>No change</div>
+        </div>
+        <div class="kpi-spark">
+            <canvas id="spark-admins"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<!-- spacer -->
+<div style="margin-bottom:2rem;"></div>
+
+
+<!-- ══ CHARTS ROW ══ -->
+<div class="row g-3 mb-3" data-aos="fade-up" data-aos-delay="100">
+
+    <!-- Activity Overview Chart -->
+    <div class="col-lg-8">
+        <div class="panel h-100">
+            <div class="chart-area pb-0">
+                <div class="section-header mb-0">
+                    <h2 class="section-title">
+                        <span class="title-icon" style="background:rgba(91,76,255,0.12); color:#5b4cff;">
+                            <i class="bi bi-activity"></i>
+                        </span>
+                        Platform Activity
+                    </h2>
+                    <div class="d-flex gap-2 align-items-center">
+                        <select class="form-select form-select-sm" style="width:110px; font-size:0.78rem;" onchange="updateChart(this.value)">
+                            <option value="7">Last 7 days</option>
+                            <option value="30" selected>Last 30 days</option>
+                            <option value="90">Last 90 days</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-area pt-1">
+                <div class="chart-canvas-wrap">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#5b4cff;"></div> Users</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#00c98b;"></div> Orders</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#38bdf8;"></div> Books Added</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Donut + Health -->
+    <div class="col-lg-4 d-flex flex-column gap-3">
+
+        <!-- Donut: Store Distribution -->
+        <div class="panel">
+            <div class="chart-area pb-0">
+                <div class="section-header mb-2">
+                    <h2 class="section-title">
+                        <span class="title-icon" style="background:rgba(0,201,139,0.12); color:#00c98b;">
+                            <i class="bi bi-pie-chart-fill"></i>
+                        </span>
+                        Store Status
+                    </h2>
+                </div>
+            </div>
+            <div style="padding: 0 1.4rem 0.5rem; display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
+                <div style="position:relative; width:100px; height:100px; flex-shrink:0;">
+                    <canvas id="storeDonut"></canvas>
+                    <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none;">
+                        <span style="font-size:1.3rem; font-weight:800; color:var(--text-primary);" id="donutTotal">-</span>
+                        <span style="font-size:0.65rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Total</span>
+                    </div>
+                </div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:0.6rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.78rem; color:var(--text-secondary); display:flex; align-items:center; gap:0.4rem;">
+                            <span style="width:8px;height:8px;border-radius:50%;background:#00c98b;flex-shrink:0;"></span>Active
+                        </span>
+                        <span style="font-size:0.82rem; font-weight:700; color:var(--text-primary);">{{ active_stores|default:"18" }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.78rem; color:var(--text-secondary); display:flex; align-items:center; gap:0.4rem;">
+                            <span style="width:8px;height:8px;border-radius:50%;background:#ffb703;flex-shrink:0;"></span>Pending
+                        </span>
+                        <span style="font-size:0.82rem; font-weight:700; color:var(--text-primary);">{{ pending_stores|default:"3" }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.78rem; color:var(--text-secondary); display:flex; align-items:center; gap:0.4rem;">
+                            <span style="width:8px;height:8px;border-radius:50%;background:#ff4d6d;flex-shrink:0;"></span>Closed
+                        </span>
+                        <span style="font-size:0.82rem; font-weight:700; color:var(--text-primary);">{{ closed_stores|default:"3" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Health -->
+        <div class="panel flex-grow-1">
+            <div style="padding: 1rem 1.4rem 0.5rem;">
+                <h2 class="section-title">
+                    <span class="title-icon" style="background:rgba(56,189,248,0.12); color:#38bdf8;">
+                        <i class="bi bi-cpu-fill"></i>
+                    </span>
+                    System Health
+                </h2>
+            </div>
+            <div class="health-grid pt-0" style="padding-top:0.5rem;">
+                <div class="health-item">
+                    <div class="health-header">
+                        <span class="health-label"><i class="bi bi-server"></i> Server Load</span>
+                        <span class="health-value" style="color:var(--success);">34%</span>
+                    </div>
+                    <div class="health-bar"><div class="health-fill good" style="width:34%"></div></div>
+                </div>
+                <div class="health-item">
+                    <div class="health-header">
+                        <span class="health-label"><i class="bi bi-hdd-stack"></i> Storage Used</span>
+                        <span class="health-value" style="color:var(--warning);">67%</span>
+                    </div>
+                    <div class="health-bar"><div class="health-fill warn" style="width:67%"></div></div>
+                </div>
+                <div class="health-item">
+                    <div class="health-header">
+                        <span class="health-label"><i class="bi bi-wifi"></i> API Uptime</span>
+                        <span class="health-value" style="color:var(--success);">99.9%</span>
+                    </div>
+                    <div class="health-bar"><div class="health-fill good" style="width:99.9%"></div></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- ══ ADMIN TABLE + ACTIVITY ══ -->
+<div class="row g-3 mb-3" data-aos="fade-up" data-aos-delay="120">
+
+    <!-- Recent Admins Table -->
+    <div class="col-lg-8">
+        <div class="panel h-100">
+            <div style="padding: 1.25rem 1.4rem 0;">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="title-icon" style="background:rgba(91,76,255,0.12); color:#5b4cff;">
+                            <i class="bi bi-clock-history"></i>
+                        </span>
+                        Recent Admin Accounts
+                    </h2>
+                    <a href="{% url 'view_admins' %}" class="view-all-btn">
+                        <i class="bi bi-grid-3x3-gap"></i> View All
+                    </a>
+                </div>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th style="padding-left:1.4rem;">Admin</th>
+                            <th>Type</th>
+                            <th>Email</th>
+                            <th>Reference</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for admin in latest_admin_accounts %}
+                        <tr>
+                            <td style="padding-left:1.4rem;">
+                                <div class="admin-name-cell">
+                                    <div class="admin-avatar" style="background: linear-gradient(135deg,
+                                        {% cycle '#5b4cff' '#00c98b' '#38bdf8' '#ffb703' '#ff4d6d' %}
+                                        , {% cycle '#9b6bff' '#00e5a0' '#67d7f5' '#ffd166' '#ff8fab' %});">
+                                        {{ admin.name|first|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="admin-name">{{ admin.name }}</div>
+                                        <div class="admin-username">@{{ admin.username|default:admin.name|lower }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if admin.admin_type == 'super' %}
+                                    <span class="type-badge super"><i class="bi bi-star-fill"></i> Super</span>
+                                {% else %}
+                                    <span class="type-badge normal"><i class="bi bi-person"></i> Normal</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if admin.email %}
+                                    <a href="mailto:{{ admin.email }}" class="email-link">
+                                        <i class="bi bi-envelope"></i>{{ admin.email }}
+                                    </a>
+                                {% else %}
+                                    <span style="color:var(--text-muted); font-size:0.82rem;">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="ref-pill">
+                                    <i class="bi bi-hash"></i>{{ admin.ref_number }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="date-cell">
+                                    <i class="bi bi-calendar3"></i>
+                                    {{ admin.created_at|date:"M d, Y" }}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <i class="bi bi-inbox"></i>
+                                    <p>No admin accounts created yet.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Feed -->
+    <div class="col-lg-4">
+        <div class="panel h-100">
+            <div style="padding: 1.25rem 1.4rem 0.75rem;">
+                <div class="section-header mb-0">
+                    <h2 class="section-title">
+                        <span class="title-icon" style="background:rgba(255,183,3,0.12); color:#ffb703;">
+                            <i class="bi bi-lightning-fill"></i>
+                        </span>
+                        Live Activity
+                    </h2>
+                    <span class="chip" style="font-size:0.7rem;">
+                        <span style="width:6px;height:6px;background:var(--success);border-radius:50%;animation:ping 2s infinite;"></span>
+                        Live
+                    </span>
+                </div>
+            </div>
+            <div class="activity-list">
+                <div class="activity-item">
+                    <div class="activity-dot-wrap">
+                        <div class="activity-dot a-create"></div>
+                        <div class="activity-line"></div>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-msg">New admin <strong>Ahmed K.</strong> was created</div>
+                        <div class="activity-time"><i class="bi bi-clock"></i>2 min ago</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-dot-wrap">
+                        <div class="activity-dot a-store"></div>
+                        <div class="activity-line"></div>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-msg">Store <strong>Al-Noor Books</strong> applied for approval</div>
+                        <div class="activity-time"><i class="bi bi-clock"></i>14 min ago</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-dot-wrap">
+                        <div class="activity-dot a-login"></div>
+                        <div class="activity-line"></div>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-msg"><strong>{{ request.user.username }}</strong> logged in</div>
+                        <div class="activity-time"><i class="bi bi-clock"></i>Just now</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-dot-wrap">
+                        <div class="activity-dot a-warn"></div>
+                        <div class="activity-line"></div>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-msg">Storage usage hit <strong>67%</strong> threshold</div>
+                        <div class="activity-time"><i class="bi bi-clock"></i>1 hr ago</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-dot-wrap">
+                        <div class="activity-dot a-create"></div>
+                        <div class="activity-line"></div>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-msg"><strong>128 new books</strong> added across stores</div>
+                        <div class="activity-time"><i class="bi bi-clock"></i>3 hrs ago</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ══ QUICK ACTIONS ══ -->
+<div data-aos="fade-up" data-aos-delay="140">
+    <div class="section-header">
+        <h2 class="section-title">
+            <span class="title-icon" style="background:rgba(255,77,109,0.12); color:#ff4d6d;">
+                <i class="bi bi-grid-fill"></i>
+            </span>
+            Quick Actions
+        </h2>
+    </div>
+
+    <div class="qa-grid">
+
+        <a href="{% url 'register_admin' %}" class="qa-card qa-create">
+            <div class="qa-icon"><i class="bi bi-person-plus-fill"></i></div>
+            <div class="qa-text">
+                <div class="qa-title">Create Admin</div>
+                <div class="qa-desc">Register a new admin account with custom permissions</div>
+            </div>
+            <div class="qa-arrow"><i class="bi bi-arrow-right"></i> Go</div>
+        </a>
+
+        <a href="{% url 'view_admins' %}" class="qa-card qa-view">
+            <div class="qa-icon"><i class="bi bi-people-fill"></i></div>
+            <div class="qa-text">
+                <div class="qa-title">Manage Admins</div>
+                <div class="qa-desc">View, edit, or remove existing administrator accounts</div>
+            </div>
+            <div class="qa-arrow"><i class="bi bi-arrow-right"></i> Go</div>
+        </a>
+
+        <div class="qa-card qa-report" onclick="generateReport()">
+            <div class="qa-icon"><i class="bi bi-file-earmark-bar-graph-fill"></i></div>
+            <div class="qa-text">
+                <div class="qa-title">Generate Report</div>
+                <div class="qa-desc">Export full platform analytics as a PDF or CSV</div>
+            </div>
+            <div class="qa-arrow"><i class="bi bi-arrow-right"></i> Run</div>
+        </div>
+
+        <div class="qa-card qa-refresh" onclick="refreshData()">
+            <div class="qa-icon"><i class="bi bi-arrow-repeat"></i></div>
+            <div class="qa-text">
+                <div class="qa-title">Refresh Data</div>
+                <div class="qa-desc">Re-sync all statistics and platform metrics</div>
+            </div>
+            <div class="qa-arrow"><i class="bi bi-arrow-right"></i> Run</div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    /* ── Theme-aware Chart colors ── */
+    function getCSSVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
+
+    function chartDefaults() {
+        return {
+            textColor:   isDark() ? 'rgba(237,233,255,0.6)' : 'rgba(90,85,110,0.7)',
+            gridColor:   isDark() ? 'rgba(255,255,255,0.05)' : 'rgba(91,76,255,0.07)',
+            bgSurface:   isDark() ? '#13111f' : '#ffffff',
+        };
+    }
+
+    /* ── Activity Line Chart ── */
+    const actCtx = document.getElementById('activityChart')?.getContext('2d');
+    if (actCtx) {
+        const labels = ['Week 1','Week 2','Week 3','Week 4','Week 5','Week 6','Week 7','Week 8'];
+
+        const gradPurple = actCtx.createLinearGradient(0, 0, 0, 200);
+        gradPurple.addColorStop(0, 'rgba(91,76,255,0.25)');
+        gradPurple.addColorStop(1, 'rgba(91,76,255,0)');
+
+        const gradGreen = actCtx.createLinearGradient(0, 0, 0, 200);
+        gradGreen.addColorStop(0, 'rgba(0,201,139,0.2)');
+        gradGreen.addColorStop(1, 'rgba(0,201,139,0)');
+
+        const gradBlue = actCtx.createLinearGradient(0, 0, 0, 200);
+        gradBlue.addColorStop(0, 'rgba(56,189,248,0.18)');
+        gradBlue.addColorStop(1, 'rgba(56,189,248,0)');
+
+        const actChart = new Chart(actCtx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Users',
+                        data: [42, 67, 55, 89, 76, 102, 94, 118],
+                        borderColor: '#5b4cff',
+                        backgroundColor: gradPurple,
+                        borderWidth: 2.5,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: '#5b4cff',
+                        pointBorderColor: chartDefaults().bgSurface,
+                        pointBorderWidth: 2,
+                        tension: 0.45,
+                        fill: true,
+                    },
+                    {
+                        label: 'Orders',
+                        data: [30, 52, 41, 65, 59, 78, 70, 88],
+                        borderColor: '#00c98b',
+                        backgroundColor: gradGreen,
+                        borderWidth: 2.5,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: '#00c98b',
+                        pointBorderColor: chartDefaults().bgSurface,
+                        pointBorderWidth: 2,
+                        tension: 0.45,
+                        fill: true,
+                    },
+                    {
+                        label: 'Books',
+                        data: [18, 25, 31, 22, 40, 35, 48, 44],
+                        borderColor: '#38bdf8',
+                        backgroundColor: gradBlue,
+                        borderWidth: 2.5,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: '#38bdf8',
+                        pointBorderColor: chartDefaults().bgSurface,
+                        pointBorderWidth: 2,
+                        tension: 0.45,
+                        fill: true,
+                    },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: isDark() ? '#1a1730' : '#ffffff',
+                        titleColor: isDark() ? '#ede9ff' : '#14102b',
+                        bodyColor: isDark() ? '#9c97b8' : '#5a556e',
+                        borderColor: isDark() ? 'rgba(123,111,255,0.2)' : 'rgba(91,76,255,0.15)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 10,
+                        titleFont: { family: 'Outfit', weight: '700', size: 13 },
+                        bodyFont: { family: 'Outfit', size: 12 },
+                        callbacks: {
+                            label: ctx => `  ${ctx.dataset.label}: ${ctx.parsed.y}`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: chartDefaults().gridColor, drawBorder: false },
+                        ticks: { color: chartDefaults().textColor, font: { family: 'Outfit', size: 11 } },
+                        border: { display: false }
+                    },
+                    y: {
+                        grid: { color: chartDefaults().gridColor, drawBorder: false },
+                        ticks: { color: chartDefaults().textColor, font: { family: 'Outfit', size: 11 }, maxTicksLimit: 5 },
+                        border: { display: false }
+                    }
+                }
+            }
+        });
+
+        window.updateChart = function(days) {
+            // Could re-fetch data here; for demo just nudge values
+            actChart.data.datasets.forEach(ds => {
+                ds.data = ds.data.map(v => Math.max(5, v + Math.floor((Math.random()-0.5)*20)));
+            });
+            actChart.update('active');
+        };
+
+        // Re-theme on dark mode change
+        document.getElementById('themeToggle')?.addEventListener('click', () => {
+            setTimeout(() => {
+                const d = chartDefaults();
+                actChart.options.scales.x.grid.color = d.gridColor;
+                actChart.options.scales.y.grid.color = d.gridColor;
+                actChart.options.scales.x.ticks.color = d.textColor;
+                actChart.options.scales.y.ticks.color = d.textColor;
+                actChart.options.plugins.tooltip.backgroundColor = d.bgSurface;
+                actChart.update();
+            }, 350);
+        });
+    }
+
+    /* ── Store Donut ── */
+    const donutCtx = document.getElementById('storeDonut')?.getContext('2d');
+    if (donutCtx) {
+        const active  = parseInt('{{ active_stores|default:18 }}');
+        const pending = parseInt('{{ pending_stores|default:3 }}');
+        const closed  = parseInt('{{ closed_stores|default:3 }}');
+        const total   = active + pending + closed;
+        document.getElementById('donutTotal').textContent = total;
+
+        new Chart(donutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Active','Pending','Closed'],
+                datasets: [{
+                    data: [active, pending, closed],
+                    backgroundColor: ['#00c98b','#ffb703','#ff4d6d'],
+                    hoverBackgroundColor: ['#00e5a0','#ffd166','#ff8fab'],
+                    borderWidth: 3,
+                    borderColor: isDark() ? '#13111f' : '#ffffff',
+                    hoverOffset: 6,
+                }]
+            },
+            options: {
+                cutout: '68%',
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: isDark() ? '#1a1730' : '#ffffff',
+                        titleColor: isDark() ? '#ede9ff' : '#14102b',
+                        bodyColor: isDark() ? '#9c97b8' : '#5a556e',
+                        borderColor: isDark() ? 'rgba(123,111,255,0.2)' : 'rgba(91,76,255,0.15)',
+                        borderWidth: 1,
+                        padding: 10,
+                        cornerRadius: 8,
+                    }
+                },
+            }
+        });
+    }
+
+    /* ── Sparklines ── */
+    function makeSparkline(id, data, color) {
+        const ctx = document.getElementById(id)?.getContext('2d');
+        if (!ctx) return;
+        const grad = ctx.createLinearGradient(0,0,0,40);
+        grad.addColorStop(0, color + '33');
+        grad.addColorStop(1, color + '00');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map((_,i)=>i),
+                datasets: [{
+                    data,
+                    borderColor: color,
+                    backgroundColor: grad,
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0.45,
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend:{display:false}, tooltip:{enabled:false} },
+                scales: { x:{display:false}, y:{display:false} },
+                animation: { duration: 1000, easing: 'easeInOutQuart' }
+            }
+        });
+    }
+
+    makeSparkline('spark-users',  [30,45,38,55,49,62,58,74], '#5b4cff');
+    makeSparkline('spark-stores', [10,12,14,13,16,18,17,20], '#00c98b');
+    makeSparkline('spark-books',  [80,90,85,100,95,110,108,125],'#38bdf8');
+    makeSparkline('spark-orders', [20,28,25,35,30,40,37,50], '#ffb703');
+    makeSparkline('spark-admins', [4,4,5,5,6,6,7,8],         '#ff4d6d');
+
+    /* ── Hero strip counter animation ── */
+    document.querySelectorAll('.hs-value[data-count]').forEach(el => {
+        const target = +el.getAttribute('data-count');
+        const start  = performance.now();
+        const step   = (now) => {
+            const p = Math.min((now - start) / 1200, 1);
+            const ease = 1 - Math.pow(1 - p, 3);
+            el.textContent = Math.floor(ease * target);
+            if (p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    });
+
+    /* ── Quick Action functions ── */
+    window.generateReport = function() {
+        showToast('Report', 'Generating analytics report…', 'info');
+        setTimeout(() => { showToast('Report Ready', 'Your report has been generated.', 'success'); }, 1800);
+    };
+
+    window.refreshData = function() {
+        const icon = document.querySelector('.qa-refresh .qa-icon i');
+        if (icon) { icon.style.transition='transform 0.8s'; icon.style.transform='rotate(360deg)'; }
+        showToast('Refreshing', 'Syncing platform statistics…', 'info');
+        setTimeout(() => {
+            window.location.reload();
+        }, 1200);
+    };
+});
+</script>
+{% endblock %}

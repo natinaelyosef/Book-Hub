@@ -1,0 +1,148 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Support Chat Detail{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="max-width:980px; margin:1.5rem auto;">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h4 class="mb-1">{{ conversation.subject|default:'Support Chat' }}</h4>
+      <div class="text-muted small">Target: {{ conversation.get_target_display }}{% if conversation.assigned_sub_admin %} | Sub-Admin: {{ conversation.assigned_sub_admin.name }}{% endif %}</div>
+    </div>
+    <a href="{% url 'support_chat_list' %}" class="btn btn-outline-secondary btn-sm">Back to Chats</a>
+  </div>
+
+  <div class="card" style="border:none; box-shadow:0 8px 24px rgba(0,0,0,.08); border-radius:12px; overflow:hidden;">
+    <div id="support-messages" style="height:460px; overflow:auto; padding:1rem; background:#f8fafc;">
+      {% for message in messages_list %}
+      <div data-message-id="{{ message.id }}" class="mb-2 d-flex {% if message.sender_user == request.user %}justify-content-end{% else %}justify-content-start{% endif %}">
+        <div style="max-width:72%; background:{% if message.sender_user == request.user %}#dcfce7{% else %}#ffffff{% endif %}; border:1px solid #e5e7eb; border-radius:10px; padding:.6rem .75rem;">
+          <div class="small fw-semibold mb-1">{{ message.sender_role|title }}</div>
+          {% if message.content %}<div>{{ message.content|linebreaksbr }}</div>{% endif %}
+          {% if message.attachment %}
+          {% with attachment_url=message.attachment.url|lower %}
+          {% if ".jpg" in attachment_url or ".jpeg" in attachment_url or ".png" in attachment_url or ".gif" in attachment_url or ".webp" in attachment_url or ".bmp" in attachment_url or ".svg" in attachment_url %}
+          <div class="mt-2"><img src="{{ message.attachment.url }}" alt="attachment image" style="max-width:100%; max-height:260px; border-radius:8px; border:1px solid #e5e7eb;"></div>
+          <div class="mt-1"><a href="{{ message.attachment.url }}" target="_blank">Open image</a></div>
+          {% else %}
+          <div class="mt-1"><a href="{{ message.attachment.url }}" target="_blank">Open attached file</a></div>
+          {% endif %}
+          {% endwith %}
+          {% endif %}
+          <div class="text-muted" style="font-size:.75rem;">{{ message.created_at|date:'Y-m-d H:i' }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="card-body border-top">
+      <form id="support-send-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-2">
+          <textarea name="content" id="support-content" rows="3" class="form-control" placeholder="Type your message"></textarea>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <input type="file" name="attachment" class="form-control" style="max-width:260px;">
+          <button class="btn btn-primary" type="submit">Send</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  const messageBox = document.getElementById('support-messages');
+  const form = document.getElementById('support-send-form');
+  const contentInput = document.getElementById('support-content');
+  if (!messageBox || !form) return;
+
+  const sendUrl = "{% url 'support_chat_send_message' conversation.id %}";
+  const pollUrlBase = "{% url 'support_chat_poll_messages' conversation.id %}";
+
+  const escapeHtml = (value) => {
+    const div = document.createElement('div');
+    div.textContent = value || '';
+    return div.innerHTML;
+  };
+
+  const getLastId = () => {
+    const nodes = messageBox.querySelectorAll('[data-message-id]');
+    if (!nodes.length) return 0;
+    return Number(nodes[nodes.length - 1].dataset.messageId || 0);
+  };
+
+  const scrollBottom = () => {
+    messageBox.scrollTop = messageBox.scrollHeight;
+  };
+
+  const renderMessage = (msg) => {
+    if (messageBox.querySelector(`[data-message-id="${msg.id}"]`)) return;
+    const row = document.createElement('div');
+    row.className = `mb-2 d-flex ${msg.is_me ? 'justify-content-end' : 'justify-content-start'}`;
+    row.dataset.messageId = msg.id;
+
+    const attachmentHtml = (() => {
+      if (!msg.attachment_url) return '';
+      if (msg.attachment_is_image) {
+        return `
+          <div class="mt-2"><img src="${msg.attachment_url}" alt="attachment image" style="max-width:100%; max-height:260px; border-radius:8px; border:1px solid #e5e7eb;"></div>
+          <div class="mt-1"><a href="${msg.attachment_url}" target="_blank">Open image</a></div>
+        `;
+      }
+      const fileName = escapeHtml(msg.attachment_name || 'Attached file');
+      return `<div class="mt-1"><a href="${msg.attachment_url}" target="_blank">${fileName}</a></div>`;
+    })();
+
+    row.innerHTML = `
+      <div style="max-width:72%; background:${msg.is_me ? '#dcfce7' : '#ffffff'}; border:1px solid #e5e7eb; border-radius:10px; padding:.6rem .75rem;">
+        <div class="small fw-semibold mb-1">${escapeHtml(msg.sender_role.replace('_', ' '))}</div>
+        ${msg.content ? `<div>${escapeHtml(msg.content)}</div>` : ''}
+        ${attachmentHtml}
+        <div class="text-muted" style="font-size:.75rem;">${escapeHtml(msg.created_at)}</div>
+      </div>`;
+    messageBox.appendChild(row);
+    scrollBottom();
+  };
+
+  form.addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const data = new FormData(form);
+    try {
+      const response = await fetch(sendUrl, {
+        method: 'POST',
+        body: data,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      const payload = await response.json();
+      if (!payload.success) {
+        alert(payload.error || 'Unable to send message.');
+        return;
+      }
+      renderMessage(payload.message);
+      form.reset();
+      contentInput.focus();
+    } catch (error) {
+      alert('Message send failed.');
+    }
+  });
+
+  async function pollMessages() {
+    const lastId = getLastId();
+    try {
+      const response = await fetch(`${pollUrlBase}?last_id=${lastId}`);
+      const payload = await response.json();
+      if (!payload.success || !payload.messages) return;
+      payload.messages.forEach(renderMessage);
+    } catch (error) {
+      // no-op
+    }
+  }
+
+  scrollBottom();
+  setInterval(pollMessages, 4000);
+})();
+</script>
+{% endblock %}

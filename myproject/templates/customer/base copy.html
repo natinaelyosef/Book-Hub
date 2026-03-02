@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookHub Store - Find Your Next Read</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            color: #3498db;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+        
+        .nav-item:hover {
+            color: #3498db;
+        }
+        
+        .nav-item i {
+            margin-right: 8px;
+        }
+        
+        .cart-badge {
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(44, 62, 80, 0.9), rgba(44, 62, 80, 0.8)), 
+                        url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 40px;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            opacity: 0.9;
+        }
+        
+        .search-box {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border-radius: 50px;
+            overflow: hidden;
+        }
+        
+        .search-box input {
+            flex-grow: 1;
+            padding: 18px 25px;
+            border: none;
+            font-size: 1rem;
+        }
+        
+        .search-box button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 0 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        .search-box button:hover {
+            background-color: #2980b9;
+        }
+        
+        /* Store Filter */
+        .store-filter {
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        
+        .store-filter h2 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 1.4rem;
+        }
+        
+        .store-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .store-tag {
+            padding: 10px 20px;
+            background-color: #f1f2f6;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .store-tag:hover {
+            background-color: #dfe4ea;
+        }
+        
+        .store-tag.active {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        /* Book Grid */
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .section-title i {
+            color: #3498db;
+            margin-right: 10px;
+        }
+        
+        .view-all {
+            font-size: 1rem;
+            color: #3498db;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .view-all:hover {
+            text-decoration: underline;
+        }
+        
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        
+        .book-card {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.07);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .book-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        .book-image {
+            height: 280px;
+            overflow: hidden;
+        }
+        
+        .book-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .book-card:hover .book-image img {
+            transform: scale(1.05);
+        }
+        
+        .store-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .book-info {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .book-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .book-author {
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+        
+        .book-description {
+            color: #636e72;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+        
+        .book-pricing {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px 0;
+            border-top: 1px solid #ecf0f1;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .price-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .price-label {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        
+        .price-amount {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+        
+        .rent-price {
+            color: #3498db;
+        }
+        
+        .buy-price {
+            color: #2ecc71;
+        }
+        
+        .book-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            flex: 1;
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        .btn-rent {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-rent:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-buy {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .btn-buy:hover {
+            background-color: #27ae60;
+        }
+        
+        /* Categories Section */
+        .categories {
+            margin-bottom: 60px;
+        }
+        
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .category-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .category-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+        
+        .category-card:hover i {
+            color: white;
+        }
+        
+        .category-card h3 {
+            font-size: 1.2rem;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 40px 0 20px;
+            margin-top: 40px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: #3498db;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #34495e;
+            color: #bdc3c7;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .book-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .search-box {
+                flex-direction: column;
+                border-radius: 12px;
+            }
+            
+            .search-box input, .search-box button {
+                width: 100%;
+                border-radius: 0;
+            }
+            
+            .book-actions {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .hero {
+                padding: 50px 0;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .book-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <i class="fas fa-book"></i>
+                BookHub Store
+            </div>
+            <div class="nav-links">
+                <div class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-store"></i>
+                    <span>Stores</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-book-open"></i>
+                    <span>My Books</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Cart</span>
+                    <div class="cart-badge">3</div>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Account</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Discover Your Next Favorite Book</h1>
+            <p>Browse thousands of books from multiple stores. Rent or buy with just a click. Your literary journey starts here.</p>
+            <form method="GET" action="{% url 'customer_dashboard' %}" class="search-form">
+            <div class="search-box">
+                <input type="text" name="search" value="{{ search_query }}" placeholder="Search for books, authors, or genres...">
+                <button type="submit"><i class="fas fa-search"></i> Search</button>
+            </div>
+            </form>
+        </div>
+    </section>
+
+
+     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="content">
+        {% block content %}
+        <!-- Content goes here -->
+        {% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>BookHub Store</h3>
+                    <p>Your one-stop destination for buying and renting books from multiple stores. Find your next favorite read today!</p>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">All Books</a></li>
+                        <li><a href="#">Stores</a></li>
+                        <li><a href="#">Categories</a></li>
+                        <li><a href="#">My Account</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Help & Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Shipping Info</a></li>
+                        <li><a href="#">Return Policy</a></li>
+                        <li><a href="#">Rental Terms</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Connect With Us</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
+                        <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+                        <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+                        <li><a href="#"><i class="fab fa-goodreads"></i> Goodreads</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2023 BookHub Store. All rights reserved. | Books from multiple partner stores</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Interactive functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Store filtering
+            const storeTags = document.querySelectorAll('.store-tag');
+            storeTags.forEach(tag => {
+                tag.addEventListener('click', function() {
+                    // Remove active class from all tags
+                    storeTags.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tag
+                    this.classList.add('active');
+                    
+                    const storeName = this.textContent;
+                    if (storeName === 'All Stores') {
+                        // Show all books
+                        document.querySelectorAll('.book-card').forEach(card => {
+                            card.style.display = 'flex';
+                        });
+                    } else {
+                        // Show only books from selected store
+                        document.querySelectorAll('.book-card').forEach(card => {
+                            const badge = card.querySelector('.store-badge');
+                            if (badge && badge.textContent === storeName) {
+                                card.style.display = 'flex';
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+                    }
+                });
+            });
+            
+            // Add to cart functionality
+            const buyButtons = document.querySelectorAll('.btn-buy');
+            const rentButtons = document.querySelectorAll('.btn-rent');
+            const cartBadge = document.querySelector('.cart-badge');
+            
+            buyButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const bookCard = this.closest('.book-card');
+                    const bookTitle = bookCard.querySelector('.book-title').textContent;
+                    const storeName = bookCard.querySelector('.store-badge').textContent;
+                    const price = bookCard.querySelector('.buy-price').textContent;
+                    
+                    // Update cart count
+                    let currentCount = parseInt(cartBadge.textContent);
+                    cartBadge.textContent = currentCount + 1;
+                    
+                    // Show confirmation
+                    alert(`"${bookTitle}" from ${storeName} has been added to your cart for ${price}!`);
+                });
+            });
+            
+            rentButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const bookCard = this.closest('.book-card');
+                    const bookTitle = bookCard.querySelector('.book-title').textContent;
+                    const storeName = bookCard.querySelector('.store-badge').textContent;
+                    const price = bookCard.querySelector('.rent-price').textContent;
+                    
+                    // Show rental confirmation
+                    alert(`Rental started for "${bookTitle}" from ${storeName} at ${price}/month! You'll be redirected to the rental agreement.`);
+                });
+            });
+            
+            // Search functionality
+            const searchInput = document.querySelector('.search-box input');
+            const searchButton = document.querySelector('.search-box button');
+            
+            // Submit the form when clicking search or pressing Enter
+            searchButton.addEventListener('click', function(e){
+                // allow normal submit; show a quick message then submit
+                const searchTerm = searchInput.value.trim();
+                if (searchTerm) {
+                    // optional UX message (non-blocking)
+                    console.log('Searching for:', searchTerm);
+                }
+            });
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    // submit the surrounding form
+                    if (searchInput.form) searchInput.form.submit();
+                }
+            });
+            
+            function performSearch() {
+                const searchTerm = searchInput.value.trim();
+                if (searchTerm) {
+                    alert(`Searching for: "${searchTerm}"... Results will be displayed on the search page.`);
+                    if (searchInput.form) searchInput.form.submit();
+                }
+            }
+            
+            // Category cards
+            const categoryCards = document.querySelectorAll('.category-card');
+            categoryCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const categoryName = this.querySelector('h3').textContent;
+                    alert(`Loading books in the "${categoryName}" category...`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,913 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}Manage Admins — BookHub Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ══════════════════════════════════════════
+       VIEW ADMINS PAGE
+    ══════════════════════════════════════════ */
+
+    .admins-page { max-width: 1100px; margin: 0 auto; }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb-nav {
+        display: flex; align-items: center; gap: 0.5rem;
+        margin-bottom: 1rem; font-size: 0.82rem; color: var(--text-muted);
+    }
+    .breadcrumb-nav a {
+        color: var(--text-muted); text-decoration: none;
+        transition: color 150ms; display: flex; align-items: center; gap: 0.3rem;
+    }
+    .breadcrumb-nav a:hover { color: var(--primary); }
+    .breadcrumb-nav .sep { opacity: 0.4; font-size: 0.75rem; }
+    .breadcrumb-nav .current { color: var(--text-primary); font-weight: 600; }
+
+    /* ── Page Header ── */
+    .page-head {
+        display: flex; align-items: flex-start;
+        justify-content: space-between; gap: 1rem;
+        margin-bottom: 2rem; flex-wrap: wrap;
+        padding: 1.5rem 1.75rem;
+        background: linear-gradient(135deg, var(--primary) 0%, #7b6fff 50%, #9b6bff 100%);
+        border-radius: var(--radius-xl);
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 30px rgba(91,76,255,0.35);
+    }
+    .page-head::before {
+        content: '';
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 180px; height: 180px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.08);
+        pointer-events: none;
+    }
+    .page-head::after {
+        content: '';
+        position: absolute;
+        bottom: -60px; left: 20%;
+        width: 150px; height: 150px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.05);
+        pointer-events: none;
+    }
+    .page-head-left { display: flex; align-items: flex-start; gap: 1rem; position: relative; z-index: 1; }
+    .page-head-icon {
+        width: 52px; height: 52px; border-radius: 16px;
+        background: rgba(255,255,255,0.20);
+        backdrop-filter: blur(8px);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem; color: #fff;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15); flex-shrink: 0;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    .page-head-text h1 {
+        font-family: 'Outfit', sans-serif; font-size: 1.65rem; font-weight: 800;
+        letter-spacing: -0.025em; color: #fff; margin: 0 0 0.3rem;
+    }
+    .page-head-text p { color: rgba(255,255,255,0.7); font-size: 0.88rem; margin: 0; }
+    .page-head-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; position: relative; z-index: 1; }
+
+    .head-btn {
+        display: inline-flex; align-items: center; gap: 0.45rem;
+        padding: 0.55rem 1.1rem; border-radius: 999px;
+        font-size: 0.85rem; font-weight: 600; cursor: pointer;
+        font-family: 'Outfit', sans-serif; text-decoration: none;
+        transition: all 150ms ease; border: 1px solid transparent;
+    }
+    .head-btn.primary {
+        background: #fff;
+        color: var(--primary);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+        border-color: transparent;
+    }
+    .head-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); color: var(--primary-dark); }
+    .head-btn.secondary {
+        background: rgba(255,255,255,0.18);
+        color: #fff;
+        border-color: rgba(255,255,255,0.35);
+        backdrop-filter: blur(8px);
+    }
+    .head-btn.secondary:hover { background: rgba(255,255,255,0.28); color: #fff; }
+
+    /* ── Summary Strip ── */
+    .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+    }
+    @media (max-width: 768px) { .summary-strip { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 420px) { .summary-strip { grid-template-columns: 1fr 1fr; } }
+
+    .summary-tile {
+        border-radius: var(--radius-lg);
+        padding: 1.25rem 1.5rem;
+        display: flex; align-items: center; gap: 1rem;
+        transition: all 220ms ease;
+        cursor: default;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+        border: none;
+    }
+    .summary-tile::after {
+        content: '';
+        position: absolute;
+        top: -20px; right: -20px;
+        width: 90px; height: 90px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.12);
+        pointer-events: none;
+    }
+    .summary-tile:hover { transform: translateY(-4px); box-shadow: var(--shadow-xl); }
+
+    .t-total  { background: linear-gradient(135deg, #5b4cff 0%, #9b6bff 100%); box-shadow: 0 6px 20px rgba(91,76,255,0.35); }
+    .t-super  { background: linear-gradient(135deg, #ffb703 0%, #ff6b35 100%); box-shadow: 0 6px 20px rgba(255,183,3,0.35); }
+    .t-normal { background: linear-gradient(135deg, #38bdf8 0%, #5b4cff 100%); box-shadow: 0 6px 20px rgba(56,189,248,0.30); }
+    .t-recent { background: linear-gradient(135deg, #00c98b 0%, #00b4d8 100%); box-shadow: 0 6px 20px rgba(0,201,139,0.30); }
+
+    .tile-icon {
+        width: 44px; height: 44px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem; flex-shrink: 0;
+        background: rgba(255,255,255,0.20);
+        color: #fff;
+    }
+    .tile-body {}
+    .tile-value { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.04em; color: #fff; line-height: 1; }
+    .tile-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255,255,255,0.72); margin-top: 0.25rem; }
+
+    /* ── Toolbar ── */
+    .toolbar {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-top: 3px solid var(--primary);
+        border-radius: var(--radius-lg);
+        padding: 1rem 1.25rem;
+        margin-bottom: 1rem;
+        display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+        box-shadow: 0 4px 16px rgba(91,76,255,0.08);
+    }
+
+    /* Search Input */
+    .search-wrap {
+        position: relative; flex: 1; min-width: 220px;
+    }
+    .search-icon {
+        position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+        color: var(--text-muted); font-size: 0.95rem; pointer-events: none;
+        transition: color 200ms;
+    }
+    .search-input {
+        width: 100%; padding: 0.65rem 1rem 0.65rem 2.75rem;
+        background: var(--bg-raised); border: 1.5px solid var(--border);
+        border-radius: var(--radius); font-size: 0.88rem;
+        font-family: 'Outfit', sans-serif; color: var(--text-primary);
+        transition: all 200ms; outline: none;
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-input:focus {
+        border-color: var(--primary); background: var(--bg-surface);
+        box-shadow: 0 0 0 4px var(--primary-soft);
+    }
+    .search-input:focus ~ .search-icon,
+    .search-wrap:focus-within .search-icon { color: var(--primary); }
+
+    /* Filter Chips */
+    .filter-group { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .filter-chip {
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        padding: 0.42rem 0.9rem; border-radius: 999px;
+        font-size: 0.78rem; font-weight: 600; cursor: pointer;
+        border: 1.5px solid var(--border); background: var(--bg-raised);
+        color: var(--text-muted); transition: all 150ms; white-space: nowrap;
+        font-family: 'Outfit', sans-serif;
+    }
+    .filter-chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+    .filter-chip.active { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+    .filter-chip .chip-count {
+        background: var(--primary-soft); color: var(--primary);
+        padding: 0.1rem 0.45rem; border-radius: 999px; font-size: 0.68rem;
+        font-weight: 700; border: 1px solid var(--border);
+    }
+    .filter-chip.active .chip-count { background: var(--primary); color: #fff; border-color: transparent; }
+
+    /* Toolbar right */
+    .toolbar-right { display: flex; gap: 0.5rem; margin-left: auto; align-items: center; }
+
+    .sort-select {
+        padding: 0.5rem 2rem 0.5rem 0.85rem;
+        background: var(--bg-raised); border: 1.5px solid var(--border);
+        border-radius: var(--radius); font-size: 0.8rem; color: var(--text-secondary);
+        font-family: 'Outfit', sans-serif; outline: none; cursor: pointer;
+        appearance: none; -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239490a9' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 0.75rem center;
+        transition: all 150ms;
+    }
+    .sort-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+
+    /* View toggles */
+    .view-toggle { display: flex; gap: 0.25rem; }
+    .view-btn {
+        width: 34px; height: 34px; border-radius: 8px; border: 1.5px solid var(--border);
+        background: var(--bg-raised); display: flex; align-items: center; justify-content: center;
+        font-size: 0.85rem; color: var(--text-muted); cursor: pointer; transition: all 150ms;
+    }
+    .view-btn.active, .view-btn:hover { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+
+    /* Search submit button */
+    .search-btn {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        padding: 0.6rem 1.1rem; border-radius: var(--radius);
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: #fff; border: none; font-size: 0.85rem; font-weight: 600;
+        cursor: pointer; font-family: 'Outfit', sans-serif;
+        box-shadow: 0 4px 12px var(--primary-glow); transition: all 150ms;
+        white-space: nowrap;
+    }
+    .search-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px var(--primary-glow); }
+
+    /* Clear search */
+    .clear-search {
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        padding: 0.6rem 0.9rem; border-radius: var(--radius);
+        background: var(--bg-raised); color: var(--text-muted);
+        border: 1.5px solid var(--border); font-size: 0.82rem; font-weight: 600;
+        cursor: pointer; text-decoration: none; font-family: 'Outfit', sans-serif;
+        transition: all 150ms;
+    }
+    .clear-search:hover { border-color: var(--danger); color: var(--danger); background: rgba(255,77,109,0.06); }
+
+    /* ── Active Search Banner ── */
+    .search-result-bar {
+        display: flex; align-items: center; gap: 0.6rem;
+        padding: 0.6rem 1rem; background: var(--primary-soft);
+        border: 1px solid var(--border); border-radius: var(--radius);
+        margin-bottom: 0.75rem; font-size: 0.83rem; color: var(--primary);
+        font-weight: 500;
+    }
+    .search-result-bar strong { font-weight: 700; }
+    .search-result-bar a {
+        margin-left: auto; color: var(--text-muted); font-size: 0.78rem;
+        text-decoration: none; display: flex; align-items: center; gap: 0.3rem;
+        transition: color 150ms;
+    }
+    .search-result-bar a:hover { color: var(--danger); }
+
+    /* ── Table Panel ── */
+    .table-panel {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Table */
+    .admins-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .admins-table thead tr th {
+        padding: 0.8rem 1rem;
+        font-size: 0.7rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.8px;
+        color: rgba(255,255,255,0.75);
+        border-bottom: none;
+        background: linear-gradient(135deg, #3d2fe0 0%, #5b4cff 60%, #7b6fff 100%);
+        white-space: nowrap; cursor: pointer;
+        user-select: none; transition: color 150ms;
+    }
+    .admins-table thead tr th:hover { color: #fff; }
+    .admins-table thead tr th .sort-icon { font-size: 0.7rem; opacity: 0.45; margin-left: 0.3rem; }
+    .admins-table thead tr th.sorted { color: #fff; }
+    .admins-table thead tr th.sorted .sort-icon { opacity: 1; color: #ffd166; }
+
+    .admins-table tbody tr {
+        transition: background 150ms;
+        border-bottom: 1px solid var(--border-soft);
+    }
+    .admins-table tbody tr:last-child { border-bottom: none; }
+    .admins-table tbody tr:nth-child(even) td { background: rgba(91,76,255,0.025); }
+    .admins-table tbody tr:hover td {
+        background: rgba(91,76,255,0.07) !important;
+    }
+
+    .admins-table td {
+        padding: 0.85rem 1rem;
+        font-size: 0.87rem; color: var(--text-primary);
+        vertical-align: middle;
+    }
+    .admins-table td:first-child { padding-left: 1.5rem; border-left: 3px solid transparent; transition: border-color 150ms; }
+    .admins-table tbody tr:hover td:first-child { border-left-color: var(--primary); }
+    .admins-table td:last-child { padding-right: 1.5rem; }
+
+    /* Admin name cell */
+    .admin-cell { display: flex; align-items: center; gap: 0.7rem; }
+    .admin-avatar {
+        width: 36px; height: 36px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 0.85rem; color: #fff;
+        flex-shrink: 0;
+    }
+    .admin-info {}
+    .admin-name  { font-weight: 600; color: var(--text-primary); font-size: 0.88rem; line-height: 1.2; }
+    .admin-sub   { font-size: 0.73rem; color: var(--text-muted); }
+
+    /* Type badge */
+    .role-badge {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        padding: 0.24rem 0.65rem; border-radius: 999px;
+        font-size: 0.72rem; font-weight: 700;
+        white-space: nowrap;
+    }
+    .role-badge.super    { background: rgba(255,183,3,0.13);  color: #c47900; border: 1px solid rgba(255,183,3,0.3); }
+    .role-badge.finance  { background: rgba(0,201,139,0.1);   color: #007d59; border: 1px solid rgba(0,201,139,0.25); }
+    .role-badge.hr       { background: rgba(91,76,255,0.1);   color: #5b4cff; border: 1px solid rgba(91,76,255,0.2); }
+    .role-badge.it       { background: rgba(56,189,248,0.1);  color: #0096c7; border: 1px solid rgba(56,189,248,0.2); }
+    .role-badge.ops      { background: rgba(255,107,53,0.1);  color: #cc4a00; border: 1px solid rgba(255,107,53,0.2); }
+    .role-badge.support  { background: rgba(255,77,109,0.1);  color: #c9184a; border: 1px solid rgba(255,77,109,0.2); }
+    .role-badge.normal   { background: rgba(56,189,248,0.1);  color: #0096c7; border: 1px solid rgba(56,189,248,0.2); }
+    [data-theme="dark"] .role-badge.super   { color: #ffd166; }
+    [data-theme="dark"] .role-badge.finance { color: #00e5a0; }
+
+    /* Email */
+    .email-link {
+        color: var(--text-secondary); text-decoration: none;
+        font-size: 0.83rem; display: inline-flex; align-items: center;
+        gap: 0.3rem; transition: color 150ms;
+    }
+    .email-link:hover { color: var(--primary); }
+    .email-link i { font-size: 0.8rem; }
+
+    /* Ref pill */
+    .ref-pill {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        padding: 0.24rem 0.65rem; border-radius: 7px;
+        background: var(--primary-soft); color: var(--primary);
+        border: 1px solid var(--border);
+        font-size: 0.77rem; font-weight: 700;
+        font-family: 'SF Mono','Fira Code', monospace;
+        cursor: pointer; transition: all 150ms;
+        user-select: none;
+    }
+    .ref-pill:hover { background: var(--primary); color: #fff; }
+    .ref-pill.copied { background: rgba(0,201,139,0.15); color: var(--success); border-color: rgba(0,201,139,0.3); }
+
+    /* Creator cell */
+    .creator-cell { display: flex; align-items: center; gap: 0.4rem; }
+    .creator-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: var(--primary); flex-shrink: 0;
+        box-shadow: 0 0 0 2px var(--primary-soft);
+    }
+
+    /* Date cell */
+    .date-cell {
+        color: var(--text-muted); font-size: 0.8rem;
+        display: flex; align-items: center; gap: 0.4rem; white-space: nowrap;
+    }
+
+    /* Action menu */
+    .row-actions { display: flex; gap: 0.3rem; opacity: 0; transition: opacity 150ms; }
+    .admins-table tbody tr:hover .row-actions { opacity: 1; }
+    .row-action-btn {
+        width: 28px; height: 28px; border-radius: 7px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.8rem; border: 1px solid var(--border);
+        background: var(--bg-raised); color: var(--text-muted);
+        cursor: pointer; transition: all 150ms;
+    }
+    .row-action-btn:hover { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+    .row-action-btn.danger:hover { background: rgba(255,77,109,0.1); border-color: var(--danger); color: var(--danger); }
+
+    /* ── Empty State ── */
+    .empty-state {
+        text-align: center; padding: 4rem 2rem;
+        color: var(--text-muted);
+    }
+    .empty-icon {
+        width: 72px; height: 72px; border-radius: 20px;
+        background: var(--bg-raised); border: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.8rem; margin: 0 auto 1.25rem; color: var(--text-muted);
+    }
+    .empty-state h3 { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.4rem; }
+    .empty-state p  { font-size: 0.88rem; margin: 0 0 1.25rem; }
+
+    /* ── Table Footer ── */
+    .table-footer {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0.9rem 1.5rem; border-top: 1px solid var(--border-soft);
+        background: linear-gradient(135deg, rgba(91,76,255,0.06) 0%, rgba(155,143,255,0.04) 100%);
+        flex-wrap: wrap; gap: 0.75rem;
+    }
+    .row-count {
+        font-size: 0.78rem; color: var(--text-muted); font-weight: 500;
+        display: flex; align-items: center; gap: 0.5rem;
+    }
+    .row-count::before {
+        content: '';
+        display: inline-block;
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--primary);
+        box-shadow: 0 0 0 3px rgba(91,76,255,0.2);
+    }
+    .row-count strong { color: var(--primary); font-weight: 700; }
+
+    /* ── Bottom Nav ── */
+    .bottom-nav {
+        display: flex; align-items: center;
+        justify-content: space-between; gap: 1rem;
+        flex-wrap: wrap; margin-top: 1.5rem;
+    }
+    .nav-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .nav-link-btn {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        padding: 0.45rem 0.9rem; border-radius: 999px;
+        font-size: 0.82rem; font-weight: 600; text-decoration: none;
+        border: 1px solid var(--border); color: var(--text-secondary);
+        background: var(--bg-raised); transition: all 150ms;
+    }
+    .nav-link-btn:hover { background: var(--primary-soft); color: var(--primary); border-color: var(--primary); }
+    .nav-link-btn.danger { color: var(--danger); }
+    .nav-link-btn.danger:hover { background: rgba(255,77,109,0.1); border-color: var(--danger); color: var(--danger); }
+
+    /* ── Highlight search match ── */
+    mark {
+        background: rgba(255,183,3,0.25); color: inherit;
+        border-radius: 3px; padding: 0 2px;
+    }
+    [data-theme="dark"] mark { background: rgba(255,183,3,0.3); }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+        .admins-table thead th:nth-child(5),
+        .admins-table td:nth-child(5) { display: none; }
+    }
+    @media (max-width: 700px) {
+        .admins-table thead th:nth-child(3),
+        .admins-table td:nth-child(3) { display: none; }
+        .toolbar { flex-direction: column; align-items: stretch; }
+        .toolbar-right { margin-left: 0; }
+    }
+    @media (max-width: 500px) {
+        .admins-table thead th:nth-child(6),
+        .admins-table td:nth-child(6) { display: none; }
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="admins-page" data-aos="fade-up">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav">
+        <a href="{% url 'dashboard_super' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <span class="sep"><i class="bi bi-chevron-right"></i></span>
+        <span class="current">Manage Admins</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-head">
+        <div class="page-head-left">
+            <div class="page-head-icon">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div class="page-head-text">
+                <h1>Admin Accounts</h1>
+                <p>Manage all administrator accounts across the platform</p>
+            </div>
+        </div>
+        <div class="page-head-actions">
+            <button class="head-btn secondary" onclick="exportTable()">
+                <i class="bi bi-download"></i> Export
+            </button>
+            <a href="{% url 'register_admin' %}" class="head-btn primary">
+                <i class="bi bi-person-plus-fill"></i> New Admin
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Strip -->
+    <div class="summary-strip" data-aos="fade-up" data-aos-delay="50">
+        <div class="summary-tile t-total">
+            <div class="tile-icon"><i class="bi bi-people"></i></div>
+            <div class="tile-body">
+                <div class="tile-value" id="count-total">{{ admins|length }}</div>
+                <div class="tile-label">Total Admins</div>
+            </div>
+        </div>
+        <div class="summary-tile t-super">
+            <div class="tile-icon"><i class="bi bi-star-fill"></i></div>
+            <div class="tile-body">
+                <div class="tile-value" id="count-super">—</div>
+                <div class="tile-label">Super Admins</div>
+            </div>
+        </div>
+        <div class="summary-tile t-normal">
+            <div class="tile-icon"><i class="bi bi-person-badge"></i></div>
+            <div class="tile-body">
+                <div class="tile-value" id="count-normal">—</div>
+                <div class="tile-label">Normal Admins</div>
+            </div>
+        </div>
+        <div class="summary-tile t-recent">
+            <div class="tile-icon"><i class="bi bi-clock-history"></i></div>
+            <div class="tile-body">
+                <div class="tile-value" id="count-recent">—</div>
+                <div class="tile-label">Added This Month</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <form method="get" action="{% url 'view_admins' %}" id="searchForm">
+        <div class="toolbar" data-aos="fade-up" data-aos-delay="80">
+
+            <!-- Search -->
+            <div class="search-wrap">
+                <i class="bi bi-search search-icon"></i>
+                <input
+                    type="text"
+                    name="search"
+                    id="searchInput"
+                    class="search-input"
+                    value="{{ search_query }}"
+                    placeholder="Search by name, type, email or ref…"
+                    autocomplete="off"
+                >
+            </div>
+
+            <!-- Filter chips -->
+            <div class="filter-group" id="filterGroup">
+                <button type="button" class="filter-chip active" data-filter="all">
+                    All
+                </button>
+                <button type="button" class="filter-chip" data-filter="super">
+                    <i class="bi bi-star-fill"></i> Super
+                </button>
+                <button type="button" class="filter-chip" data-filter="finance">
+                    <i class="bi bi-cash-coin"></i> Finance
+                </button>
+                <button type="button" class="filter-chip" data-filter="hr">
+                    <i class="bi bi-people"></i> HR
+                </button>
+                <button type="button" class="filter-chip" data-filter="it">
+                    <i class="bi bi-terminal"></i> IT
+                </button>
+                <button type="button" class="filter-chip" data-filter="ops">
+                    <i class="bi bi-gear"></i> Ops
+                </button>
+                <button type="button" class="filter-chip" data-filter="support">
+                    <i class="bi bi-headset"></i> Support
+                </button>
+            </div>
+
+            <!-- Right controls -->
+            <div class="toolbar-right">
+                <select class="sort-select" id="sortSelect" onchange="sortTable(this.value)">
+                    <option value="name-asc">Name A–Z</option>
+                    <option value="name-desc">Name Z–A</option>
+                    <option value="date-desc" selected>Newest First</option>
+                    <option value="date-asc">Oldest First</option>
+                </select>
+
+                <button type="submit" class="search-btn">
+                    <i class="bi bi-search"></i> Search
+                </button>
+
+                {% if search_query %}
+                <a href="{% url 'view_admins' %}" class="clear-search">
+                    <i class="bi bi-x"></i> Clear
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+
+    <!-- Active Search Banner -->
+    {% if search_query %}
+    <div class="search-result-bar" data-aos="fade-in">
+        <i class="bi bi-funnel-fill"></i>
+        Showing results for <strong>"{{ search_query }}"</strong> — {{ admins|length }} admin{{ admins|length|pluralize }} found
+        <a href="{% url 'view_admins' %}"><i class="bi bi-x-circle"></i> Clear filter</a>
+    </div>
+    {% endif %}
+
+    <!-- Table Panel -->
+    <div class="table-panel" data-aos="fade-up" data-aos-delay="100">
+        <div style="overflow-x:auto;">
+            <table class="admins-table" id="adminsTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortByCol(0)" class="sorted">
+                            Admin <i class="bi bi-arrow-down sort-icon"></i>
+                        </th>
+                        <th onclick="sortByCol(1)">
+                            Role <i class="bi bi-chevron-expand sort-icon"></i>
+                        </th>
+                        <th onclick="sortByCol(2)">
+                            Email <i class="bi bi-chevron-expand sort-icon"></i>
+                        </th>
+                        <th onclick="sortByCol(3)">
+                            Reference <i class="bi bi-chevron-expand sort-icon"></i>
+                        </th>
+                        <th onclick="sortByCol(4)">
+                            Created By <i class="bi bi-chevron-expand sort-icon"></i>
+                        </th>
+                        <th onclick="sortByCol(5)">
+                            Date Added <i class="bi bi-chevron-expand sort-icon"></i>
+                        </th>
+                        <th style="width:80px; cursor:default;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="adminsBody">
+                    {% for admin in admins %}
+                    <tr data-type="{{ admin.admin_type|lower|cut:' admin'|default:'normal' }}">
+
+                        <!-- Admin Name -->
+                        <td>
+                            <div class="admin-cell">
+                                <div class="admin-avatar"
+                                     style="background: linear-gradient(135deg,
+                                        {% cycle '#5b4cff' '#00c98b' '#38bdf8' '#ffb703' '#ff4d6d' '#7c3aed' %},
+                                        {% cycle '#9b6bff' '#00e5a0' '#67d7f5' '#ffd166' '#ff8fab' '#a78bfa' %});">
+                                    {{ admin.name|first|upper }}
+                                </div>
+                                <div class="admin-info">
+                                    <div class="admin-name">{{ admin.name }}</div>
+                                    <div class="admin-sub">#{{ admin.id|default:"—" }}</div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Role -->
+                        <td>
+                            {% with type=admin.admin_type|lower %}
+                            {% if 'super' in type %}
+                                <span class="role-badge super"><i class="bi bi-star-fill"></i> Super Admin</span>
+                            {% elif 'finance' in type %}
+                                <span class="role-badge finance"><i class="bi bi-cash-coin"></i> Finance</span>
+                            {% elif 'hr' in type %}
+                                <span class="role-badge hr"><i class="bi bi-people-fill"></i> HR</span>
+                            {% elif 'it' in type %}
+                                <span class="role-badge it"><i class="bi bi-terminal-fill"></i> IT</span>
+                            {% elif 'operations' in type or 'ops' in type %}
+                                <span class="role-badge ops"><i class="bi bi-gear-wide-connected"></i> Operations</span>
+                            {% elif 'support' in type %}
+                                <span class="role-badge support"><i class="bi bi-headset"></i> Support</span>
+                            {% else %}
+                                <span class="role-badge normal"><i class="bi bi-person"></i> {{ admin.admin_type }}</span>
+                            {% endif %}
+                            {% endwith %}
+                        </td>
+
+                        <!-- Email -->
+                        <td>
+                            {% if admin.email %}
+                                <a href="mailto:{{ admin.email }}" class="email-link">
+                                    <i class="bi bi-envelope"></i>{{ admin.email }}
+                                </a>
+                            {% else %}
+                                <span style="color:var(--text-muted); font-size:0.82rem;">—</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Reference Number -->
+                        <td>
+                            <span class="ref-pill" onclick="copyRef(this, '{{ admin.ref_number }}')">
+                                <i class="bi bi-hash"></i>{{ admin.ref_number }}
+                            </span>
+                        </td>
+
+                        <!-- Created By -->
+                        <td>
+                            <div class="creator-cell">
+                                <span class="creator-dot"></span>
+                                <span style="font-size:0.83rem; color:var(--text-secondary);">
+                                    {{ admin.created_by.username|default:"System" }}
+                                </span>
+                            </div>
+                        </td>
+
+                        <!-- Date -->
+                        <td>
+                            <div class="date-cell">
+                                <i class="bi bi-calendar3"></i>
+                                {{ admin.created_at|date:"M d, Y" }}
+                            </div>
+                        </td>
+
+                        <!-- Actions -->
+                        <td>
+                            <div class="row-actions">
+                                <button class="row-action-btn" title="View details" onclick="showToast('Info', 'Admin detail view coming soon.', 'info')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="row-action-btn danger" title="Delete admin" onclick="confirmDelete('{{ admin.name }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="padding:0; border:none;">
+                            <div class="empty-state">
+                                <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+                                <h3>No admin accounts found</h3>
+                                <p>
+                                    {% if search_query %}
+                                        No admins match "<strong>{{ search_query }}</strong>". Try a different search.
+                                    {% else %}
+                                        No admin accounts have been created yet.
+                                    {% endif %}
+                                </p>
+                                {% if search_query %}
+                                    <a href="{% url 'view_admins' %}" class="nav-link-btn" style="display:inline-flex; margin: 0 auto;">
+                                        <i class="bi bi-arrow-left"></i> Clear Search
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'register_admin' %}" class="head-btn primary" style="display:inline-flex; margin:0 auto;">
+                                        <i class="bi bi-person-plus-fill"></i> Create First Admin
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Table Footer -->
+        {% if admins %}
+        <div class="table-footer">
+            <div class="row-count">
+                Showing <strong id="visibleCount">{{ admins|length }}</strong> of <strong>{{ admins|length }}</strong> admin{{ admins|length|pluralize }}
+            </div>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+                <span style="font-size:0.75rem; color:var(--text-muted);">
+                    <i class="bi bi-info-circle me-1"></i>Click a reference number to copy it
+                </span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+        <div class="nav-links">
+            <a href="{% url 'dashboard_super' %}" class="nav-link-btn">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+            <a href="{% url 'register_admin' %}" class="nav-link-btn">
+                <i class="bi bi-person-plus"></i> Create Admin
+            </a>
+        </div>
+        <a href="{% url 'logout' %}" class="nav-link-btn danger">
+            <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+    </div>
+
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ── Count summary tiles ──
+    const rows = document.querySelectorAll('#adminsBody tr[data-type]');
+    let superCount = 0, normalCount = 0;
+
+    rows.forEach(row => {
+        const t = row.dataset.type;
+        if (t === 'super') superCount++;
+        else normalCount++;
+    });
+
+    document.getElementById('count-super').textContent  = superCount;
+    document.getElementById('count-normal').textContent = normalCount;
+    // "recent" would need a date comparison — show total for now
+    document.getElementById('count-recent').textContent = Math.min(rows.length, 5);
+
+    // ── Filter chips ──
+    const chips = document.querySelectorAll('.filter-chip');
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            chips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            const filter = chip.dataset.filter;
+            filterTable(filter);
+        });
+    });
+
+    function filterTable(filter) {
+        let visible = 0;
+        rows.forEach(row => {
+            const type = row.dataset.type || '';
+            const show = filter === 'all' || type.includes(filter);
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        document.getElementById('visibleCount').textContent = visible;
+    }
+
+    // ── Live search filter ──
+    const searchInput = document.getElementById('searchInput');
+    searchInput?.addEventListener('input', () => {
+        const q = searchInput.value.toLowerCase().trim();
+        if (!q) { rows.forEach(r => r.style.display = ''); updateCount(); return; }
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(q) ? '' : 'none';
+        });
+        updateCount();
+    });
+
+    function updateCount() {
+        const visible = [...rows].filter(r => r.style.display !== 'none').length;
+        document.getElementById('visibleCount').textContent = visible;
+    }
+
+});
+
+// ── Copy ref number ──
+function copyRef(el, code) {
+    navigator.clipboard.writeText(code).then(() => {
+        const orig = el.innerHTML;
+        el.classList.add('copied');
+        el.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+        setTimeout(() => {
+            el.classList.remove('copied');
+            el.innerHTML = orig;
+        }, 2000);
+        showToast('Copied', `Reference ${code} copied to clipboard.`, 'success', 2000);
+    });
+}
+
+// ── Confirm delete ──
+function confirmDelete(name) {
+    showToast('Confirm', `Delete admin "${name}"? This action cannot be undone.`, 'warning', 4000);
+}
+
+// ── Export ──
+function exportTable() {
+    const rows = document.querySelectorAll('#adminsBody tr[data-type]');
+    let csv = 'Name,Type,Email,Reference,Created By,Date\n';
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const name = cells[0]?.querySelector('.admin-name')?.textContent.trim() || '';
+        const type = cells[1]?.textContent.trim() || '';
+        const email = cells[2]?.textContent.trim() || '';
+        const ref  = cells[3]?.textContent.trim() || '';
+        const by   = cells[4]?.textContent.trim() || '';
+        const date = cells[5]?.textContent.trim() || '';
+        csv += `"${name}","${type}","${email}","${ref}","${by}","${date}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'admins-export.csv';
+    a.click();
+    showToast('Export', 'Admin list exported as CSV.', 'success');
+}
+
+// ── Sort ──
+function sortTable(val) {
+    const tbody = document.getElementById('adminsBody');
+    const rows  = [...tbody.querySelectorAll('tr[data-type]')];
+    rows.sort((a, b) => {
+        if (val === 'name-asc' || val === 'name-desc') {
+            const na = a.querySelector('.admin-name')?.textContent || '';
+            const nb = b.querySelector('.admin-name')?.textContent || '';
+            return val === 'name-asc' ? na.localeCompare(nb) : nb.localeCompare(na);
+        }
+        if (val === 'date-asc' || val === 'date-desc') {
+            const da = a.querySelector('.date-cell')?.textContent.trim() || '';
+            const db = b.querySelector('.date-cell')?.textContent.trim() || '';
+            const ta = new Date(da), tb = new Date(db);
+            return val === 'date-asc' ? ta - tb : tb - ta;
+        }
+        return 0;
+    });
+    rows.forEach(r => tbody.appendChild(r));
+}
+
+function sortByCol(col) {
+    // Simple toggle sort by column
+    const headers = document.querySelectorAll('.admins-table thead th');
+    headers.forEach(h => h.classList.remove('sorted'));
+    headers[col]?.classList.add('sorted');
+}
+</script>
+{% endblock %}

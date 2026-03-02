@@ -1,0 +1,81 @@
+{% extends "admin/base_sub_admin.html" %}
+{% load static %}
+
+{% block title %}Sub-Admin Dashboard - BookHub{% endblock %}
+
+{% block extra_css %}
+<style>
+  .sub-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem; margin-bottom:1.4rem; }
+  .sub-card { background:var(--bg-surface); border:1px solid var(--border); border-radius:14px; padding:1rem 1.1rem; box-shadow:var(--shadow-sm); }
+  .sub-card h5 { margin:0; font-size:0.9rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; }
+  .sub-card .val { font-size:1.9rem; font-weight:700; margin-top:.35rem; color:var(--text-primary); }
+  .sub-links { display:flex; gap:.7rem; flex-wrap:wrap; margin:1rem 0 1.3rem; }
+  .sub-links a { text-decoration:none; border:1px solid var(--border); padding:.5rem .9rem; border-radius:999px; color:var(--text-secondary); background:var(--bg-raised); }
+  .sub-links a:hover { color:var(--primary); border-color:var(--primary); }
+  .table-wrap { background:var(--bg-surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { padding:.72rem .85rem; border-bottom:1px solid var(--border-soft); font-size:.88rem; }
+  th { background:var(--bg-raised); text-align:left; color:var(--text-secondary); }
+  .status { padding:.18rem .55rem; border-radius:999px; font-size:.76rem; font-weight:600; }
+  .status.pending { background:rgba(255,183,3,.15); color:#8f5d00; }
+  .status.under_review { background:rgba(56,189,248,.15); color:#075985; }
+  .status.resolved { background:rgba(0,201,139,.15); color:#065f46; }
+  .status.rejected { background:rgba(255,77,109,.15); color:#9f1239; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+      <h2 class="mb-1">Sub-Admin Dashboard</h2>
+      <div class="text-muted">Welcome {{ admin_account.name }} ({{ admin_account.admin_type }})</div>
+    </div>
+  </div>
+
+  <div class="sub-grid">
+    <div class="sub-card"><h5>Pending Reports</h5><div class="val">{{ pending_reports }}</div></div>
+    <div class="sub-card"><h5>Under Review</h5><div class="val">{{ under_review_reports }}</div></div>
+    <div class="sub-card"><h5>Resolved Reports</h5><div class="val">{{ resolved_reports }}</div></div>
+    <div class="sub-card"><h5>Open Support Chats</h5><div class="val">{{ open_support_conversations }}</div></div>
+    <div class="sub-card"><h5>Unread Support Messages</h5><div class="val">{{ unread_support_messages }}</div></div>
+    <div class="sub-card"><h5>Restricted User Accounts</h5><div class="val">{{ restricted_users_count }}</div></div>
+  </div>
+
+  <div class="sub-links">
+    <a href="{% url 'sub_admin_issue_reports' %}"><i class="bi bi-flag me-1"></i>Issue Reports</a>
+    <a href="{% url 'sub_admin_support_chat_list' %}"><i class="bi bi-chat-dots me-1"></i>Support Chats</a>
+    <a href="{% url 'sub_admin_manage_accounts' %}"><i class="bi bi-person-lock me-1"></i>Account Management</a>
+    <a href="{% url 'sub_admin_activity_logs' %}"><i class="bi bi-journal-text me-1"></i>Activity Logs</a>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Reporter</th>
+          <th>Reported User</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for report in recent_reports %}
+        <tr>
+          <td>#{{ report.id }}</td>
+          <td>{{ report.reporter.username }} ({{ report.get_reporter_role_display }})</td>
+          <td>{{ report.reported_user.username }}</td>
+          <td>{{ report.get_category_display }}</td>
+          <td><span class="status {{ report.status }}">{{ report.get_status_display }}</span></td>
+          <td>{{ report.created_at|date:"Y-m-d H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No issue reports yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

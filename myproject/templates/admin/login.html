@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book-Hub · normal admin login</title>
+  <!-- Font Awesome 5 (same as target) -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+  <!-- Google Font: Inter (exactly like admin page) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    /* ---------- reset / base (copied from login admin.html with minimal adaptations) ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #edf3fa;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      color: #1e293b;
+    }
+
+    /* main container: split card */
+    .login-wrapper {
+      max-width: 1060px;
+      width: 100%;
+      background: white;
+      border-radius: 48px;
+      box-shadow: 0 30px 60px -15px rgba(15, 42, 68, 0.25);
+      display: flex;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+
+    /* ————— left side: brand panel ————— */
+    .brand-panel {
+      flex: 1.1;
+      background: #0f2a44;         /* deep navy, same as admin */
+      padding: 3rem 2.5rem;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .brand-panel::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 200px;
+      height: 200px;
+      background: #f5b042;          /* accent gold */
+      opacity: 0.05;
+      border-radius: 0 80% 0 0;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 1.9rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 2.5rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand-logo i {
+      background: #f5b042;           /* gold icon bg */
+      color: #0f2a44;
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+
+    .brand-logo span {
+      color: #f5b042;                /* gold accent for "-hub" */
+      font-weight: 300;
+    }
+
+    .welcome-message h2 {
+      font-size: 2.3rem;
+      font-weight: 600;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+
+    .welcome-message p {
+      color: #b6cde3;
+      font-size: 1.1rem;
+      margin-bottom: 3rem;
+      max-width: 85%;
+    }
+
+    .admin-tip {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(4px);
+      padding: 1.3rem 1.8rem;
+      border-radius: 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 1rem;
+      border: 1px solid rgba(245,176,66,0.3);
+    }
+
+    .admin-tip i {
+      color: #f5b042;
+      font-size: 1.8rem;
+    }
+
+    .admin-tip div {
+      font-weight: 500;
+    }
+
+    .admin-tip small {
+      display: block;
+      color: #9bb5d3;
+      font-size: 0.85rem;
+    }
+
+    .footer-stats {
+      margin-top: 2.5rem;
+      color: #5f7da0;
+      font-size: 0.9rem;
+      display: flex;
+      gap: 2rem;
+    }
+
+    .footer-stats i {
+      color: #f5b042;
+    }
+
+    /* ————— right side: form panel ————— */
+    .form-panel {
+      flex: 1.3;
+      padding: 3rem 3.5rem;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .form-header {
+      margin-bottom: 2.2rem;
+    }
+
+    .form-header h3 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #0f2a44;
+    }
+
+    .form-header p {
+      color: #5e738f;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-header p i {
+      color: #f5b042;
+    }
+
+    /* message alerts (django tags) */
+    .message {
+      padding: 1rem 1.5rem;
+      border-radius: 16px;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .message.error {
+      background: #fee9e9;
+      border: 1px solid #fbc5c5;
+      color: #b91c1c;
+    }
+
+    .message.success {
+      background: #e3f9e5;
+      border: 1px solid #b8e5be;
+      color: #1e7b48;
+    }
+
+    .message.warning {
+      background: #fff2d6;
+      border: 1px solid #f5b042;
+      color: #8e6100;
+    }
+
+    .message i {
+      font-size: 1.2rem;
+    }
+
+    /* input groups */
+    .input-group {
+      margin-bottom: 1.8rem;
+    }
+
+    .input-group label {
+      display: block;
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: #344e6c;
+      margin-bottom: 0.5rem;
+    }
+
+    .input-group label i {
+      color: #f5b042;
+      width: 22px;
+      margin-right: 6px;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 1rem 1.4rem;
+      background: #f8fafd;
+      border: 1.5px solid #e3eaf2;
+      border-radius: 24px;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+      transition: 0.2s;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #f5b042;
+      background: #ffffff;
+      box-shadow: 0 4px 14px rgba(245,176,66,0.15);
+    }
+
+    /* field hint / extra */
+    .field-hint {
+      margin-top: 0.4rem;
+      font-size: 0.8rem;
+      color: #6b84a2;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    /* reference tag (dynamic) – same style as demo-credentials but smaller */
+    .ref-tag {
+      display: none;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 0.8rem;
+      background: #f2f7ff;
+      border-radius: 40px;
+      padding: 0.5rem 1.2rem;
+      border: 1px solid #dde6f2;
+      width: fit-content;
+    }
+    .ref-tag.show {
+      display: flex;
+    }
+    .ref-tag i {
+      color: #f5b042;
+    }
+    .ref-tag span {
+      font-family: monospace;
+      font-weight: 600;
+      color: #0f2a44;
+      background: white;
+      padding: 0.2rem 1rem;
+      border-radius: 40px;
+      border: 1px solid #cbd9ec;
+    }
+
+    /* login options (no checkboxes in original normal login, but we keep structure to match style) */
+    .login-options {
+      display: flex;
+      justify-content: flex-end;   /* only hint available, but we put dummy space */
+      margin: 0.8rem 0 2.2rem;
+    }
+
+    /* submit button – exactly like admin button but with normal admin text */
+    .btn-login {
+      background: #0f2a44;
+      color: white;
+      border: none;
+      padding: 1.2rem 2rem;
+      width: 100%;
+      font-size: 1.2rem;
+      font-weight: 600;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 8px 18px -6px rgba(15,42,68,0.4);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .btn-login i {
+      color: #f5b042;
+      font-size: 1.2rem;
+    }
+
+    .btn-login:hover {
+      background: #1a3757;
+      transform: scale(1.01);
+    }
+
+    .btn-login:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* demo‑like reference preview (small) – but we keep the ref-tag already */
+
+    hr {
+      border: none;
+      border-top: 1px solid #e5ecf5;
+      margin: 2rem 0 0.8rem;
+    }
+
+    /* link row similar to admin footer but with two links */
+    .register-prompt {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+    }
+
+    .foot-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #f2f7ff;
+      border-radius: 40px;
+      padding: 0.7rem 1.4rem;
+      border: 1px solid #dde6f2;
+      color: #0f2a44;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+
+    .foot-link i {
+      color: #f5b042;
+    }
+
+    .foot-link:hover {
+      background: #e2ecf9;
+      border-color: #f5b042;
+    }
+
+    .sec-note {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: #8ba0bc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    .sec-note i {
+      color: #f5b042;
+    }
+
+    /* no changes to any functionality — all ids and logic kept */
+  </style>
+</head>
+<body>
+<div class="login-wrapper">
+
+  <!-- left panel : identical structure to login admin.html, only content adapted for normal admin -->
+  <div class="brand-panel">
+    <div>
+      <div class="brand-logo">
+        <i class="fas fa-book-open"></i>
+        <div>book<span>-hub</span></div>
+      </div>
+      <div class="welcome-message">
+        <h2>admin access</h2>
+        <p>Sign in with your name and reference number to manage books & inventory.</p>
+      </div>
+      <div class="admin-tip">
+        <i class="fas fa-id-card"></i>
+        <div>
+          reference login <small>provided by super admin</small>
+        </div>
+      </div>
+    </div>
+   
+  </div>
+
+  <!-- right panel: login form (identical logic, only ui changed) -->
+  <div class="form-panel">
+    <div class="form-header">
+      <h3>admin login</h3>
+      <p><i class="fas fa-key"></i> use your admin name & reference</p>
+    </div>
+
+    <!-- Django messages (exactly as before) -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="message {% if message.tags %}{{ message.tags }}{% else %}error{% endif %}">
+          <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-exclamation-circle{% endif %}"></i>
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}" id="loginForm" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="login_mode" value="normal_admin">
+
+      <!-- admin name -->
+      <div class="input-group">
+        <label><i class="fas fa-user"></i> admin name <span style="color:#b91c1c;">*</span></label>
+        <input class="input-field" id="admin_name" name="admin_name" type="text" placeholder="Your full admin name" required autocomplete="name" autofocus>
+      </div>
+
+      <!-- reference number field with toggle (same id's) -->
+      <div class="input-group">
+        <label><i class="fas fa-key"></i> reference number <span style="color:#b91c1c;">*</span></label>
+        
+        
+        <div style="position: relative;">
+          <input class="input-field" id="ref_number" name="ref_number" type="password" placeholder="XXXX" required autocomplete="current-password" style="padding-right: 3rem;">
+          <button type="button" id="refToggle" style="position: absolute; right: 1.2rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: #8ba0bc; cursor: pointer; font-size: 1.1rem;">
+            <i class="fas fa-eye-slash" id="refToggleIcon"></i>
+          </button>
+        </div>
+
+
+        
+        <div class="field-hint">
+          <i class="fas fa-info-circle"></i> Provided by your Super Admin at account creation
+        </div>
+        <!-- live ref preview (same refTag) -->
+        <div class="ref-tag" id="refTag">
+          <i class="fas fa-hashtag"></i>
+          <span id="refTagText"></span>
+        </div>
+      </div>
+
+      <!-- login button (identical structure to admin, but text changed) -->
+      <button type="submit" class="btn-login" id="submitBtn">
+        <i class="fas fa-sign-in-alt"></i> sign in to dashboard
+      </button>
+    </form>
+
+    <!-- extra links + security note (like admin page footer + sec-note) -->
+    <hr>
+
+    <div class="register-prompt">
+      <a href="{% url 'admin_login' %}" class="foot-link">
+        <i class="fas fa-shield-alt"></i> super admin login
+      </a>
+      <a href="{% url 'index' %}" class="foot-link">
+        <i class="fas fa-home"></i> back to home
+      </a>
+    </div>
+
+    <div class="sec-note">
+      <i class="fas fa-shield"></i> 256-bit encrypted · secure session · BookHub admin v2
+    </div>
+  </div>
+</div>
+
+<!-- Javascript – exactly the same logic as original login.html, only theme part removed (since theme button not present) -->
+<script>
+  (function() {
+    // ref visibility toggle (preserve original behaviour)
+    const refInput = document.getElementById('ref_number');
+    const refToggle = document.getElementById('refToggle');
+    const refToggleIcon = document.getElementById('refToggleIcon');
+    if (refToggle) {
+      refToggle.addEventListener('click', function() {
+        const show = refInput.type === 'password';
+        refInput.type = show ? 'text' : 'password';
+        refToggleIcon.className = show ? 'fas fa-eye' : 'fas fa-eye-slash';
+      });
+    }
+
+    // Live ref preview tag
+    const refTag = document.getElementById('refTag');
+    const refTagText = document.getElementById('refTagText');
+    if (refInput) {
+      refInput.addEventListener('input', function() {
+        const v = refInput.value.trim().toUpperCase();
+        if (v.length >= 3) {
+          refTagText.textContent = v;
+          refTag.classList.add('show');
+        } else {
+          refTag.classList.remove('show');
+        }
+      });
+    }
+
+    // Submit loading state (exactly as original)
+    document.getElementById('loginForm')?.addEventListener('submit', function(e) {
+      let hasEmpty = false;
+      this.querySelectorAll('.input-field[required]').forEach(inp => {
+        if (!inp.value.trim()) {
+          inp.style.borderColor = '#b91c1c';
+          inp.style.boxShadow = '0 0 0 4px rgba(185,28,28,0.1)';
+          inp.addEventListener('input', () => {
+            inp.style.borderColor = ''; inp.style.boxShadow = '';
+          }, { once: true });
+          hasEmpty = true;
+        }
+      });
+      if (hasEmpty) {
+        e.preventDefault();
+        return;
+      }
+
+      const btn = document.getElementById('submitBtn');
+      btn.innerHTML = `
+        <i class="fas fa-spinner fa-pulse"></i> Authenticating…
+      `;
+      btn.disabled = true;
+    });
+  })();
+</script>
+
+<!-- ensure that no original theme toggle remains, no extra code added, only UI changed -->
+</body>
+</html>

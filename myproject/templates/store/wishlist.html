@@ -1,0 +1,428 @@
+<!-- store/wishlist.html -->
+{% extends 'store/base.html' %}
+
+{% block title %}Wishlisted Books - Store Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'store_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Wishlisted Books</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-card p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h3 class="mb-2">
+                            <i class="bi bi-heart-fill text-danger me-2"></i>
+                            Wishlisted Books
+                        </h3>
+                        <p class="text-muted mb-0">
+                            Track books with high customer interest and manage stock levels
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'view_inventory' %}" class="btn btn-primary">
+                                <i class="bi bi-box me-2"></i> View Inventory
+                            </a>
+                            <a href="{% url 'add_book_registration' %}" class="btn btn-success">
+                                <i class="bi bi-plus-lg me-2"></i> Add Book
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center">
+                <div class="text-danger mb-2">
+                    <i class="bi bi-heart-fill fs-1"></i>
+                </div>
+                <h4 class="mb-1">{{ total_wishlisted }}</h4>
+                <p class="text-muted mb-0">Total Wishlisted</p>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center">
+                <div class="text-warning mb-2">
+                    <i class="bi bi-fire fs-1"></i>
+                </div>
+                <h4 class="mb-1">{{ popular_count }}</h4>
+                <p class="text-muted mb-0">Popular Books</p>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center">
+                <div class="text-danger mb-2">
+                    <i class="bi bi-exclamation-triangle fs-1"></i>
+                </div>
+                <h4 class="mb-1">{{ low_stock_count }}</h4>
+                <p class="text-muted mb-0">Low Stock</p>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center">
+                <div class="text-success mb-2">
+                    <i class="bi bi-graph-up-arrow fs-1"></i>
+                </div>
+                <h4 class="mb-1">{{ trending_count }}</h4>
+                <p class="text-muted mb-0">Trending Now</p>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center">
+                <div class="text-info mb-2">
+                    <i class="bi bi-clock-history fs-1"></i>
+                </div>
+                <h4 class="mb-1">{{ wishlisted_books|length }}</h4>
+                <p class="text-muted mb-0">To Review</p>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="dashboard-card p-3 text-center">
+                <div class="text-book-color mb-2">
+                    <i class="bi bi-cash-coin fs-1"></i>
+                </div>
+                <h4 class="mb-1">${{ estimated_revenue|floatformat:2 }}</h4>
+                <p class="text-muted mb-0">Potential Revenue</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-card p-4">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Filter by Category</label>
+                        <select class="form-select" id="categoryFilter">
+                            <option value="all">All Categories</option>
+                            <option value="popular">Most Popular</option>
+                            <option value="low_stock">Low Stock</option>
+                            <option value="new">New Arrivals</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Sort By</label>
+                        <select class="form-select" id="sortFilter">
+                            <option value="popularity">Popularity</option>
+                            <option value="wishlist_count">Wishlist Count</option>
+                            <option value="stock">Stock Level</option>
+                            <option value="recent">Recently Added</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Stock Level</label>
+                        <select class="form-select" id="stockFilter">
+                            <option value="all">All Levels</option>
+                            <option value="low">Low Stock (≤ 2)</option>
+                            <option value="medium">Medium (3-10)</option>
+                            <option value="high">High Stock (> 10)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" onclick="applyFilters()">
+                            <i class="bi bi-funnel me-2"></i> Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if wishlisted_books %}
+    <!-- Books Grid -->
+    <div class="row mb-4">
+        {% for book in wishlisted_books %}
+        <div class="col-xl-4 col-lg-6 mb-4">
+            <div class="dashboard-card h-100">
+                <div class="p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">{{ book.title }}</h5>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-person me-1"></i>{{ book.author }}
+                            </p>
+                            <span class="badge bg-primary mb-3">{{ book.genre|default:"Fiction" }}</span>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <span class="badge bg-danger p-2">
+                                <i class="bi bi-heart-fill me-1"></i>{{ book.wishlist_count|default:"15" }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Stock Levels -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="border rounded p-2 text-center">
+                                <small class="text-muted d-block">FOR RENT</small>
+                                <h6 class="mb-0 text-book-color">${{ book.rental_price|floatformat:2 }}</h6>
+                                <small
+                                    class="{% if book.available_copies > 3 %}text-success{% elif book.available_copies > 0 %}text-warning{% else %}text-danger{% endif %}">
+                                    {{ book.available_copies }} available
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded p-2 text-center">
+                                <small class="text-muted d-block">FOR SALE</small>
+                                <h6 class="mb-0 text-success">${{ book.sale_price|floatformat:2 }}</h6>
+                                <small
+                                    class="{% if book.available_sales > 3 %}text-success{% elif book.available_sales > 0 %}text-warning{% else %}text-danger{% endif %}">
+                                    {{ book.available_sales }} available
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alerts -->
+                    <div class="mb-3">
+                        {% if book.available_copies <= 2 %} <div
+                            class="alert alert-danger py-1 mb-2 d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <small>Low rental stock</small>
+                    </div>
+                    {% endif %}
+
+                    {% if book.available_sales <= 2 %} <div
+                        class="alert alert-warning py-1 mb-2 d-flex align-items-center">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        <small>Low sale stock</small>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-grid gap-2">
+                <a href="{% url 'edit_book' book.id %}" class="btn btn-primary">
+                    <i class="bi bi-pencil me-2"></i> Edit Book
+                </a>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <button class="btn btn-success w-100" onclick="restockBook({{ book.id }})">
+                            <i class="bi bi-plus-lg me-1"></i> Restock
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn btn-info w-100" onclick="viewAnalytics({{ book.id }})">
+                            <i class="bi bi-graph-up me-1"></i> Analytics
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+</div>
+
+<!-- Restock Recommendations -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="dashboard-card p-4">
+            <h4 class="mb-4">
+                <i class="bi bi-lightbulb-fill text-warning me-2"></i>
+                Restock Recommendations
+            </h4>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Book</th>
+                            <th class="text-center">Current Stock</th>
+                            <th class="text-center">Wishlist Count</th>
+                            <th class="text-center">Recommendation</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for book in low_stock_books %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0 me-3">
+                                        <div class="bg-light rounded p-2">
+                                            <i class="bi bi-book text-book-color"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">{{ book.title }}</h6>
+                                        <small class="text-muted">{{ book.author }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div>
+                                    <span
+                                        class="badge {% if book.available_copies > 2 %}bg-success{% else %}bg-danger{% endif %}">
+                                        Rent: {{ book.available_copies }}
+                                    </span>
+                                    <span
+                                        class="badge {% if book.available_sales > 2 %}bg-success{% else %}bg-danger{% endif %}">
+                                        Sale: {{ book.available_sales }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-danger p-2">
+                                    <i class="bi bi-heart-fill me-1"></i>{{ book.wishlist_count|default:"15" }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-success">
+                                    <i class="bi bi-plus-circle me-1"></i>
+                                    +{{ book.recommended_restock|default:"5" }} copies
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-success" onclick="quickRestock({{ book.id }})">
+                                    <i class="bi bi-cart-plus me-1"></i> Order More
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="row">
+    <div class="col-12">
+        <div class="dashboard-card p-5 text-center">
+            <div class="mb-4">
+                <i class="bi bi-heart text-muted" style="font-size: 4rem;"></i>
+            </div>
+            <h4 class="mb-3">No wishlisted books yet</h4>
+            <p class="text-muted mb-4">
+                Books that customers add to their wishlist will appear here.
+                This helps you track popular items and manage stock levels.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'view_inventory' %}" class="btn btn-primary">
+                    <i class="bi bi-box me-2"></i> View Inventory
+                </a>
+                <a href="{% url 'store_orders' %}" class="btn btn-success">
+                    <i class="bi bi-cart me-2"></i> View Orders
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+</div>
+
+<style>
+    .bg-book-color {
+        background-color: var(--book-color) !important;
+    }
+
+    .text-book-color {
+        color: var(--book-color) !important;
+    }
+
+    .alert {
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(67, 97, 238, 0.05);
+    }
+
+    .badge {
+        font-weight: 500;
+    }
+</style>
+
+<script>
+    function applyFilters() {
+        const category = document.getElementById('categoryFilter').value;
+        const sort = document.getElementById('sortFilter').value;
+        const stock = document.getElementById('stockFilter').value;
+
+        let url = '?';
+
+        if (category !== 'all') url += `category=${category}&`;
+        if (sort !== 'popularity') url += `sort=${sort}&`;
+        if (stock !== 'all') url += `stock=${stock}`;
+
+        window.location.href = url;
+    }
+
+    function restockBook(bookId) {
+        showAlert('Restock Book', 'Opening restock form for book #' + bookId);
+    }
+
+    function quickRestock(bookId) {
+        const quantity = prompt('Enter quantity to order:', '5');
+        if (quantity) {
+            showAlert('Order Placed', `Ordering ${quantity} copies for book #${bookId}`);
+        }
+    }
+
+    function viewAnalytics(bookId) {
+        showAlert('Book Analytics', 'Opening analytics dashboard for book #' + bookId);
+    }
+
+    function showAlert(title, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        alertDiv.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+        <strong>${title}</strong><br>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+        document.body.appendChild(alertDiv);
+
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 3000);
+    }
+
+    // Initialize filters from URL parameters
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        if (urlParams.has('category')) {
+            document.getElementById('categoryFilter').value = urlParams.get('category');
+        }
+
+        if (urlParams.has('sort')) {
+            document.getElementById('sortFilter').value = urlParams.get('sort');
+        }
+
+        if (urlParams.has('stock')) {
+            document.getElementById('stockFilter').value = urlParams.get('stock');
+        }
+    });
+</script>
+{% endblock %}

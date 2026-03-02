@@ -1,0 +1,98 @@
+{% extends 'admin/base_sub_admin.html' %}
+
+{% block title %}Sub-Admin Profile{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="max-width:920px;">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <h2 class="mb-0">Edit Sub-Admin Profile</h2>
+    <a href="{% url 'dashboard_admin' %}" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+  </div>
+
+  <div class="card" style="border:1px solid var(--border); background:var(--bg-surface); border-radius:14px;">
+    <div class="card-body p-4">
+      <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+        <div id="avatarPreview" class="rounded-circle overflow-hidden border" style="width:120px; height:120px; border-color:var(--border) !important; background:var(--bg-raised);">
+          {% if avatar_url %}
+          <img src="{{ avatar_url }}" alt="Profile image" style="width:100%; height:100%; object-fit:cover;">
+          {% else %}
+          <div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-person" style="font-size:2.4rem; color:var(--text-muted);"></i></div>
+          {% endif %}
+        </div>
+        <div>
+          <label class="form-label fw-semibold mb-1">Profile Image</label>
+          <input id="avatarInput" type="file" class="form-control" accept="image/*" style="max-width:320px;">
+          <div class="form-text">Allowed: JPG, PNG, GIF, WEBP, BMP, SVG. Max: 5MB.</div>
+          <div id="avatarFeedback" class="small mt-2"></div>
+        </div>
+      </div>
+
+      <form method="post" action="{% url 'sub_admin_profile_update' %}">
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-control" name="name" value="{{ admin_account.name }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" name="email" value="{{ admin_account.email|default:'' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Admin Type</label>
+            <input type="text" class="form-control" name="admin_type" value="{{ admin_account.admin_type }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Reference Number</label>
+            <input type="text" class="form-control" value="{{ admin_account.ref_number }}" readonly>
+          </div>
+        </div>
+        <div class="mt-4">
+          <button type="submit" class="btn btn-primary">Save Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  const input = document.getElementById('avatarInput');
+  const preview = document.getElementById('avatarPreview');
+  const feedback = document.getElementById('avatarFeedback');
+  if (!input || !preview) return;
+
+  function setFeedback(text, ok) {
+    if (!feedback) return;
+    feedback.textContent = text || '';
+    feedback.style.color = ok ? 'var(--success)' : 'var(--danger)';
+  }
+
+  input.addEventListener('change', async () => {
+    if (!input.files || !input.files[0]) return;
+    const formData = new FormData();
+    formData.append('avatar', input.files[0]);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    try {
+      const response = await fetch('{% url "sub_admin_update_avatar" %}', { method: 'POST', body: formData });
+      const payload = await response.json();
+      if (!payload.success) {
+        setFeedback(payload.message || 'Upload failed.', false);
+        return;
+      }
+
+      const newUrl = payload.avatar_url + '?v=' + Date.now();
+      preview.innerHTML = `<img src="${newUrl}" alt="Profile image" style="width:100%; height:100%; object-fit:cover;">`;
+      document.querySelectorAll('.nav-avatar').forEach((img) => { img.src = newUrl; });
+      setFeedback('Profile image updated successfully.', true);
+      input.value = '';
+    } catch (error) {
+      setFeedback('Upload failed. Please try again.', false);
+    }
+  });
+})();
+</script>
+{% endblock %}

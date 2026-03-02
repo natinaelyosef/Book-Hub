@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Super Admin Dashboard{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --primary-dark: #3a56c4;
+            --secondary-color: #858796;
+            --success-color: #1cc88a;
+            --info-color: #36b9cc;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --light-color: #f8f9fc;
+            --dark-color: #5a5c69;
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 80px;
+            --transition-speed: 0.3s;
+            --admin-color: #0f2a44;
+            --admin-accent: #f5b042;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fc;
+            color: #333;
+            overflow-x: hidden;
+            min-height: 100vh;
+            padding-top: 70px;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: white;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            padding: 0.75rem 0;
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: 1030;
+            transition: all var(--transition-speed) ease;
+            height: 70px;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--admin-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-brand span {
+            color: var(--admin-accent);
+        }
+
+        .nav-user-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e3e6f0;
+        }
+
+        /* Sidebar Styling */
+        #sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--admin-color);
+            color: #dbe7f3;
+            position: fixed;
+            top: 70px;
+            left: 0;
+            height: calc(100vh - 70px);
+            z-index: 1000;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            transition: all var(--transition-speed) ease;
+            overflow-y: auto;
+            display: flex !important;
+            flex-direction: column;
+        }
+
+        .sidebar-heading {
+            padding: 1.5rem 1rem 0.5rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #a0b3cc;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-item {
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            color: #dbe7f3;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .sidebar-item:hover,
+        .sidebar-item.active {
+            color: #fff;
+            background-color: rgba(245, 176, 66, 0.2);
+            border-left-color: var(--admin-accent);
+        }
+
+        .sidebar-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-item span {
+            transition: opacity var(--transition-speed);
+        }
+
+        .sidebar-item.logout-bottom {
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Main Content Area */
+        #content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            min-height: calc(100vh - 70px);
+            transition: all var(--transition-speed) ease;
+        }
+
+        /* Cards */
+        .dashboard-card {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+            transition: all 0.3s;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+
+        /* Admin Stats Cards */
+        .admin-stat-card {
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--admin-color) 0%, #1a3a5a 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+        }
+
+        .admin-stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .admin-stat-card.users {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        }
+
+        .admin-stat-card.stores {
+            background: linear-gradient(135deg, #1cc88a 0%, #169b6b 100%);
+        }
+
+        .admin-stat-card.books {
+            background: linear-gradient(135deg, #36b9cc 0%, #258391 100%);
+        }
+
+        .admin-stat-card.orders {
+            background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%);
+        }
+
+        .admin-stat-card.admins {
+            background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%);
+        }
+
+        /* Message Styling */
+        .alert-custom {
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-custom.success {
+            background-color: #ecfdf3;
+            border-left-color: var(--success-color);
+            color: #0a3622;
+        }
+
+        .alert-custom.error {
+            background-color: #fef2f2;
+            border-left-color: var(--danger-color);
+            color: #58151c;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Table Styling */
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+        }
+
+        .table thead th {
+            border-bottom: 2px solid #e3e6f0;
+            color: var(--admin-color);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fc;
+        }
+
+        .ref-number {
+            font-weight: 600;
+            color: var(--admin-accent);
+            background: rgba(245, 176, 66, 0.1);
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        /* Dark Mode Styles */
+        body[data-bs-theme="dark"] {
+            background-color: #12151e;
+            color: #adb5bd;
+        }
+
+        body[data-bs-theme="dark"] .navbar {
+            background-color: #1a1d28;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.3);
+        }
+
+        body[data-bs-theme="dark"] #sidebar {
+            background-color: #1a1d28;
+        }
+
+        body[data-bs-theme="dark"] .table-container {
+            background-color: #1a1d28;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.3);
+        }
+
+        body[data-bs-theme="dark"] .table {
+            color: #adb5bd;
+        }
+
+        body[data-bs-theme="dark"] .table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        body[data-bs-theme="dark"] .table thead th {
+            border-bottom-color: #2a2d38;
+            color: #adb5bd;
+        }
+
+        body[data-bs-theme="dark"] .alert-custom.success {
+            background-color: rgba(28, 200, 138, 0.1);
+            color: #adb5bd;
+        }
+
+        body[data-bs-theme="dark"] .alert-custom.error {
+            background-color: rgba(231, 74, 59, 0.1);
+            color: #adb5bd;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            #sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+
+            #content {
+                margin-left: 0;
+            }
+
+            .sidebar-open #sidebar {
+                transform: translateX(0);
+            }
+
+            .sidebar-open::after {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+            }
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scrollbar Styling */
+        #sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid px-4">
+            <!-- Sidebar Toggle Button -->
+            <button class="btn btn-link text-dark me-3 d-lg-none" id="sidebarToggle">
+                <i class="bi bi-list" style="font-size: 1.5rem;"></i>
+            </button>
+
+            <!-- Brand -->
+            <a class="navbar-brand" href="{% url 'dashboard_super' %}">
+                <i class="bi bi-shield-shaded me-2"></i>
+                <span>Book</span>-Hub <small class="fs-6 ms-2 text-muted">Super Admin</small>
+            </a>
+
+            <!-- Navbar Items -->
+            <div class="d-flex align-items-center ms-auto">
+                <!-- Welcome Message -->
+                <div class="me-4 d-none d-md-block">
+                    <span class="text-muted">Welcome,</span>
+                    <span class="fw-bold ms-1">{{ request.user.username }}</span>
+                </div>
+
+                <!-- Dark Mode Toggle -->
+                <div class="form-check form-switch me-4">
+                    <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                    <label class="form-check-label" for="darkModeToggle">
+                        <i class="bi bi-moon-fill"></i>
+                    </label>
+                </div>
+
+                <!-- User Dropdown -->
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
+                        id="userDropdown" data-bs-toggle="dropdown">
+                        <img src="https://ui-avatars.com/api/?name={{ request.user.username|urlencode }}&background=0f2a44&color=f5b042&size=128"
+                            alt="User" class="nav-user-img me-2">
+                        <span class="d-none d-md-inline">{{ request.user.username }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <div class="sidebar-heading">Main Navigation</div>
+        <a href="{% url 'dashboard_super' %}" class="sidebar-item active">
+            <i class="bi bi-speedometer2"></i> <span>Dashboard Home</span>
+        </a>
+        
+        <div class="sidebar-heading">Admin Management</div>
+        <a href="{% url 'register_admin' %}" class="sidebar-item">
+            <i class="bi bi-person-plus"></i> <span>Create Admin Account</span>
+        </a>
+        <a href="{% url 'view_admins' %}" class="sidebar-item">
+            <i class="bi bi-people"></i> <span>View Admins</span>
+        </a>
+        
+        <a href="{% url 'logout' %}" class="sidebar-item logout-bottom">
+            <i class="bi bi-box-arrow-right"></i>
+            <span>Logout</span>
+        </a>
+    </div>
+
+
+
+    
+    <!-- Main Content -->
+    <div id="content">
+        {% block content %}
+        <div class="container-fluid">
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert-custom {{ message.tags|default:'success' }} d-flex align-items-center">
+                        <i class="bi {% if message.tags == 'error' %}bi-exclamation-triangle{% else %}bi-check-circle{% endif %} me-2 fs-5"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-2 text-gray-800">Super Admin Dashboard</h1>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-clock me-1"></i>Last updated: {% now "F j, Y, g:i a" %}
+                    </p>
+                </div>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary" onclick="window.location.reload()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="admin-stat-card users h-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-white-50 text-uppercase fw-bold mb-1">Total Users</div>
+                                <div class="h2 mb-0 fw-bold text-white">{{ total_users|default:"0" }}</div>
+                            </div>
+                            <i class="bi bi-people card-icon text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="admin-stat-card stores h-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-white-50 text-uppercase fw-bold mb-1">Total Stores</div>
+                                <div class="h2 mb-0 fw-bold text-white">{{ total_stores|default:"0" }}</div>
+                            </div>
+                            <i class="bi bi-shop card-icon text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="admin-stat-card books h-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-white-50 text-uppercase fw-bold mb-1">Total Books</div>
+                                <div class="h2 mb-0 fw-bold text-white">{{ total_books|default:"0" }}</div>
+                            </div>
+                            <i class="bi bi-book card-icon text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="admin-stat-card orders h-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-white-50 text-uppercase fw-bold mb-1">Total Orders</div>
+                                <div class="h2 mb-0 fw-bold text-white">{{ total_orders|default:"0" }}</div>
+                            </div>
+                            <i class="bi bi-cart-check card-icon text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-2 col-md-4 col-sm-6">
+                    <div class="admin-stat-card admins h-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small text-white-50 text-uppercase fw-bold mb-1">Normal Admins</div>
+                                <div class="h2 mb-0 fw-bold text-white">{{ total_admin_accounts|default:"0" }}</div>
+                            </div>
+                            <i class="bi bi-person-badge card-icon text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Admin Accounts Section -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="table-container">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="bi bi-clock-history me-2 text-primary"></i>
+                                Recently Created Admin Accounts
+                            </h5>
+                            <a href="{% url 'view_admins' %}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye me-1"></i>View All
+                            </a>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Admin Name</th>
+                                        <th>Admin Type</th>
+                                        <th>Email</th>
+                                        <th>Reference Number</th>
+                                        <th>Created At</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for admin in latest_admin_accounts %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-circle me-2" style="width: 32px; height: 32px; background: rgba(15, 42, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                    <span class="fw-bold" style="color: var(--admin-color);">{{ admin.name|first|upper }}</span>
+                                                </div>
+                                                {{ admin.name }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if admin.admin_type == 'super' %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-star-fill me-1"></i>Super Admin
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-info">
+                                                <i class="bi bi-person me-1"></i>Normal Admin
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if admin.email %}
+                                            <a href="mailto:{{ admin.email }}" class="text-decoration-none">
+                                                <i class="bi bi-envelope me-1"></i>{{ admin.email }}
+                                            </a>
+                                            {% else %}
+                                            <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="ref-number">
+                                                <i class="bi bi-hash me-1"></i>{{ admin.ref_number }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-calendar3 me-1 text-muted"></i>
+                                            {{ admin.created_at|date:"M d, Y H:i" }}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">
+                                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                            No admin accounts created yet.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="table-container">
+                        <h5 class="mb-3 fw-bold">
+                            <i class="bi bi-lightning-charge me-2 text-warning"></i>
+                            Quick Actions
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-3 col-sm-6">
+                                <a href="{% url 'register_admin' %}" class="text-decoration-none">
+                                    <div class="card dashboard-card text-center p-3">
+                                        <i class="bi bi-person-plus fs-1 text-primary mb-2"></i>
+                                        <h6 class="mb-0">Create Admin</h6>
+                                        <small class="text-muted">Add new admin account</small>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="{% url 'view_admins' %}" class="text-decoration-none">
+                                    <div class="card dashboard-card text-center p-3">
+                                        <i class="bi bi-people fs-1 text-success mb-2"></i>
+                                        <h6 class="mb-0">View Admins</h6>
+                                        <small class="text-muted">Manage existing admins</small>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card dashboard-card text-center p-3" onclick="generateReport()" style="cursor: pointer;">
+                                    <i class="bi bi-file-earmark-bar-graph fs-1 text-info mb-2"></i>
+                                    <h6 class="mb-0">Generate Report</h6>
+                                    <small class="text-muted">System analytics report</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card dashboard-card text-center p-3" onclick="refreshData()" style="cursor: pointer;">
+                                    <i class="bi bi-arrow-repeat fs-1 text-warning mb-2"></i>
+                                    <h6 class="mb-0">Refresh Data</h6>
+                                    <small class="text-muted">Update statistics</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endblock %}
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // DOM Elements
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const sidebar = document.getElementById('sidebar');
+        const body = document.body;
+
+        // Check for saved dark mode preference
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+
+        // Apply dark mode if previously enabled
+        if (isDarkMode) {
+            body.setAttribute('data-bs-theme', 'dark');
+            darkModeToggle.checked = true;
+        }
+
+        // Toggle Sidebar on Mobile
+        sidebarToggle.addEventListener('click', () => {
+            body.classList.toggle('sidebar-open');
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 &&
+                body.classList.contains('sidebar-open') &&
+                !sidebar.contains(e.target) &&
+                !sidebarToggle.contains(e.target)) {
+                body.classList.remove('sidebar-open');
+            }
+        });
+
+        // Toggle Dark Mode
+        darkModeToggle.addEventListener('change', () => {
+            if (darkModeToggle.checked) {
+                body.setAttribute('data-bs-theme', 'dark');
+                localStorage.setItem('darkMode', 'true');
+            } else {
+                body.setAttribute('data-bs-theme', 'light');
+                localStorage.setItem('darkMode', 'false');
+            }
+        });
+
+        // Quick action functions
+        function generateReport() {
+            showAlert('Report Generation', 'Generating system analytics report...');
+        }
+
+        function refreshData() {
+            showAlert('Data Refresh', 'Refreshing dashboard statistics...');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        }
+
+        // Helper function to show alerts
+        function showAlert(title, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-info alert-dismissible fade show position-fixed';
+            alertDiv.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                <strong>${title}</strong><br>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        }
+
+        // Animate stats on load
+        window.addEventListener('load', () => {
+            const statElements = document.querySelectorAll('.admin-stat-card .h2');
+            statElements.forEach(element => {
+                const text = element.textContent;
+                if (!isNaN(parseInt(text))) {
+                    animateValue(element, 0, parseInt(text), 1000);
+                }
+            });
+        });
+
+        // Value animation function
+        function animateValue(element, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                element.textContent = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Active link handling
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                document.querySelectorAll('.sidebar-item').forEach(el => {
+                    el.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                if (window.innerWidth <= 768) {
+                    body.classList.remove('sidebar-open');
+                }
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
