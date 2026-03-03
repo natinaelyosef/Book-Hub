@@ -92,7 +92,11 @@ if orders.exists():
     oc = Client()
     ok = oc.login(username='store_owner', password='ownerpass')
     print('Owner login:', ok)
-    proc = oc.post(f'/store/order/process/{order.id}/', {'status': 'preparing'}, HTTP_HOST='localhost')
+    proc = oc.post(
+        f'/store/order/process/{order.id}/',
+        {'action': 'update_status', 'status': 'preparing'},
+        HTTP_HOST='localhost'
+    )
     print('process POST status:', proc.status_code)
     order.refresh_from_db()
     print('Order status after processing:', order.status)

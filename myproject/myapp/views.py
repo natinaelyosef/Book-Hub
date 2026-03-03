@@ -80,7 +80,15 @@ def can_manage_order(user, order):
         return False
     if user.is_superuser:
         return True
-    return get_managed_stores(user).filter(id=order.id).exists()
+
+    # Accept either an Order-like object (with store_id) or a Store-like object.
+    target_store_id = getattr(order, 'store_id', None)
+    if target_store_id is None:
+        target_store_id = getattr(order, 'id', None)
+    if target_store_id is None:
+        return False
+
+    return get_managed_stores(user).filter(id=target_store_id).exists()
 
 
 STORE_OWNER_GROUP = "store_owner"
@@ -511,9 +519,17 @@ def login_view(request):
 
 
 def logout(request):
+    was_super_admin = bool(request.user.is_authenticated and request.user.is_superuser)
+    was_sub_admin = bool(get_current_normal_admin(request))
+
     clear_normal_admin_session(request)
     if request.user.is_authenticated:
         auth_logout(request)
+
+    if was_super_admin:
+        return redirect('admin_login')
+    if was_sub_admin:
+        return redirect('normal_admin_login')
     return redirect('index')
 
 

@@ -45,3 +45,28 @@ class AccountRestrictionMiddleware:
             return redirect('login')
 
         return self.get_response(request)
+
+
+class AdminNoCacheMiddleware:
+    """Disables browser caching for admin pages to prevent back-button access after logout."""
+
+    ADMIN_PREFIXES = (
+        '/dashboard_super/',
+        '/dashboard_admin/',
+        '/super_admin/',
+        '/register_admin/',
+        '/admin/',
+    )
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+
+        if any(request.path.startswith(prefix) for prefix in self.ADMIN_PREFIXES):
+            response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0, private'
+            response['Pragma'] = 'no-cache'
+            response['Expires'] = '0'
+
+        return response

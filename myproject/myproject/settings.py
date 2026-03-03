@@ -28,6 +28,9 @@ DEBUG = False
 ALLOWED_HOSTS = [
     'naty.pythonanywhere.com',
     'www.naty.pythonanywhere.com',
+    'localhost',
+    '127.0.0.1',
+    'testserver',
 ]
 
 
@@ -51,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'myapp.middleware.AccountRestrictionMiddleware',
+    'myapp.middleware.AdminNoCacheMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -168,4 +172,3 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # 1. Enable 2-factor authentication on your Google account
 # 2. Generate an App Password: https://myaccount.google.com/apppasswords
 # 3. Use the App Password (not your regular Gmail password)
-

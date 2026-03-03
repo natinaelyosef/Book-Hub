@@ -1282,6 +1282,34 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.reload();
         }, 1200);
     };
+
+    // Handle browser back/forward restore: re-check auth and redirect if logged out.
+    window.addEventListener('pageshow', function (event) {
+        const nav = performance.getEntriesByType('navigation')[0];
+        const fromHistory = event.persisted || (nav && nav.type === 'back_forward');
+        if (!fromHistory) return;
+
+        fetch('{% url "dashboard_super" %}', {
+            method: 'GET',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            redirect: 'follow',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (resp) {
+            if (
+                resp.redirected ||
+                resp.status === 401 ||
+                resp.status === 403 ||
+                (resp.url && resp.url.indexOf('{% url "admin_login" %}') !== -1)
+            ) {
+                window.location.replace('{% url "admin_login" %}');
+            }
+        })
+        .catch(function () {
+            window.location.replace('{% url "admin_login" %}');
+        });
+    });
 });
 </script>
 {% endblock %}
